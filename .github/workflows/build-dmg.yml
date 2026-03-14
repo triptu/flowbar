@@ -1,0 +1,56 @@
+name: Build DMG
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: Flowbar
+        run: xcodegen generate
+
+      - name: Archive app
+        run: |
+          xcodebuild archive \
+            -project Flowbar/Flowbar.xcodeproj \
+            -scheme Flowbar \
+            -configuration Release \
+            -destination 'generic/platform=macOS' \
+            -archivePath "$GITHUB_WORKSPACE/build/Flowbar.xcarchive" \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGN_STYLE=Manual \
+            ENABLE_HARDENED_RUNTIME=NO \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES
+
+      - name: Extract .app from archive
+        run: |
+          cp -r \
+            "$GITHUB_WORKSPACE/build/Flowbar.xcarchive/Products/Applications/Flowbar.app" \
+            "$GITHUB_WORKSPACE/build/Flowbar.app"
+
+      - name: Create DMG
+        run: |
+          hdiutil create \
+            -volname Flowbar \
+            -srcfolder "$GITHUB_WORKSPACE/build/Flowbar.app" \
+            -ov \
+            -format UDZO \
+            "$GITHUB_WORKSPACE/build/Flowbar.dmg"
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Flowbar-${{ github.sha }}
+          path: build/Flowbar.dmg
+          retention-days: 30

@@ -996,7 +996,7 @@
                 <strong style="color: var(--text);">SQLite, not Core Data or flat files</strong> &mdash; Timer sessions need real queries &mdash; "give me the total time per todo" is a GROUP BY + SUM. Core Data is way too heavy for one table. A JSON file can't do that. SQLite ships with every Mac, needs no setup, and the whole thing is about 10 lines of C API calls.
               </p>
               <p style="font-size: 13px; color: var(--text-dim); line-height: 1.7; margin-bottom: 8px;">
-                <strong style="color: var(--text);">ObservableObject singletons</strong> &mdash; AppState and TimerService are created once and injected into the view tree with <code style="font-family: var(--font-mono); font-size: 11.5px; background: var(--bg-code); padding: 1px 5px; border-radius: 3px; color: var(--sage);">.environmentObject()</code>. Any view that needs them just asks. When something changes, SwiftUI re-renders automatically. No manual wiring, no event bus.
+                <strong style="color: var(--text);">@Observable singletons</strong> &mdash; AppState and TimerService use Swift's <code style="font-family: var(--font-mono); font-size: 11.5px; background: var(--bg-code); padding: 1px 5px; border-radius: 3px; color: var(--sage);">@Observable</code> macro and are injected via <code style="font-family: var(--font-mono); font-size: 11.5px; background: var(--bg-code); padding: 1px 5px; border-radius: 3px; color: var(--sage);">.environment()</code>. Any view that needs them just asks with <code style="font-family: var(--font-mono); font-size: 11.5px; background: var(--bg-code); padding: 1px 5px; border-radius: 3px; color: var(--sage);">@Environment</code>. SwiftUI tracks property access at the call site — only views that actually read a property re-render when it changes. No <code style="font-family: var(--font-mono); font-size: 11.5px; background: var(--bg-code); padding: 1px 5px; border-radius: 3px; color: var(--sage);">@Published</code> needed.
               </p>
               <p style="font-size: 13px; color: var(--text-dim); line-height: 1.7; margin: 0;">
                 <strong style="color: var(--text);">GCD file watchers, not polling</strong> &mdash; Instead of checking the filesystem on a timer, Flowbar asks the OS to notify it the instant a file changes. Your CPU does nothing until something actually happens. That's DispatchSource.
@@ -1175,7 +1175,7 @@
                             AppState
                         </text>
                         <text x="380" y="198" text-anchor="middle" font-size="9" fill="#a09d94">
-                            ObservableObject
+                            @Observable
                         </text>
                     </g>
                     <!-- TimerService -->
@@ -1200,7 +1200,7 @@
                             TimerService
                         </text>
                         <text x="630" y="198" text-anchor="middle" font-size="9" fill="#a09d94">
-                            ObservableObject
+                            @Observable
                         </text>
                     </g>
                     <!-- PopoverManager -->
@@ -1225,7 +1225,7 @@
                             PopoverManager
                         </text>
                         <text x="890" y="198" text-anchor="middle" font-size="9" fill="#a09d94">
-                            NSObject, Observable
+                            NSObject, @Observable
                         </text>
                     </g>
 
@@ -1770,9 +1770,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popoverManager = PopoverManager(appState: appState)
 
         let mainView = MainView()
-            .environmentObject(appState)
-            .environmentObject(timerService)
-            .environmentObject(popoverManager)
+            .environment(appState)
+            .environment(timerService)
+            .environment(popoverManager)
 
         popoverManager.setContentView(mainView, timerService: timerService)
         setupDoubleFnShortcut()
@@ -1801,7 +1801,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 }`,
 
                 "App/AppState.swift": `import SwiftUI
-import Combine
+import Observation
 
 enum AppTheme: String, CaseIterable {
     case light, dark, system
@@ -1814,33 +1814,58 @@ enum ActivePanel: Equatable {
     case empty
 }
 
+@Observable
 @MainActor
-final class AppState: ObservableObject {
-    @AppStorage("folderPath") var folderPath: String = ""
-    @AppStorage("theme") var theme: AppTheme = .dark
-    @AppStorage("typography") var typography: TypographySize = .default
-    @AppStorage("popoverWidth") var popoverWidth: Double = 700
-    @AppStorage("popoverHeight") var popoverHeight: Double = 500
-    @AppStorage("sidebarVisible") var sidebarVisible: Bool = true
-    @AppStorage("sidebarWidth") var sidebarWidth: Double = 200
+final class AppState {
+    var folderPath: String {
+        didSet { UserDefaults.standard.set(folderPath, forKey: "folderPath") }
+    }
+    var theme: AppTheme {
+        didSet { UserDefaults.standard.set(theme.rawValue, forKey: "theme") }
+    }
+    var typography: TypographySize {
+        didSet { UserDefaults.standard.set(typography.rawValue, forKey: "typography") }
+    }
+    var popoverWidth: Double {
+        didSet { UserDefaults.standard.set(popoverWidth, forKey: "popoverWidth") }
+    }
+    var popoverHeight: Double {
+        didSet { UserDefaults.standard.set(popoverHeight, forKey: "popoverHeight") }
+    }
+    var sidebarVisible: Bool {
+        didSet { UserDefaults.standard.set(sidebarVisible, forKey: "sidebarVisible") }
+    }
+    var sidebarWidth: Double {
+        didSet { UserDefaults.standard.set(sidebarWidth, forKey: "sidebarWidth") }
+    }
 
-    @Published var activePanel: ActivePanel = .empty
+    var activePanel: ActivePanel = .empty
 
     var selectedFile: NoteFile? {
         if case .file(let f) = activePanel { return f }
         return nil
     }
 
-    @Published var noteFiles: [NoteFile] = []
+    var noteFiles: [NoteFile] = []
 
-    private var dirWatcher: FileWatcher?
-    private var fileWatcher: FileWatcher?
+    @ObservationIgnored private var dirWatcher: FileWatcher?
+    @ObservationIgnored private var fileWatcher: FileWatcher?
 
-    @Published var editorContent: String = ""
-    private var saveTask: DispatchWorkItem?
-    private var isWriting = false
+    var editorContent: String = ""
+    @ObservationIgnored private var saveTask: DispatchWorkItem?
+    @ObservationIgnored private var isWriting = false
 
-    init() { loadFiles() }
+    init() {
+        let defaults = UserDefaults.standard
+        self.folderPath = defaults.string(forKey: "folderPath") ?? ""
+        self.theme = AppTheme(rawValue: defaults.string(forKey: "theme") ?? "") ?? .dark
+        self.typography = TypographySize(rawValue: defaults.string(forKey: "typography") ?? "") ?? .default
+        self.popoverWidth = defaults.object(forKey: "popoverWidth") as? Double ?? 700
+        self.popoverHeight = defaults.object(forKey: "popoverHeight") as? Double ?? 500
+        self.sidebarVisible = defaults.object(forKey: "sidebarVisible") as? Bool ?? true
+        self.sidebarWidth = defaults.object(forKey: "sidebarWidth") as? Double ?? 200
+        loadFiles()
+    }
 
     func loadFiles() {
         guard !folderPath.isEmpty else { noteFiles = []; return }
@@ -1965,6 +1990,7 @@ struct TodoItem: Identifiable {
                 "Services/DatabaseService.swift": `import Foundation
 import SQLite3
 
+@MainActor
 final class DatabaseService {
     static let shared = DatabaseService()
     private var db: OpaquePointer?
@@ -1973,8 +1999,6 @@ final class DatabaseService {
         openDatabase()
         createTables()
     }
-
-    deinit { sqlite3_close(db) }
 
     private func openDatabase() {
         let fileManager = FileManager.default
@@ -2034,17 +2058,18 @@ final class DatabaseService {
 
                 "Services/FileWatcher.swift": `import Foundation
 
+@MainActor
 final class FileWatcher {
     private var source: DispatchSourceFileSystemObject?
     private var fileDescriptor: Int32 = -1
-    private let onChange: () -> Void
+    private let onChange: @MainActor () -> Void
 
-    init(url: URL, onChange: @escaping () -> Void) {
+    init(url: URL, onChange: @escaping @MainActor () -> Void) {
         self.onChange = onChange
         startWatching(url: url)
     }
 
-    deinit { stopWatching() }
+    deinit { source?.cancel() }
 
     func startWatching(url: URL) {
         stopWatching()
@@ -2117,24 +2142,24 @@ enum MarkdownParser {
 }`,
 
                 "Services/TimerService.swift": `import Foundation
-import Combine
-import SwiftUI
+import Observation
 
+@Observable
 @MainActor
-final class TimerService: ObservableObject {
-    @Published var isRunning = false
-    @Published var isPaused = false
-    @Published var currentTodoText = ""
-    @Published var currentSourceFile = ""
-    @Published var elapsed: TimeInterval = 0
+final class TimerService {
+    var isRunning = false
+    var isPaused = false
+    var currentTodoText = ""
+    var currentSourceFile = ""
+    var elapsed: TimeInterval = 0
 
     var hasActiveSession: Bool { isRunning || isPaused }
 
-    private var sessionId: Int64?
-    private var startedAt: Date?
-    private var pausedElapsed: TimeInterval = 0
-    private var timer: Timer?
-    private let db = DatabaseService.shared
+    @ObservationIgnored private var sessionId: Int64?
+    @ObservationIgnored private var startedAt: Date?
+    @ObservationIgnored private var pausedElapsed: TimeInterval = 0
+    @ObservationIgnored private var timer: Timer?
+    @ObservationIgnored private let db = DatabaseService.shared
 
     init() { restoreActiveSession() }
 
@@ -2191,7 +2216,7 @@ final class TimerService: ObservableObject {
 
     func allTotalTimes() -> [String: TimeInterval] { db.allTotalTimes() }
 
-    static func formatTime(_ seconds: TimeInterval) -> String {
+    nonisolated static func formatTime(_ seconds: TimeInterval) -> String {
         String(format: "%02d:%02d", Int(seconds) / 60, Int(seconds) % 60)
     }
 
@@ -2258,10 +2283,11 @@ enum TypographySize: String, CaseIterable {
                 "Views/MainView.swift": `import SwiftUI
 
 struct MainView: View {
-    @EnvironmentObject var appState: AppState
-    @EnvironmentObject var popoverManager: PopoverManager
+    @Environment(AppState.self) var appState
+    @Environment(PopoverManager.self) var popoverManager
 
     var body: some View {
+        @Bindable var appState = appState
         HStack(spacing: 0) {
             if appState.sidebarVisible {
                 SidebarView()
@@ -2296,15 +2322,17 @@ struct MainView: View {
 
                 "Window/PopoverManager.swift": `import AppKit
 import SwiftUI
+import Observation
 
+@Observable
 @MainActor
-final class PopoverManager: NSObject, ObservableObject {
+final class PopoverManager: NSObject {
     let statusItem: NSStatusItem
     let popover: NSPopover
-    @Published var isFloating = false
-    private var floatingPanel: FloatingPanel?
-    private var appState: AppState
-    private var timerService: TimerService?
+    var isFloating = false
+    @ObservationIgnored private var floatingPanel: FloatingPanel?
+    @ObservationIgnored private var appState: AppState
+    @ObservationIgnored private var timerService: TimerService?
 
     init(appState: AppState) {
         self.appState = appState
@@ -2335,9 +2363,9 @@ final class PopoverManager: NSObject, ObservableObject {
         closePopover()
         let panel = FloatingPanel(contentRect: NSRect(origin: origin, size: size), appState: appState)
         let mainView = MainView()
-            .environmentObject(appState)
-            .environmentObject(timerService)
-            .environmentObject(self)
+            .environment(appState)
+            .environment(timerService)
+            .environment(self)
         panel.setContent(mainView)
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
