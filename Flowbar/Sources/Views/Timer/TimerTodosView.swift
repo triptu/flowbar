@@ -63,6 +63,7 @@ struct TimerTodosView: View {
         }
         .onAppear { loadTodos() }
         .onChange(of: appState.noteFiles) { loadTodos() }
+        .onChange(of: timerService.isRunning) { loadTodos() }
     }
 
     private func loadTodos() {

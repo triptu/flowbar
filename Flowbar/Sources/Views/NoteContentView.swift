@@ -72,8 +72,11 @@ struct NoteContentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 6) {
                 let lines = appState.editorContent.components(separatedBy: "\n")
+                let skipFirstH1 = lines.first?.trimmingCharacters(in: .whitespaces).hasPrefix("# ") == true
                 ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
-                    renderLine(line, at: index)
+                    if !(skipFirstH1 && index == 0) {
+                        renderLine(line, at: index)
+                    }
                 }
             }
             .padding(20)

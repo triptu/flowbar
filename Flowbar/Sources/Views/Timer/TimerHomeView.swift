@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct TimerHomeView: View {
+    @EnvironmentObject var appState: AppState
     @EnvironmentObject var timerService: TimerService
 
     var body: some View {
@@ -44,7 +45,7 @@ struct TimerHomeView: View {
                 }
                 .buttonStyle(.plain)
 
-                Button(action: { timerService.complete() }) {
+                Button(action: { timerService.complete(folderPath: appState.folderPath) }) {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark")
                             .font(.system(size: 12))

@@ -50,8 +50,20 @@ final class TimerService: ObservableObject {
         cleanup()
     }
 
-    func complete() {
+    func complete(folderPath: String) {
         guard isRunning, let id = sessionId else { return }
+        // Mark the todo as done in the markdown file
+        let fileURL = URL(fileURLWithPath: folderPath).appendingPathComponent(currentSourceFile + ".md")
+        if let content = try? String(contentsOf: fileURL, encoding: .utf8) {
+            let lines = content.components(separatedBy: "\n")
+            for (index, line) in lines.enumerated() {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                if trimmed.hasPrefix("- [ ] ") && String(trimmed.dropFirst(6)) == currentTodoText {
+                    _ = MarkdownParser.toggleTodo(at: index, in: fileURL)
+                    break
+                }
+            }
+        }
         db.endSession(id: id, completed: true)
         cleanup()
     }
