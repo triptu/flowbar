@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct SidebarView: View {
-    @EnvironmentObject var appState: AppState
-    @EnvironmentObject var popoverManager: PopoverManager
+    @Environment(AppState.self) var appState
+    @Environment(PopoverManager.self) var popoverManager
 
     var body: some View {
         VStack(spacing: 0) {

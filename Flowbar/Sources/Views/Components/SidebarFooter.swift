@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SidebarFooter: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) var appState
 
     private var isSettings: Bool { appState.activePanel == .settings }
     private var isTimer: Bool { appState.activePanel == .timer }

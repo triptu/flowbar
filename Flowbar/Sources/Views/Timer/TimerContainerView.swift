@@ -6,8 +6,8 @@ import SwiftUI
 /// shows TimerHomeView. The user can toggle between them with the list button.
 /// Listens to timerService.isRunning changes to auto-switch when a timer completes.
 struct TimerContainerView: View {
-    @EnvironmentObject var appState: AppState
-    @EnvironmentObject var timerService: TimerService
+    @Environment(AppState.self) var appState
+    @Environment(TimerService.self) var timerService
     @State private var showingTodos: Bool? = nil
 
     private var effectiveShowingTodos: Bool {

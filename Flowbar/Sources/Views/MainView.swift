@@ -6,10 +6,11 @@ import SwiftUI
 /// settings, the timer, or an empty state. The sidebar is togglable with Cmd+B.
 /// Used identically in both popover and floating panel modes.
 struct MainView: View {
-    @EnvironmentObject var appState: AppState
-    @EnvironmentObject var popoverManager: PopoverManager
+    @Environment(AppState.self) var appState
+    @Environment(PopoverManager.self) var popoverManager
 
     var body: some View {
+        @Bindable var appState = appState
         HStack(spacing: 0) {
             if appState.sidebarVisible {
                 SidebarView()

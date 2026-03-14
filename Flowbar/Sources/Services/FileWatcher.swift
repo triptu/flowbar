@@ -6,18 +6,19 @@ import Foundation
 /// currently selected file (for external edits, e.g. from Obsidian). Each watcher
 /// opens a file descriptor and fires the onChange callback on the main queue.
 /// Automatically cleans up the descriptor on deinit.
+@MainActor
 final class FileWatcher {
     private var source: DispatchSourceFileSystemObject?
     private var fileDescriptor: Int32 = -1
-    private let onChange: () -> Void
+    private let onChange: @MainActor () -> Void
 
-    init(url: URL, onChange: @escaping () -> Void) {
+    init(url: URL, onChange: @escaping @MainActor () -> Void) {
         self.onChange = onChange
         startWatching(url: url)
     }
 
     deinit {
-        stopWatching()
+        source?.cancel()
     }
 
     func startWatching(url: URL) {

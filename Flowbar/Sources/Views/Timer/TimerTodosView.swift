@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct TimerTodosView: View {
-    @EnvironmentObject var appState: AppState
-    @EnvironmentObject var timerService: TimerService
+    @Environment(AppState.self) var appState
+    @Environment(TimerService.self) var timerService
     @State private var searchText = ""
     @State private var hideDone = false
     @State private var sourceFilter: String? = nil
@@ -88,8 +88,8 @@ struct TimerTodosView: View {
             }
         }
         .onAppear { loadTodos() }
-        .onChange(of: appState.noteFiles) { loadTodos() }
-        .onChange(of: timerService.isRunning) { loadTodos() }
+        .onChange(of: appState.noteFiles) { _, _ in loadTodos() }
+        .onChange(of: timerService.isRunning) { _, _ in loadTodos() }
     }
 
     private func loadTodos() {
@@ -104,7 +104,6 @@ struct TimerTodosView: View {
 
     private func toggleTodo(_ todo: TodoItem) {
         _ = MarkdownParser.toggleTodo(at: todo.lineIndex, in: todo.sourceFile.url)
-        // onChange handlers will trigger loadTodos via noteFiles or isRunning changes
         loadTodos()
     }
 

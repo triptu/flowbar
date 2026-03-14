@@ -1,20 +1,22 @@
 import AppKit
 import SwiftUI
+import Observation
 
 /// Manages the menu bar status item, popover, and floating panel lifecycle.
 ///
 /// Owns the NSStatusItem (menu bar icon) and the NSPopover. Can switch between
 /// popover mode (attached to menu bar) and floating panel mode (detached window).
-/// Injected as an @EnvironmentObject so views can trigger float/dock and read isFloating.
+/// Injected via .environment() so views can trigger float/dock and read isFloating.
+@Observable
 @MainActor
-final class PopoverManager: NSObject, ObservableObject {
+final class PopoverManager: NSObject {
     let statusItem: NSStatusItem
     let popover: NSPopover
-    @Published var isFloating = false
+    var isFloating = false
 
-    private var floatingPanel: FloatingPanel?
-    private var appState: AppState
-    private var timerService: TimerService?
+    @ObservationIgnored private var floatingPanel: FloatingPanel?
+    @ObservationIgnored private var appState: AppState
+    @ObservationIgnored private var timerService: TimerService?
 
     init(appState: AppState) {
         self.appState = appState
@@ -75,9 +77,9 @@ final class PopoverManager: NSObject, ObservableObject {
 
         let panel = FloatingPanel(contentRect: frame, appState: appState)
         let mainView = MainView()
-            .environmentObject(appState)
-            .environmentObject(timerService)
-            .environmentObject(self)
+            .environment(appState)
+            .environment(timerService)
+            .environment(self)
         panel.setContent(mainView)
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)

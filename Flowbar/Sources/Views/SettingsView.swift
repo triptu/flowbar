@@ -1,9 +1,10 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) var appState
 
     var body: some View {
+        @Bindable var appState = appState
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Settings")
@@ -13,7 +14,9 @@ struct SettingsView: View {
                     HStack {
                         TextField("/path/to/obsidian/vault/folder", text: $appState.folderPath)
                             .textFieldStyle(.roundedBorder)
-                            .onChange(of: appState.folderPath) { appState.loadFiles() }
+                            .onChange(of: appState.folderPath) { _, _ in
+                                appState.loadFiles()
+                            }
                         Button("Browse...") { browseFolder() }
                             .buttonStyle(.bordered)
                             .tint(FlowbarColors.accent)

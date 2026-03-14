@@ -1,5 +1,5 @@
 import SwiftUI
-import Combine
+import Observation
 
 enum AppTheme: String, CaseIterable {
     case light, dark, system
@@ -14,23 +14,38 @@ enum ActivePanel: Equatable {
 
 /// Central source of truth for the app's navigation, file list, and editor content.
 ///
-/// Owns the folder path (persisted via @AppStorage), the list of markdown NoteFiles,
+/// Owns the folder path (persisted via UserDefaults), the list of markdown NoteFiles,
 /// and the currently selected file's editor text. Sets up directory and file watchers
 /// so the UI stays in sync when files change on disk (e.g. edits from Obsidian).
 /// An isWriting flag prevents the file watcher from reloading content we just saved.
+@Observable
 @MainActor
-final class AppState: ObservableObject {
-    // MARK: - Settings
-    @AppStorage("folderPath") var folderPath: String = ""
-    @AppStorage("theme") var theme: AppTheme = .dark
-    @AppStorage("typography") var typography: TypographySize = .default
-    @AppStorage("popoverWidth") var popoverWidth: Double = 700
-    @AppStorage("popoverHeight") var popoverHeight: Double = 500
-    @AppStorage("sidebarVisible") var sidebarVisible: Bool = true
-    @AppStorage("sidebarWidth") var sidebarWidth: Double = 200
+final class AppState {
+    // MARK: - Settings (persisted to UserDefaults)
+    var folderPath: String {
+        didSet { UserDefaults.standard.set(folderPath, forKey: "folderPath") }
+    }
+    var theme: AppTheme {
+        didSet { UserDefaults.standard.set(theme.rawValue, forKey: "theme") }
+    }
+    var typography: TypographySize {
+        didSet { UserDefaults.standard.set(typography.rawValue, forKey: "typography") }
+    }
+    var popoverWidth: Double {
+        didSet { UserDefaults.standard.set(popoverWidth, forKey: "popoverWidth") }
+    }
+    var popoverHeight: Double {
+        didSet { UserDefaults.standard.set(popoverHeight, forKey: "popoverHeight") }
+    }
+    var sidebarVisible: Bool {
+        didSet { UserDefaults.standard.set(sidebarVisible, forKey: "sidebarVisible") }
+    }
+    var sidebarWidth: Double {
+        didSet { UserDefaults.standard.set(sidebarWidth, forKey: "sidebarWidth") }
+    }
 
     // MARK: - Navigation (single source of truth)
-    @Published var activePanel: ActivePanel = .empty
+    var activePanel: ActivePanel = .empty
 
     var selectedFile: NoteFile? {
         if case .file(let f) = activePanel { return f }
@@ -38,18 +53,26 @@ final class AppState: ObservableObject {
     }
 
     // MARK: - Files
-    @Published var noteFiles: [NoteFile] = []
+    var noteFiles: [NoteFile] = []
 
     // File watching
-    private var dirWatcher: FileWatcher?
-    private var fileWatcher: FileWatcher?
+    @ObservationIgnored private var dirWatcher: FileWatcher?
+    @ObservationIgnored private var fileWatcher: FileWatcher?
 
     // MARK: - Editor
-    @Published var editorContent: String = ""
-    private var saveTask: DispatchWorkItem?
-    private var isWriting = false
+    var editorContent: String = ""
+    @ObservationIgnored private var saveTask: DispatchWorkItem?
+    @ObservationIgnored private var isWriting = false
 
     init() {
+        let defaults = UserDefaults.standard
+        self.folderPath = defaults.string(forKey: "folderPath") ?? ""
+        self.theme = AppTheme(rawValue: defaults.string(forKey: "theme") ?? "") ?? .dark
+        self.typography = TypographySize(rawValue: defaults.string(forKey: "typography") ?? "") ?? .default
+        self.popoverWidth = defaults.object(forKey: "popoverWidth") as? Double ?? 700
+        self.popoverHeight = defaults.object(forKey: "popoverHeight") as? Double ?? 500
+        self.sidebarVisible = defaults.object(forKey: "sidebarVisible") as? Bool ?? true
+        self.sidebarWidth = defaults.object(forKey: "sidebarWidth") as? Double ?? 200
         loadFiles()
     }
 
@@ -158,6 +181,3 @@ final class AppState: ObservableObject {
         }
     }
 }
-
-extension AppTheme: RawRepresentable {}
-extension TypographySize: RawRepresentable {}

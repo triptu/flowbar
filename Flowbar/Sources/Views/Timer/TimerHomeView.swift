@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct TimerHomeView: View {
-    @EnvironmentObject var appState: AppState
-    @EnvironmentObject var timerService: TimerService
+    @Environment(AppState.self) var appState
+    @Environment(TimerService.self) var timerService
 
     var body: some View {
         Group {

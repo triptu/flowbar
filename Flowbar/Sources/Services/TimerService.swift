@@ -1,29 +1,29 @@
 import Foundation
-import Combine
-import SwiftUI
+import Observation
 
 /// Manages the stopwatch timer for tracking time spent on todos.
 ///
 /// Supports start, pause, resume, and complete. Persists sessions to SQLite via DatabaseService.
 /// Does NOT modify markdown files — the caller is responsible for marking todos done.
-/// Views observe @Published properties to update the UI; hasActiveSession and isTracking()
+/// Views observe properties to update the UI; hasActiveSession and isTracking()
 /// provide convenient checks without duplicating the isRunning/isPaused logic everywhere.
+@Observable
 @MainActor
-final class TimerService: ObservableObject {
-    @Published var isRunning = false
-    @Published var isPaused = false
-    @Published var currentTodoText = ""
-    @Published var currentSourceFile = ""
-    @Published var elapsed: TimeInterval = 0
+final class TimerService {
+    var isRunning = false
+    var isPaused = false
+    var currentTodoText = ""
+    var currentSourceFile = ""
+    var elapsed: TimeInterval = 0
 
     /// True when a timer session exists (running or paused)
     var hasActiveSession: Bool { isRunning || isPaused }
 
-    private var sessionId: Int64?
-    private var startedAt: Date?
-    private var pausedElapsed: TimeInterval = 0
-    private var timer: Timer?
-    private let db = DatabaseService.shared
+    @ObservationIgnored private var sessionId: Int64?
+    @ObservationIgnored private var startedAt: Date?
+    @ObservationIgnored private var pausedElapsed: TimeInterval = 0
+    @ObservationIgnored private var timer: Timer?
+    @ObservationIgnored private let db = DatabaseService.shared
 
     init() {
         restoreActiveSession()
@@ -134,7 +134,7 @@ final class TimerService: ObservableObject {
         db.allTotalTimes()
     }
 
-    static func formatTime(_ seconds: TimeInterval) -> String {
+    nonisolated static func formatTime(_ seconds: TimeInterval) -> String {
         let mins = Int(seconds) / 60
         let secs = Int(seconds) % 60
         return String(format: "%02d:%02d", mins, secs)

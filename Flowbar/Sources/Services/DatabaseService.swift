@@ -6,6 +6,7 @@ import SQLite3
 /// Accessed via DatabaseService.shared singleton. TimerService calls into this for all
 /// session CRUD operations; AppState does not use the database directly.
 /// The database file lives in ~/Library/Application Support/Flowbar/flowbar.sqlite.
+@MainActor
 final class DatabaseService {
     static let shared = DatabaseService()
     private var db: OpaquePointer?
@@ -13,10 +14,6 @@ final class DatabaseService {
     private init() {
         openDatabase()
         createTables()
-    }
-
-    deinit {
-        sqlite3_close(db)
     }
 
     private func openDatabase() {

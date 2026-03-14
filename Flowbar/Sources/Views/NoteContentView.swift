@@ -1,10 +1,11 @@
 import SwiftUI
 
 struct NoteContentView: View {
-    @EnvironmentObject var appState: AppState
-    @EnvironmentObject var popoverManager: PopoverManager
+    @Environment(AppState.self) var appState
+    @Environment(PopoverManager.self) var popoverManager
 
     var body: some View {
+        @Bindable var appState = appState
         VStack(alignment: .leading, spacing: 0) {
             noteHeader
             Divider().opacity(0.2)
@@ -13,7 +14,7 @@ struct NoteContentView: View {
                 .font(.system(size: appState.typography.bodySize))
                 .scrollContentBackground(.hidden)
                 .padding(16)
-                .onChange(of: appState.editorContent) {
+                .onChange(of: appState.editorContent) { _, _ in
                     appState.saveFileContent()
                 }
         }
