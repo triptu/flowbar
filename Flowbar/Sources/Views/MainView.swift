@@ -68,11 +68,6 @@ struct SidebarDivider: View {
         Rectangle()
             .fill(Color.clear)
             .frame(width: 5)
-            .overlay(
-                Rectangle()
-                    .fill(Color.primary.opacity(0.08))
-                    .frame(width: 1)
-            )
             .contentShape(Rectangle())
             .onHover { hovering in
                 if hovering {
