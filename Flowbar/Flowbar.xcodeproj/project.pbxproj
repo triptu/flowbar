@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		02809DCA65555BE65F063A9F /* NoteContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BE9090CD422B39C22928F8C /* NoteContentView.swift */; };
 		13B7ED8967A1A4B824777752 /* TodoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E055DC9A0DE8A87522720A1 /* TodoItem.swift */; };
+		1E5052E9569AE84B38C2C0F3 /* TimerServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2705123F4FA326A6DFC877D8 /* TimerServiceTests.swift */; };
 		33F5E63DCB5F9DD94C47FD32 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4709745944EB39D269992BF /* Typography.swift */; };
 		42A5459E77ED6745E1DBCD43 /* NoteFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 635F72DDE09908762049B42B /* NoteFile.swift */; };
 		4F139AF375C4FA41F292C0E7 /* MarkdownParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1B419B41DBE32FBEC53E7E /* MarkdownParser.swift */; };
@@ -18,10 +19,12 @@
 		56FDF78959DAAC5E59386E6F /* SidebarFooter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8510A28B4BDA11F845C2A2F0 /* SidebarFooter.swift */; };
 		5CB99267DAC1962A81157A85 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 542C5A78074B276391DA809D /* Colors.swift */; };
 		66E4356102C5E6AD78E1EA11 /* TimerHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DABC3A9E8EB88A3D9F59F2 /* TimerHomeView.swift */; };
+		7576910985CDCB6BADF17639 /* MarkdownParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A4E9B5708812F7012B4B7F /* MarkdownParserTests.swift */; };
+		76AD7711155357239987CD1F /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7B4D68F1D94AEB1C9D1953 /* ModelTests.swift */; };
 		8995DCB6F7D39DB04F49F5FC /* DatabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475F8AB060E4655AA80A13E0 /* DatabaseService.swift */; };
 		94477EDEB696C005201FDF33 /* PopoverManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4666F986226364CA59E93D /* PopoverManager.swift */; };
 		97C23CB05145842759114559 /* TimerContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AB02F728664A2670EEFCAF /* TimerContainerView.swift */; };
-A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2938A16169339850B84E63 /* AppState.swift */; };
+		A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2938A16169339850B84E63 /* AppState.swift */; };
 		A1C37D455CD1DEEE92C0F49F /* FloatingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19927FCA0D6E052D93303A86 /* FloatingPanel.swift */; };
 		A34CDF3EB4CF83E179BEF2BA /* TimerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39083BC43A019B06241FB227 /* TimerService.swift */; };
 		B09973A5834843B57F506206 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 679770A71B494E81BD99BB16 /* SettingsView.swift */; };
@@ -31,15 +34,29 @@ A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; 
 		F6A2FCC540B165487531BA6C /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA28AD0B52FFBD4002D7108F /* MainView.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		17FB66528EEA3C3D87735BFE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = EFF728564FB4149D745FD4CB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0C56B4E08F3E32E7FA4F5D01;
+			remoteInfo = Flowbar;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		06DABC3A9E8EB88A3D9F59F2 /* TimerHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerHomeView.swift; sourceTree = "<group>"; };
+		08A4E9B5708812F7012B4B7F /* MarkdownParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownParserTests.swift; sourceTree = "<group>"; };
+		169227FE96874503D7ED8D2D /* FlowbarTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlowbarTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		19927FCA0D6E052D93303A86 /* FloatingPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingPanel.swift; sourceTree = "<group>"; };
+		2705123F4FA326A6DFC877D8 /* TimerServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerServiceTests.swift; sourceTree = "<group>"; };
 		29AB02F728664A2670EEFCAF /* TimerContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerContainerView.swift; sourceTree = "<group>"; };
 		39083BC43A019B06241FB227 /* TimerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerService.swift; sourceTree = "<group>"; };
+		3A7B4D68F1D94AEB1C9D1953 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
 		3BE9090CD422B39C22928F8C /* NoteContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteContentView.swift; sourceTree = "<group>"; };
 		4437CE287B73D4B42D2A7488 /* TodoRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoRow.swift; sourceTree = "<group>"; };
 		475F8AB060E4655AA80A13E0 /* DatabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseService.swift; sourceTree = "<group>"; };
-4DAC8FE70A4CC25EFC1101BE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		4DAC8FE70A4CC25EFC1101BE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4E055DC9A0DE8A87522720A1 /* TodoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItem.swift; sourceTree = "<group>"; };
 		542C5A78074B276391DA809D /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		635F72DDE09908762049B42B /* NoteFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteFile.swift; sourceTree = "<group>"; };
@@ -71,6 +88,7 @@ A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; 
 			isa = PBXGroup;
 			children = (
 				FF70D3AF5D0BCB839138D476 /* Sources */,
+				F671781C531CA2B8B3993F1D /* Tests */,
 				C44FBD2640CD80E693BD7B0B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -129,6 +147,7 @@ A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; 
 			isa = PBXGroup;
 			children = (
 				F6B0E80A3C0E7534674FD493 /* Flowbar.app */,
+				169227FE96874503D7ED8D2D /* FlowbarTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -141,6 +160,16 @@ A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; 
 				BAF1CAFB6CFD0E5A2A75702D /* TimerTodosView.swift */,
 			);
 			path = Timer;
+			sourceTree = "<group>";
+		};
+		F671781C531CA2B8B3993F1D /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				08A4E9B5708812F7012B4B7F /* MarkdownParserTests.swift */,
+				3A7B4D68F1D94AEB1C9D1953 /* ModelTests.swift */,
+				2705123F4FA326A6DFC877D8 /* TimerServiceTests.swift */,
+			);
+			path = Tests;
 			sourceTree = "<group>";
 		};
 		F6B4520FD05F27728B9DA495 /* Services */ = {
@@ -187,6 +216,24 @@ A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; 
 			productReference = F6B0E80A3C0E7534674FD493 /* Flowbar.app */;
 			productType = "com.apple.product-type.application";
 		};
+		134C1742E3474FC4FF78ABC4 /* FlowbarTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B42D05E47BB9D10EB4DA27D2 /* Build configuration list for PBXNativeTarget "FlowbarTests" */;
+			buildPhases = (
+				A802B1812923783C9549758A /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3AE8D83DAECAF26C5D30866C /* PBXTargetDependency */,
+			);
+			name = FlowbarTests;
+			packageProductDependencies = (
+			);
+			productName = FlowbarTests;
+			productReference = 169227FE96874503D7ED8D2D /* FlowbarTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -216,11 +263,22 @@ A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; 
 			projectRoot = "";
 			targets = (
 				0C56B4E08F3E32E7FA4F5D01 /* Flowbar */,
+				134C1742E3474FC4FF78ABC4 /* FlowbarTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		A802B1812923783C9549758A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7576910985CDCB6BADF17639 /* MarkdownParserTests.swift in Sources */,
+				76AD7711155357239987CD1F /* ModelTests.swift in Sources */,
+				1E5052E9569AE84B38C2C0F3 /* TimerServiceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BDFB2D943A577D4665361F6F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -243,7 +301,7 @@ A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; 
 				97C23CB05145842759114559 /* TimerContainerView.swift in Sources */,
 				66E4356102C5E6AD78E1EA11 /* TimerHomeView.swift in Sources */,
 				A34CDF3EB4CF83E179BEF2BA /* TimerService.swift in Sources */,
-521CE08AE3FC9244CE92C597 /* TimerTodosView.swift in Sources */,
+				521CE08AE3FC9244CE92C597 /* TimerTodosView.swift in Sources */,
 				13B7ED8967A1A4B824777752 /* TodoItem.swift in Sources */,
 				525F0DBEC750803D29A5BE5C /* TodoRow.swift in Sources */,
 				33F5E63DCB5F9DD94C47FD32 /* Typography.swift in Sources */,
@@ -251,6 +309,14 @@ A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; 
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3AE8D83DAECAF26C5D30866C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0C56B4E08F3E32E7FA4F5D01 /* Flowbar */;
+			targetProxy = 17FB66528EEA3C3D87735BFE /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1C29F99196B3598258ADF1D2 /* Release */ = {
@@ -288,6 +354,23 @@ A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; 
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.flowbar.app;
 				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		9D108BBC48DF6D29FD8D96F0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.flowbar.tests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Flowbar.app/Contents/MacOS/Flowbar";
 			};
 			name = Debug;
 		};
@@ -346,6 +429,23 @@ A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; 
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		CD53DAAB61034CF905A82BA6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.flowbar.tests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Flowbar.app/Contents/MacOS/Flowbar";
 			};
 			name = Release;
 		};
@@ -422,6 +522,15 @@ A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; 
 			buildConfigurations = (
 				501916133A1B272B2D4303A5 /* Debug */,
 				1C29F99196B3598258ADF1D2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B42D05E47BB9D10EB4DA27D2 /* Build configuration list for PBXNativeTarget "FlowbarTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9D108BBC48DF6D29FD8D96F0 /* Debug */,
+				CD53DAAB61034CF905A82BA6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

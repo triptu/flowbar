@@ -34,3 +34,15 @@ targets:
       path: Resources/Flowbar.entitlements
       properties:
         com.apple.security.app-sandbox: false
+
+  FlowbarTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests
+    dependencies:
+      - target: Flowbar
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.flowbar.tests
+        GENERATE_INFOPLIST_FILE: YES
