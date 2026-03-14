@@ -18,6 +18,7 @@ final class PopoverManager: NSObject {
     @ObservationIgnored private var appState: AppState
     @ObservationIgnored private var timerService: TimerService?
     @ObservationIgnored private var statusMenu: NSMenu
+    @ObservationIgnored private var rightClickMonitor: Any?
 
     init(appState: AppState) {
         self.appState = appState
@@ -36,24 +37,27 @@ final class PopoverManager: NSObject {
 
         if let button = statusItem.button {
             button.image = Self.makeMenuBarIcon()
-            button.action = #selector(handleStatusItemClick(_:))
+            // Default sendAction fires on mouseDown — this gives native highlight behavior
+            button.action = #selector(statusItemClicked(_:))
             button.target = self
-            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+        }
+
+        // Handle right-click separately via event monitor
+        rightClickMonitor = NSEvent.addLocalMonitorForEvents(matching: .rightMouseUp) { [weak self] event in
+            guard let self, let button = self.statusItem.button else { return event }
+            let pointInButton = button.convert(event.locationInWindow, from: nil)
+            if button.bounds.contains(pointInButton) {
+                self.statusItem.menu = self.statusMenu
+                button.performClick(nil)
+                self.statusItem.menu = nil
+                return nil
+            }
+            return event
         }
     }
 
-    @objc private func handleStatusItemClick(_ sender: Any?) {
-        guard let event = NSApp.currentEvent else {
-            togglePopover(sender)
-            return
-        }
-        if event.type == .rightMouseUp {
-            statusItem.menu = statusMenu
-            statusItem.button?.performClick(nil)
-            statusItem.menu = nil
-        } else {
-            togglePopover(sender)
-        }
+    @objc private func statusItemClicked(_ sender: Any?) {
+        togglePopover(sender)
     }
 
     @objc private func quitApp() {
@@ -82,18 +86,12 @@ final class PopoverManager: NSObject {
         guard let button = statusItem.button else { return }
         popover.contentSize = NSSize(width: appState.popoverWidth, height: appState.popoverHeight)
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-        button.highlight(true)
         NSApp.activate(ignoringOtherApps: true)
         popover.contentViewController?.view.window?.makeKey()
     }
 
     func closePopover() {
         popover.performClose(nil)
-    }
-
-    /// Updates the menu bar button highlight to reflect whether the popover or panel is open.
-    private func updateButtonHighlight(_ highlighted: Bool) {
-        statusItem.button?.highlight(highlighted)
     }
 
     func floatPanel() {
@@ -119,7 +117,6 @@ final class PopoverManager: NSObject {
         panel.delegate = self
         floatingPanel = panel
         isFloating = true
-        updateButtonHighlight(true)
     }
 
     func dockPanel() {
@@ -207,22 +204,14 @@ final class PopoverManager: NSObject {
 }
 
 // MARK: - NSPopoverDelegate
-/// Tracks popover close (including transient dismissal) to unhighlight the menu bar button.
-extension PopoverManager: NSPopoverDelegate {
-    func popoverDidClose(_ notification: Notification) {
-        if !isFloating {
-            updateButtonHighlight(false)
-        }
-    }
-}
+extension PopoverManager: NSPopoverDelegate {}
 
 // MARK: - NSWindowDelegate
-/// Tracks floating panel close (e.g. via close button) to unhighlight the menu bar button.
+/// Tracks floating panel close (e.g. via close button) to reset isFloating state.
 extension PopoverManager: NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         guard notification.object as? FloatingPanel === floatingPanel else { return }
         floatingPanel = nil
         isFloating = false
-        updateButtonHighlight(false)
     }
 }

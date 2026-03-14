@@ -54,7 +54,7 @@ struct NoteContentView: View {
             }
         }
         .padding(.horizontal, 20)
-        .padding(.top, 8)
+        .padding(.top, popoverManager.isFloating ? 4 : 8)
         .padding(.bottom, 8)
     }
 }

@@ -8,10 +8,6 @@ struct SidebarView: View {
         VStack(spacing: 0) {
             // Header bar — in floating mode, sits right of traffic lights
             HStack(spacing: 8) {
-                if popoverManager.isFloating {
-                    // Space for traffic lights (close/minimize/zoom)
-                    Color.clear.frame(width: 52, height: 1)
-                }
                 Button(action: { appState.toggleSidebar() }) {
                     Image(systemName: "sidebar.left")
                         .font(.system(size: 13))
@@ -20,8 +16,10 @@ struct SidebarView: View {
                 .buttonStyle(.plain)
                 Spacer()
             }
-            .padding(.horizontal, 12)
-            .padding(.top, popoverManager.isFloating ? 12 : 10)
+            // In floating mode, push past traffic lights (~76px from left edge)
+            .padding(.leading, popoverManager.isFloating ? 76 : 20)
+            .padding(.trailing, 20)
+            .padding(.top, popoverManager.isFloating ? 6 : 10)
             .padding(.bottom, 4)
 
             ScrollView {
