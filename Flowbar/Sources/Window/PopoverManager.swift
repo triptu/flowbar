@@ -55,12 +55,6 @@ final class PopoverManager: NSObject {
         }
     }
 
-    deinit {
-        if let monitor = rightClickMonitor {
-            NSEvent.removeMonitor(monitor)
-        }
-    }
-
     @objc private func statusItemClicked(_ sender: Any?) {
         togglePopover(sender)
     }
