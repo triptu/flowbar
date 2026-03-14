@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Learning Swift through Flowbar</title>
-        <link rel="icon" type="image/svg+xml" href="../assets/logo.svg">
+        <link rel="icon" type="image/svg+xml" href="../assets/logo.svg" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -331,10 +331,10 @@
                 margin: 0;
                 padding: 20px 24px;
                 font-family: var(--font-mono);
-                font-size: 12.5px;
-                line-height: 1.45;
+                font-size: 13px;
+                line-height: 1.7;
                 color: var(--text);
-                tab-size: 4;
+                tab-size: 2;
                 counter-reset: line;
                 position: relative;
                 overflow-x: auto;
@@ -351,10 +351,9 @@
                 z-index: 5;
             }
             .code-line {
-                display: block;
                 position: relative;
                 padding-left: 48px;
-                min-height: 1.45em;
+                min-height: 1.7em;
                 white-space: pre;
             }
             .code-line:hover {
@@ -367,7 +366,7 @@
                 text-align: right;
                 color: var(--text-muted);
                 opacity: 0.4;
-                font-size: 11px;
+                font-size: 13px;
                 user-select: none;
             }
             /* Syntax colors */
@@ -798,7 +797,16 @@
     <body>
         <!-- ========== NAV ========== -->
         <nav>
-            <a href="#hero" class="logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.5C7 2.5 2.5 7 2.5 12C2.5 17 7 21.5 12 21.5C17 21.5 21.5 17 21.5 12C21.5 7 17 2.5 12 2.5ZM3.8 11.2Q7 8.8 10.5 10.8Q12 11.8 13.5 12.2Q17 13 20.2 10.8L20.2 12.8Q17 15 13.5 14.2Q12 13.8 10.5 12.8Q7 10.8 3.8 13.2Z"/></svg> Flowbar</a>
+            <a href="#hero" class="logo"
+                ><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                        d="M12 2.5C7 2.5 2.5 7 2.5 12C2.5 17 7 21.5 12 21.5C17 21.5 21.5 17 21.5 12C21.5 7 17 2.5 12 2.5ZM3.8 11.2Q7 8.8 10.5 10.8Q12 11.8 13.5 12.2Q17 13 20.2 10.8L20.2 12.8Q17 15 13.5 14.2Q12 13.8 10.5 12.8Q7 10.8 3.8 13.2Z"
+                    />
+                </svg>
+                Flowbar</a
+            >
             <div class="links">
                 <a href="#hero">Home</a>
                 <a href="#getting-started">Getting Started</a>
