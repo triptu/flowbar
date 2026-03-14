@@ -827,8 +827,9 @@
                 <div class="prereq-card">
                     <h3>What to Install</h3>
                     <p>
-                        <span class="step-num">1</span> Grab <strong>Xcode</strong> from the Mac
-                        App Store (it's free). This one download gives you everything &mdash; the Swift compiler, SwiftUI, the macOS SDK, a simulator, and a debugger.
+                        <span class="step-num">1</span> Grab <strong>Xcode</strong> from the Mac App
+                        Store (it's free). This one download gives you everything &mdash; the Swift
+                        compiler, SwiftUI, the macOS SDK, a simulator, and a debugger.
                     </p>
                     <p>
                         <span class="step-num">2</span> Open Xcode once, go to
@@ -861,11 +862,13 @@
                     </p>
                     <p>
                         <span class="step-num">3</span> Give it a name, pick a folder. Xcode sets up
-                        everything &mdash; a <code>.xcodeproj</code>, a starter SwiftUI view, the whole structure.
+                        everything &mdash; a <code>.xcodeproj</code>, a starter SwiftUI view, the
+                        whole structure.
                     </p>
                     <p>
                         Now hit <strong>&#8984;R</strong>. Xcode compiles your code, signs the app,
-                        and launches it. You've got a running macOS app. The whole thing takes under a minute.
+                        and launches it. You've got a running macOS app. The whole thing takes under
+                        a minute.
                     </p>
                     <p>
                         <a
@@ -880,7 +883,10 @@
                 <div class="prereq-card">
                     <h3>What is AppDelegate?</h3>
                     <p>
-                        When your Mac launches an app, the OS needs someone to talk to. "Hey, you're launching now." "Hey, the user just came back from sleep." That someone is the <code>AppDelegate</code> &mdash; it's your app's point of contact with macOS.
+                        When your Mac launches an app, the OS needs someone to talk to. "Hey, you're
+                        launching now." "Hey, the user just came back from sleep." That someone is
+                        the <code>AppDelegate</code> &mdash; it's your app's point of contact with
+                        macOS.
                     </p>
                     <div class="lifecycle-flow">
                         <span class="lf-box system">macOS</span>
@@ -890,36 +896,50 @@
                         <span class="lf-box yours">your setup code</span>
                     </div>
                     <p>
-                        The big one is <code>applicationDidFinishLaunching()</code> &mdash; it fires once at startup. Flowbar uses it to create the state, timer service, and that menu bar icon you click. Think of it as your app's <code>main()</code>.
+                        The big one is <code>applicationDidFinishLaunching()</code> &mdash; it fires
+                        once at startup. Flowbar uses it to create the state, timer service, and
+                        that menu bar icon you click. Think of it as your app's <code>main()</code>.
                     </p>
                 </div>
 
                 <div class="prereq-card">
                     <h3>SwiftUI App vs AppDelegate</h3>
                     <p>
-                        Here's the thing &mdash; modern SwiftUI apps use <code>@main struct MyApp: App</code> as their entry point. It's clean and simple. But menu bar apps need AppKit stuff (the status bar icon, popovers, global hotkeys) that SwiftUI just can't do yet.
+                        Here's the thing &mdash; modern SwiftUI apps use
+                        <code>@main struct MyApp: App</code> as their entry point. It's clean and
+                        simple. But menu bar apps need AppKit stuff (the status bar icon, popovers,
+                        global hotkeys) that SwiftUI just can't do yet.
                     </p>
                     <p>
-                        So Flowbar uses both. The <code>@main</code> struct declares the app, and <code>@NSApplicationDelegateAdaptor</code> plugs in an AppDelegate that handles the AppKit side. You'll see this pattern in most macOS apps that need low-level system access.
+                        So Flowbar uses both. The <code>@main</code> struct declares the app, and
+                        <code>@NSApplicationDelegateAdaptor</code> plugs in an AppDelegate that
+                        handles the AppKit side. You'll see this pattern in most macOS apps that
+                        need low-level system access.
                     </p>
                 </div>
 
                 <div class="prereq-card">
                     <h3>What's in a Swift Project?</h3>
                     <p>
-                        <code>.xcodeproj</code> &mdash; Xcode's project file. Build settings, targets, which files belong where. You rarely edit this by hand.
+                        <code>.xcodeproj</code> &mdash; Xcode's project file. Build settings,
+                        targets, which files belong where. You rarely edit this by hand.
                     </p>
                     <p>
-                        <code>.swift</code> files &mdash; your actual code. No header files, no makefiles, no boilerplate. Just Swift.
+                        <code>.swift</code> files &mdash; your actual code. No header files, no
+                        makefiles, no boilerplate. Just Swift.
                     </p>
                     <p>
-                        <code>Info.plist</code> &mdash; metadata like app name, version, and permissions. Xcode handles most of it for you.
+                        <code>Info.plist</code> &mdash; metadata like app name, version, and
+                        permissions. Xcode handles most of it for you.
                     </p>
                     <p>
-                        <code>Assets.xcassets</code> &mdash; images, app icons, colors. You drag stuff in through Xcode's visual editor.
+                        <code>Assets.xcassets</code> &mdash; images, app icons, colors. You drag
+                        stuff in through Xcode's visual editor.
                     </p>
                     <p>
-                        One nice thing: there's <strong>no <code>main.swift</code></strong> when you use <code>@main</code>. The attribute tells the compiler where to start. Less ceremony.
+                        One nice thing: there's <strong>no <code>main.swift</code></strong> when you
+                        use <code>@main</code>. The attribute tells the compiler where to start.
+                        Less ceremony.
                     </p>
                 </div>
 
@@ -987,20 +1007,116 @@
                 the code.
             </p>
 
-            <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 20px;">
-              <h3 style="font-family: var(--font-mono); font-size: 14px; color: var(--sage); margin-bottom: 10px;">Why it's built this way</h3>
-              <p style="font-size: 13px; color: var(--text-dim); line-height: 1.7; margin-bottom: 8px;">
-                <strong style="color: var(--text);">AppDelegate, not pure SwiftUI</strong> &mdash; SwiftUI is great for UI, but it can't put an icon in your menu bar, show a popover from it, or listen for global hotkeys. For that you need AppKit, and AppKit talks through the AppDelegate.
-              </p>
-              <p style="font-size: 13px; color: var(--text-dim); line-height: 1.7; margin-bottom: 8px;">
-                <strong style="color: var(--text);">SQLite, not Core Data or flat files</strong> &mdash; Timer sessions need real queries &mdash; "give me the total time per todo" is a GROUP BY + SUM. Core Data is way too heavy for one table. A JSON file can't do that. SQLite ships with every Mac, needs no setup, and the whole thing is about 10 lines of C API calls.
-              </p>
-              <p style="font-size: 13px; color: var(--text-dim); line-height: 1.7; margin-bottom: 8px;">
-                <strong style="color: var(--text);">@Observable singletons</strong> &mdash; AppState and TimerService use Swift's <code style="font-family: var(--font-mono); font-size: 11.5px; background: var(--bg-code); padding: 1px 5px; border-radius: 3px; color: var(--sage);">@Observable</code> macro and are injected via <code style="font-family: var(--font-mono); font-size: 11.5px; background: var(--bg-code); padding: 1px 5px; border-radius: 3px; color: var(--sage);">.environment()</code>. Any view that needs them just asks with <code style="font-family: var(--font-mono); font-size: 11.5px; background: var(--bg-code); padding: 1px 5px; border-radius: 3px; color: var(--sage);">@Environment</code>. SwiftUI tracks property access at the call site — only views that actually read a property re-render when it changes. No <code style="font-family: var(--font-mono); font-size: 11.5px; background: var(--bg-code); padding: 1px 5px; border-radius: 3px; color: var(--sage);">@Published</code> needed.
-              </p>
-              <p style="font-size: 13px; color: var(--text-dim); line-height: 1.7; margin: 0;">
-                <strong style="color: var(--text);">GCD file watchers, not polling</strong> &mdash; Instead of checking the filesystem on a timer, Flowbar asks the OS to notify it the instant a file changes. Your CPU does nothing until something actually happens. That's DispatchSource.
-              </p>
+            <div
+                style="
+                    background: var(--bg-card);
+                    border: 1px solid var(--border);
+                    border-radius: 12px;
+                    padding: 20px 24px;
+                    margin-bottom: 20px;
+                "
+            >
+                <h3
+                    style="
+                        font-family: var(--font-mono);
+                        font-size: 14px;
+                        color: var(--sage);
+                        margin-bottom: 10px;
+                    "
+                >
+                    Why it's built this way
+                </h3>
+                <p
+                    style="
+                        font-size: 13px;
+                        color: var(--text-dim);
+                        line-height: 1.7;
+                        margin-bottom: 8px;
+                    "
+                >
+                    <strong style="color: var(--text)">AppDelegate, not pure SwiftUI</strong>
+                    &mdash; SwiftUI is great for UI, but it can't put an icon in your menu bar, show
+                    a popover from it, or listen for global hotkeys. For that you need AppKit, and
+                    AppKit talks through the AppDelegate.
+                </p>
+                <p
+                    style="
+                        font-size: 13px;
+                        color: var(--text-dim);
+                        line-height: 1.7;
+                        margin-bottom: 8px;
+                    "
+                >
+                    <strong style="color: var(--text)">SQLite, not Core Data or flat files</strong>
+                    &mdash; Timer sessions need real queries &mdash; "give me the total time per
+                    todo" is a GROUP BY + SUM. Core Data is way too heavy for one table. A JSON file
+                    can't do that. SQLite ships with every Mac, needs no setup, and the whole thing
+                    is about 10 lines of C API calls.
+                </p>
+                <p
+                    style="
+                        font-size: 13px;
+                        color: var(--text-dim);
+                        line-height: 1.7;
+                        margin-bottom: 8px;
+                    "
+                >
+                    <strong style="color: var(--text)">@Observable singletons</strong> &mdash;
+                    AppState and TimerService use Swift's
+                    <code
+                        style="
+                            font-family: var(--font-mono);
+                            font-size: 11.5px;
+                            background: var(--bg-code);
+                            padding: 1px 5px;
+                            border-radius: 3px;
+                            color: var(--sage);
+                        "
+                        >@Observable</code
+                    >
+                    macro and are injected via
+                    <code
+                        style="
+                            font-family: var(--font-mono);
+                            font-size: 11.5px;
+                            background: var(--bg-code);
+                            padding: 1px 5px;
+                            border-radius: 3px;
+                            color: var(--sage);
+                        "
+                        >.environment()</code
+                    >. Any view that needs them just asks with
+                    <code
+                        style="
+                            font-family: var(--font-mono);
+                            font-size: 11.5px;
+                            background: var(--bg-code);
+                            padding: 1px 5px;
+                            border-radius: 3px;
+                            color: var(--sage);
+                        "
+                        >@Environment</code
+                    >. SwiftUI tracks property access at the call site — only views that actually
+                    read a property re-render when it changes. No
+                    <code
+                        style="
+                            font-family: var(--font-mono);
+                            font-size: 11.5px;
+                            background: var(--bg-code);
+                            padding: 1px 5px;
+                            border-radius: 3px;
+                            color: var(--sage);
+                        "
+                        >@Published</code
+                    >
+                    needed.
+                </p>
+                <p style="font-size: 13px; color: var(--text-dim); line-height: 1.7; margin: 0">
+                    <strong style="color: var(--text)">GCD file watchers, not polling</strong>
+                    &mdash; Instead of checking the filesystem on a timer, Flowbar asks the OS to
+                    notify it the instant a file changes. Your CPU does nothing until something
+                    actually happens. That's DispatchSource.
+                </p>
             </div>
 
             <div class="arch-container">
@@ -1630,10 +1746,10 @@
                         <div class="dot"></div>
                         <div class="line-segment"></div>
                         <div class="step-content">
-                            <div class="step-label">editorContent @Published</div>
+                            <div class="step-label">editorContent updates</div>
                             <div class="step-desc">
-                                The <code>@Published</code> property emits a change. SwiftUI detects
-                                it.
+                                The <code>@Observable</code> macro detects the property change.
+                                SwiftUI re-renders only views that read <code>editorContent</code>.
                             </div>
                         </div>
                     </div>
@@ -1687,10 +1803,10 @@
                         <div class="dot"></div>
                         <div class="line-segment"></div>
                         <div class="step-content">
-                            <div class="step-label">elapsed @Published updates</div>
+                            <div class="step-label">elapsed property updates</div>
                             <div class="step-desc">
-                                SwiftUI views observing <code>timerService.elapsed</code> re-render
-                                automatically.
+                                The <code>@Observable</code> macro tracks access &mdash; only views
+                                reading <code>timerService.elapsed</code> re-render.
                             </div>
                         </div>
                     </div>
@@ -2453,8 +2569,8 @@ class FloatingPanel: NSPanel {
                         body: "The <code>!</code> after the type means this is an implicitly unwrapped optional. It starts as <code>nil</code> but will be set in <code>applicationDidFinishLaunching</code> before anyone uses it. After that, you can use it without <code>if let</code> unwrapping. Dangerous if used before initialization!",
                     },
                     18: {
-                        title: ".environmentObject()",
-                        body: "Injects an observable object into the SwiftUI view hierarchy. Any descendant view can access it with <code>@EnvironmentObject</code>. This is SwiftUI's dependency injection system &mdash; like React's Context API. Objects flow down the tree automatically.",
+                        title: ".environment()",
+                        body: "Injects an <code>@Observable</code> object into the SwiftUI view hierarchy. Any descendant view can access it with <code>@Environment(Type.self)</code>.",
                     },
                     25: {
                         title: "[weak self]",
@@ -2467,16 +2583,16 @@ class FloatingPanel: NSPanel {
                 },
                 "App/AppState.swift": {
                     15: {
-                        title: "@MainActor + ObservableObject",
-                        body: "This class is the app's central state. <code>ObservableObject</code> is a protocol that lets SwiftUI watch for changes. When any <code>@Published</code> property changes, all views observing this object re-render. Think of it like React's <code>useState</code> but for an entire state container.",
+                        title: "@Observable macro",
+                        body: "It automatically tracks which properties each view reads, so only views that actually use a changed property re-render. Any stored property is automatically observable.",
                     },
                     16: {
-                        title: "@AppStorage",
-                        body: "A property wrapper that reads/writes to <code>UserDefaults</code> automatically. It's reactive too &mdash; changes trigger UI updates. The string parameter is the UserDefaults key. This is how Flowbar persists settings between app launches without any manual save/load code.",
+                        title: "UserDefaults with didSet",
+                        body: "With <code>@Observable</code>, you can't use <code>@AppStorage</code> (it's a property wrapper, and <code>@Observable</code> already transforms properties). Instead, Flowbar reads defaults in <code>init()</code> and writes them back in <code>didSet</code>. Same persistence, just explicit &mdash; and the <code>@Observable</code> macro handles reactivity automatically.",
                     },
                     24: {
-                        title: "@Published",
-                        body: "Marks a property as observable. When this value changes, SwiftUI automatically re-renders any view that reads it. Under the hood, it uses Combine's <code>Publisher</code> system. This is the core of SwiftUI's reactivity &mdash; like React's <code>setState</code>.",
+                        title: "@ObservationIgnored",
+                        body: "Opts a property out of observation tracking. Private implementation details like <code>dirWatcher</code>, <code>fileWatcher</code>, and <code>saveTask</code> don't need to trigger view re-renders. Without this, any change to these internal fields would cause unnecessary UI updates.",
                     },
                     26: {
                         title: "Computed Property",
@@ -2532,10 +2648,6 @@ class FloatingPanel: NSPanel {
                         title: "private init()",
                         body: "A private initializer means only code inside this type can create an instance. Combined with <code>static let shared</code>, this enforces the singleton pattern: exactly one DatabaseService exists in the entire app.",
                     },
-                    11: {
-                        title: "deinit",
-                        body: "Called when an object is about to be deallocated. Only classes have <code>deinit</code> (structs don't need it since they're value types). Here it closes the SQLite database connection. This is part of Swift's ARC (Automatic Reference Counting) memory management.",
-                    },
                     29: {
                         title: "@discardableResult",
                         body: "Tells the compiler it's OK to ignore the return value. Without this, calling <code>startSession()</code> without using the returned <code>Int64</code> would produce a warning. This is a common pattern for functions where the return value is sometimes useful but not always needed.",
@@ -2574,13 +2686,13 @@ class FloatingPanel: NSPanel {
                     },
                 },
                 "Services/TimerService.swift": {
-                    5: {
-                        title: "@MainActor + ObservableObject",
-                        body: "Like AppState, TimerService is an observable state container that must run on the main thread. Multiple <code>@Published</code> properties track timer state. Any SwiftUI view that accesses these properties (via <code>@EnvironmentObject</code>) will automatically update when they change.",
+                    4: {
+                        title: "@Observable + @MainActor",
+                        body: "Like AppState, TimerService uses the <code>@Observable</code> macro for automatic change tracking. No <code>@Published</code> needed. The <code>@MainActor</code> guarantees all property access happens on the main thread. Views read properties via <code>@Environment(TimerService.self)</code>.",
                     },
-                    6: {
-                        title: "@Published var isRunning",
-                        body: "Each <code>@Published</code> property is a reactive signal. When <code>isRunning</code> changes from <code>false</code> to <code>true</code>, every view reading it re-renders. This is how the play/pause button updates without any manual notification code.",
+                    7: {
+                        title: "Plain var (auto-observed)",
+                        body: "With <code>@Observable</code>, plain <code>var</code> properties are automatically tracked. When <code>isRunning</code> changes, only views that actually read <code>isRunning</code> re-render &mdash; not every view observing TimerService. This is more efficient than the old <code>@Published</code> approach.",
                     },
                     11: {
                         title: "Computed Property (hasActiveSession)",
@@ -2621,12 +2733,16 @@ class FloatingPanel: NSPanel {
                 },
                 "Views/MainView.swift": {
                     4: {
-                        title: "@EnvironmentObject",
-                        body: "Reads an observable object that was injected by a parent view using <code>.environmentObject()</code>. It's like React's <code>useContext()</code>. The type must match exactly. If no matching object exists in the environment, the app crashes &mdash; so it's important to inject it early (AppDelegate does this).",
+                        title: "@Environment(Type.self)",
+                        body: "Reads an <code>@Observable</code> object injected via <code>.environment()</code>. Replaces the older <code>@EnvironmentObject</code>. The type is passed as a parameter: <code>@Environment(AppState.self)</code>. If no matching object exists, the app crashes &mdash; so inject early in AppDelegate.",
                     },
                     7: {
                         title: "var body: some View",
                         body: "Every SwiftUI view must have a <code>body</code> property that returns <code>some View</code>. This is a computed property that SwiftUI calls to get the view's content. The <code>some View</code> opaque return type lets you return any combination of views without specifying the complex nested generic type.",
+                    },
+                    8: {
+                        title: "@Bindable",
+                        body: "Creates bindings to an <code>@Observable</code> object's properties. With the old <code>@EnvironmentObject</code>, the <code>$</code> prefix worked directly. With <code>@Environment</code>, you first create a local <code>@Bindable</code> copy: <code>@Bindable var appState = appState</code>. Then <code>$appState.property</code> gives you a <code>Binding</code>.",
                     },
                     12: {
                         title: "$appState.sidebarWidth",
@@ -2642,13 +2758,13 @@ class FloatingPanel: NSPanel {
                     },
                 },
                 "Window/PopoverManager.swift": {
-                    4: {
-                        title: "NSObject + ObservableObject",
-                        body: "Inherits from both <code>NSObject</code> (required for Objective-C interop, like <code>@objc</code> methods and <code>NSStatusBar</code>) and conforms to <code>ObservableObject</code> (for SwiftUI reactivity). This bridges the old AppKit world with modern SwiftUI.",
+                    5: {
+                        title: "NSObject + @Observable",
+                        body: "Inherits from <code>NSObject</code> (required for Objective-C interop, like <code>@objc</code> methods and <code>NSStatusBar</code>) and uses the <code>@Observable</code> macro for SwiftUI reactivity.",
                     },
-                    8: {
-                        title: "@Published var isFloating",
-                        body: 'When the user "detaches" the popover into a floating window, this published property changes to <code>true</code>. Any view reading <code>popoverManager.isFloating</code> will instantly re-render to reflect the new state.',
+                    9: {
+                        title: "var isFloating (auto-observed)",
+                        body: 'With <code>@Observable</code>, this plain <code>var</code> is automatically tracked. When the user "detaches" the popover into a floating window, any view reading <code>popoverManager.isFloating</code> will re-render. No <code>@Published</code> wrapper needed.',
                     },
                     15: {
                         title: "super.init()",
@@ -2693,7 +2809,7 @@ class FloatingPanel: NSPanel {
                     cat: "types",
                     title: "class",
                     desc: "Reference types passed by pointer. Used when you need identity, inheritance, or a single shared instance (like AppDelegate, AppState).",
-                    code: '<span class="pw">@MainActor</span>\n<span class="kw">final class</span> <span class="ty">AppState</span>: <span class="ty">ObservableObject</span> {\n    <span class="pw">@Published</span> <span class="kw">var</span> noteFiles: [<span class="ty">NoteFile</span>] = []\n}',
+                    code: '<span class="pw">@Observable</span>\n<span class="pw">@MainActor</span>\n<span class="kw">final class</span> <span class="ty">AppState</span> {\n    <span class="kw">var</span> noteFiles: [<span class="ty">NoteFile</span>] = []\n}',
                 },
                 {
                     cat: "types",
@@ -2739,15 +2855,21 @@ class FloatingPanel: NSPanel {
                 },
                 {
                     cat: "swiftui",
-                    title: "@EnvironmentObject",
-                    desc: "Reads an ObservableObject injected by an ancestor view. Changes to @Published properties trigger re-renders. Like React Context.",
-                    code: '<span class="cmt">// Inject in parent:</span>\n<span class="ty">MainView</span>()\n    .environmentObject(appState)\n\n<span class="cmt">// Read in any descendant:</span>\n<span class="pw">@EnvironmentObject</span> <span class="kw">var</span> appState: <span class="ty">AppState</span>',
+                    title: "@Bindable",
+                    desc: "Creates bindings to @Observable properties. With @Environment, you first create @Bindable var x = x, then $x.prop gives you a Binding. Required because @Environment doesn't project bindings directly.",
+                    code: '<span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {\n    <span class="pw">@Bindable</span> <span class="kw">var</span> appState = appState\n    <span class="ty">TextField</span>(<span class="str">"Path"</span>, text: <span class="kw">$</span>appState.folderPath)\n}',
                 },
                 {
                     cat: "swiftui",
-                    title: "@AppStorage",
-                    desc: "A property wrapper that persists to UserDefaults and triggers view updates. Combines persistence with reactivity in one line.",
-                    code: '<span class="pw">@AppStorage</span>(<span class="str">"folderPath"</span>) <span class="kw">var</span> folderPath: <span class="ty">String</span> = <span class="str">""</span>\n<span class="pw">@AppStorage</span>(<span class="str">"theme"</span>) <span class="kw">var</span> theme: <span class="ty">AppTheme</span> = .dark\n<span class="cmt">// Automatically saved & restored between launches</span>',
+                    title: "@Environment + @Observable",
+                    desc: "Reads an @Observable object injected by an ancestor view via .environment().",
+                    code: '<span class="cmt">// Inject in parent:</span>\n<span class="ty">MainView</span>()\n    .environment(appState)\n\n<span class="cmt">// Read in any descendant:</span>\n<span class="pw">@Environment</span>(<span class="ty">AppState</span>.<span class="kw">self</span>) <span class="kw">var</span> appState',
+                },
+                {
+                    cat: "swiftui",
+                    title: "@ObservationIgnored",
+                    desc: "Excludes a property from @Observable tracking. Use it for internal state (watchers, timers, flags) that shouldn't trigger view re-renders.",
+                    code: '<span class="pw">@Observable</span>\n<span class="kw">final class</span> <span class="ty">AppState</span> {\n    <span class="kw">var</span> noteFiles: [<span class="ty">NoteFile</span>] = []  <span class="cmt">// tracked</span>\n    <span class="pw">@ObservationIgnored</span> <span class="kw">private var</span> dirWatcher: <span class="ty">FileWatcher</span>?  <span class="cmt">// not tracked</span>\n}',
                 },
                 {
                     cat: "swiftui",
@@ -2758,8 +2880,8 @@ class FloatingPanel: NSPanel {
                 {
                     cat: "concurrency",
                     title: "@MainActor",
-                    desc: "A global actor that ensures code runs on the main thread. Required for UI updates. Applied to entire classes or individual functions.",
-                    code: '<span class="pw">@MainActor</span>\n<span class="kw">final class</span> <span class="ty">AppState</span>: <span class="ty">ObservableObject</span> {\n    <span class="cmt">// All properties and methods here</span>\n    <span class="cmt">// are guaranteed to run on main thread</span>\n}',
+                    desc: "A global actor that ensures code runs on the main thread. Required for UI updates. Applied to entire classes or individual functions. In Swift 6 strict concurrency, the compiler enforces this at compile time.",
+                    code: '<span class="pw">@Observable</span>\n<span class="pw">@MainActor</span>\n<span class="kw">final class</span> <span class="ty">AppState</span> {\n    <span class="cmt">// All properties and methods here</span>\n    <span class="cmt">// are guaranteed to run on main thread</span>\n}',
                 },
                 {
                     cat: "concurrency",
@@ -2778,6 +2900,12 @@ class FloatingPanel: NSPanel {
                     title: "Timer.scheduledTimer",
                     desc: "Creates a repeating timer on the current run loop. Used for the focus timer's 1-second ticks.",
                     code: 'timer = <span class="ty">Timer</span>.scheduledTimer(\n    withTimeInterval: <span class="num">1.0</span>,\n    repeats: <span class="kw">true</span>\n) { [<span class="kw">weak self</span>] _ <span class="kw">in</span>\n    <span class="ty">Task</span> { <span class="pw">@MainActor</span> <span class="kw">in</span>\n        <span class="kw">self</span>?.elapsed = ...\n    }\n}',
+                },
+                {
+                    cat: "concurrency",
+                    title: "nonisolated",
+                    desc: "Opts a method out of its class's actor isolation. Useful for pure functions that don't access mutable state, so they can be called from any context without await.",
+                    code: '<span class="pw">@MainActor</span>\n<span class="kw">final class</span> <span class="ty">TimerService</span> {\n    <span class="cmt">// Can be called from anywhere, no await needed</span>\n    <span class="kw">nonisolated static func</span> formatTime(\n        _ seconds: <span class="ty">TimeInterval</span>\n    ) -> <span class="ty">String</span> { ... }\n}',
                 },
                 {
                     cat: "patterns",
@@ -2832,7 +2960,7 @@ class FloatingPanel: NSPanel {
 
                 // Property wrappers
                 html = html.replace(
-                    /(@(?:MainActor|Published|AppStorage|EnvironmentObject|State|Binding|ViewBuilder|objc|main|discardableResult|NSApplicationDelegateAdaptor|escaping))/g,
+                    /(@(?:MainActor|Observable|ObservationIgnored|Published|AppStorage|Environment|EnvironmentObject|Bindable|State|Binding|ViewBuilder|objc|main|discardableResult|NSApplicationDelegateAdaptor|escaping|nonisolated))/g,
                     '<span class="pw">$1</span>',
                 );
 
@@ -2878,6 +3006,7 @@ class FloatingPanel: NSPanel {
                     "extension",
                     "typealias",
                     "weak",
+                    "nonisolated",
                     "mutating",
                 ];
                 const kwRe = new RegExp("\\b(" + kwList.join("|") + ")\\b", "g");
@@ -2966,6 +3095,8 @@ class FloatingPanel: NSPanel {
                     "CharacterSet",
                     "Notification",
                     "Combine",
+                    "Observation",
+                    "UserDefaults",
                     "OpaquePointer",
                     "ModifierFlags",
                 ];
@@ -3179,7 +3310,7 @@ class FloatingPanel: NSPanel {
                 AppDelegate:
                     "The app's entry point. Receives lifecycle callbacks from macOS (launch, quit). Creates AppState, TimerService, PopoverManager, and sets up the double-Fn keyboard shortcut.",
                 AppState:
-                    "Central state container (ObservableObject). Holds the list of notes, active panel, editor content, and user settings. All views observe this for changes.",
+                    "Central state container (@Observable). Holds the list of notes, active panel, editor content, and user settings. Views observe only the specific properties they read.",
                 TimerService:
                     "Manages the focus timer. Tracks elapsed time, start/pause/complete, and persists sessions to the SQLite database.",
                 PopoverManager:
