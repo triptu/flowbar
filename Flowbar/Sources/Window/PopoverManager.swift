@@ -49,13 +49,13 @@ final class PopoverManager: NSObject, ObservableObject {
         guard let button = statusItem.button else { return }
         popover.contentSize = NSSize(width: appState.popoverWidth, height: appState.popoverHeight)
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        NSApp.activate(ignoringOtherApps: true)
+        popover.contentViewController?.view.window?.makeKey()
     }
 
     func closePopover() {
         popover.performClose(nil)
     }
-
-    // MARK: - Float / Dock
 
     func floatPanel() {
         guard let timerService else { return }
@@ -66,7 +66,6 @@ final class PopoverManager: NSObject, ObservableObject {
             y: screen.frame.midY - size.height / 2
         )
         let frame = NSRect(origin: origin, size: size)
-
         closePopover()
 
         let panel = FloatingPanel(contentRect: frame, appState: appState)

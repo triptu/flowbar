@@ -2,28 +2,35 @@ import SwiftUI
 
 struct SidebarView: View {
     @EnvironmentObject var appState: AppState
+    @EnvironmentObject var popoverManager: PopoverManager
 
     var body: some View {
         VStack(spacing: 0) {
-            // File list
+            HStack {
+                Button(action: { appState.toggleSidebar() }) {
+                    Image(systemName: "sidebar.left")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                Spacer()
+            }
+            .padding(.horizontal, 12)
+            .padding(.top, popoverManager.isFloating ? 6 : 10)
+            .padding(.bottom, 4)
+
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 2) {
                     ForEach(appState.noteFiles) { file in
                         SidebarFileRow(file: file, isSelected: appState.selectedFile?.id == file.id)
-                            .onTapGesture {
-                                appState.showingSettings = false
-                                appState.showingTimer = false
-                                appState.selectFile(file)
-                            }
+                            .onTapGesture { appState.selectFile(file) }
                     }
                 }
-                .padding(.vertical, 8)
+                .padding(.vertical, 4)
                 .padding(.horizontal, 8)
             }
 
             Spacer()
-
-            // Footer
             SidebarFooter()
         }
         .frame(maxHeight: .infinity)

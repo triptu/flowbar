@@ -20,30 +20,32 @@ struct TimerTodosView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Search + filter bar
+            // Inline search + hide-done filter
             HStack(spacing: 8) {
                 HStack {
                     Image(systemName: "magnifyingglass")
                         .foregroundStyle(.secondary)
+                        .font(.system(size: 12))
                     TextField("Search todo", text: $searchText)
                         .textFieldStyle(.plain)
+                        .font(.system(size: 13))
                 }
-                .padding(8)
+                .padding(6)
                 .background(
-                    RoundedRectangle(cornerRadius: 8)
+                    RoundedRectangle(cornerRadius: 6)
                         .fill(.ultraThinMaterial)
                 )
 
                 Button(action: { hideDone.toggle() }) {
                     Image(systemName: hideDone ? "eye.slash" : "eye")
+                        .font(.system(size: 13))
                         .foregroundStyle(hideDone ? FlowbarColors.accent : .secondary)
                 }
                 .buttonStyle(.plain)
                 .help(hideDone ? "Show completed" : "Hide completed")
             }
             .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.trailing, 44) // space for the list toggle button
+            .padding(.top, 6)
 
             // Todos list
             ScrollView {
@@ -72,7 +74,6 @@ struct TimerTodosView: View {
             let extracted = MarkdownParser.extractTodos(from: file.url, noteFile: file)
             allTodos.append(contentsOf: extracted)
         }
-        // Enrich with timer data
         for i in allTodos.indices {
             let total = timerService.totalTime(forTodo: allTodos[i].text, sourceFile: allTodos[i].sourceFile.id)
             allTodos[i].totalSeconds = total
@@ -90,7 +91,7 @@ struct TimerTodosView: View {
 
     private func startTimer(for todo: TodoItem) {
         if timerService.isRunning && timerService.currentTodoText == todo.text {
-            timerService.stop()
+            timerService.pause()
         } else {
             timerService.start(todoText: todo.text, sourceFile: todo.sourceFile.id)
         }
@@ -98,7 +99,6 @@ struct TimerTodosView: View {
     }
 
     private func navigateToFile(_ todo: TodoItem) {
-        appState.showingTimer = false
         appState.selectFile(todo.sourceFile)
     }
 }

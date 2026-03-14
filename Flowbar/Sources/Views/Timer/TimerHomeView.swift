@@ -6,7 +6,7 @@ struct TimerHomeView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if timerService.isRunning {
+            if timerService.isRunning || timerService.isPaused {
                 runningView
             } else {
                 idleView
@@ -29,11 +29,17 @@ struct TimerHomeView: View {
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 16) {
-                Button(action: { timerService.stop() }) {
+                Button(action: {
+                    if timerService.isRunning {
+                        timerService.pause()
+                    } else {
+                        timerService.resume()
+                    }
+                }) {
                     HStack(spacing: 8) {
-                        Image(systemName: "stop.fill")
+                        Image(systemName: timerService.isRunning ? "pause.fill" : "play.fill")
                             .font(.system(size: 12))
-                        Text("STOP")
+                        Text(timerService.isRunning ? "PAUSE" : "RESUME")
                             .font(.system(size: 14, weight: .semibold))
                     }
                     .padding(.horizontal, 24)

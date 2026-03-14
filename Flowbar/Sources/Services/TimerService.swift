@@ -5,12 +5,14 @@ import SwiftUI
 @MainActor
 final class TimerService: ObservableObject {
     @Published var isRunning = false
+    @Published var isPaused = false
     @Published var currentTodoText = ""
     @Published var currentSourceFile = ""
     @Published var elapsed: TimeInterval = 0
 
     private var sessionId: Int64?
     private var startedAt: Date?
+    private var pausedElapsed: TimeInterval = 0
     private var timer: Timer?
     private let db = DatabaseService.shared
 
@@ -30,9 +32,8 @@ final class TimerService: ObservableObject {
     }
 
     func start(todoText: String, sourceFile: String) {
-        // Stop any running session first
-        if isRunning {
-            stop()
+        if isRunning || isPaused {
+            stopSession()
         }
 
         sessionId = db.startSession(todoText: todoText, sourceFile: sourceFile)
@@ -40,19 +41,37 @@ final class TimerService: ObservableObject {
         currentSourceFile = sourceFile
         startedAt = Date()
         elapsed = 0
+        pausedElapsed = 0
         isRunning = true
+        isPaused = false
+        startTicking()
+    }
+
+    func pause() {
+        guard isRunning else { return }
+        timer?.invalidate()
+        timer = nil
+        pausedElapsed = elapsed
+        isRunning = false
+        isPaused = true
+    }
+
+    func resume() {
+        guard isPaused else { return }
+        startedAt = Date()
+        isRunning = true
+        isPaused = false
         startTicking()
     }
 
     func stop() {
-        guard isRunning, let id = sessionId else { return }
+        guard isRunning || isPaused, let id = sessionId else { return }
         db.endSession(id: id, completed: false)
         cleanup()
     }
 
     func complete(folderPath: String) {
-        guard isRunning, let id = sessionId else { return }
-        // Mark the todo as done in the markdown file
+        guard (isRunning || isPaused), let id = sessionId else { return }
         let fileURL = URL(fileURLWithPath: folderPath).appendingPathComponent(currentSourceFile + ".md")
         if let content = try? String(contentsOf: fileURL, encoding: .utf8) {
             let lines = content.components(separatedBy: "\n")
@@ -68,23 +87,34 @@ final class TimerService: ObservableObject {
         cleanup()
     }
 
+    private func stopSession() {
+        if let id = sessionId {
+            db.endSession(id: id, completed: false)
+        }
+        timer?.invalidate()
+        timer = nil
+    }
+
     private func cleanup() {
         timer?.invalidate()
         timer = nil
         isRunning = false
+        isPaused = false
         sessionId = nil
         startedAt = nil
         elapsed = 0
+        pausedElapsed = 0
         currentTodoText = ""
         currentSourceFile = ""
     }
 
     private func startTicking() {
         timer?.invalidate()
+        let base = pausedElapsed
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 guard let self, let start = self.startedAt else { return }
-                self.elapsed = Date().timeIntervalSince(start)
+                self.elapsed = base + Date().timeIntervalSince(start)
             }
         }
     }

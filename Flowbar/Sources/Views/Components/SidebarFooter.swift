@@ -3,31 +3,23 @@ import SwiftUI
 struct SidebarFooter: View {
     @EnvironmentObject var appState: AppState
 
+    private var isSettings: Bool { appState.activePanel == .settings }
+    private var isTimer: Bool { appState.activePanel == .timer }
+
     var body: some View {
         HStack(spacing: 4) {
-            footerButton(icon: "gearshape", label: "Settings", isActive: appState.showingSettings) {
-                if appState.showingSettings {
-                    appState.showingSettings = false
-                    if let file = appState.noteFiles.first {
-                        appState.selectFile(file)
-                    }
+            footerButton(icon: "gearshape", label: "Settings", isActive: isSettings) {
+                if isSettings {
+                    if let file = appState.noteFiles.first { appState.selectFile(file) }
                 } else {
-                    appState.showingTimer = false
-                    appState.showingSettings = true
-                    appState.selectedFile = nil
+                    appState.showSettings()
                 }
             }
-
-            footerButton(icon: "clock", label: "Timer", isActive: appState.showingTimer) {
-                if appState.showingTimer {
-                    appState.showingTimer = false
-                    if let file = appState.noteFiles.first {
-                        appState.selectFile(file)
-                    }
+            footerButton(icon: "clock", label: "Timer", isActive: isTimer) {
+                if isTimer {
+                    if let file = appState.noteFiles.first { appState.selectFile(file) }
                 } else {
-                    appState.showingSettings = false
-                    appState.showingTimer = true
-                    appState.selectedFile = nil
+                    appState.showTimer()
                 }
             }
         }

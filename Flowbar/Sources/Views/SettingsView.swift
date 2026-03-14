@@ -9,32 +9,25 @@ struct SettingsView: View {
                 Text("Settings")
                     .font(.system(size: appState.typography.titleSize, weight: .bold))
 
-                // Folder path
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Obsidian Folder Path")
                         .font(.system(size: 14, weight: .medium))
-
                     HStack {
                         TextField("/path/to/obsidian/vault/folder", text: $appState.folderPath)
                             .textFieldStyle(.roundedBorder)
                             .onChange(of: appState.folderPath) {
                                 appState.loadFiles()
                             }
-
-                        Button("Browse...") {
-                            browseFolder()
-                        }
-                        .buttonStyle(.bordered)
+                        Button("Browse...") { browseFolder() }
+                            .buttonStyle(.bordered)
                     }
                 }
 
                 Divider().opacity(0.3)
 
-                // Appearance
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Appearance")
                         .font(.system(size: 14, weight: .medium))
-
                     Picker("", selection: $appState.theme) {
                         ForEach(AppTheme.allCases, id: \.self) { theme in
                             Text(theme.rawValue.capitalized).tag(theme)
@@ -46,11 +39,9 @@ struct SettingsView: View {
 
                 Divider().opacity(0.3)
 
-                // Typography
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Typography")
                         .font(.system(size: 14, weight: .medium))
-
                     Picker("", selection: $appState.typography) {
                         ForEach(TypographySize.allCases, id: \.self) { size in
                             Text(size.rawValue.capitalized).tag(size)
@@ -62,18 +53,11 @@ struct SettingsView: View {
 
                 Divider().opacity(0.3)
 
-                // Global shortcut
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Global Keyboard Shortcut")
                         .font(.system(size: 14, weight: .medium))
-
-                    HStack {
-                        Button("Record Shortcut...") {
-                            // TODO: Implement shortcut recording
-                        }
+                    Button("Record Shortcut...") {}
                         .buttonStyle(.bordered)
-                    }
-
                     Text("Double-tap Fn key to toggle Flowbar (default)")
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
@@ -89,7 +73,6 @@ struct SettingsView: View {
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
         panel.message = "Select your Obsidian notes folder"
-
         if panel.runModal() == .OK, let url = panel.url {
             appState.folderPath = url.path
             appState.loadFiles()

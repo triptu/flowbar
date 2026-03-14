@@ -8,35 +8,34 @@ struct MainView: View {
         HStack(spacing: 0) {
             if appState.sidebarVisible {
                 SidebarView()
-                    .frame(width: 200)
+                    .frame(width: CGFloat(appState.sidebarWidth))
                     .transition(.move(edge: .leading).combined(with: .opacity))
 
-                Divider()
-                    .opacity(0.3)
+                SidebarDivider(width: $appState.sidebarWidth)
             }
 
-            // Right content area
             Group {
-                if appState.showingSettings {
+                switch appState.activePanel {
+                case .settings:
                     SettingsView()
-                } else if appState.showingTimer {
+                case .timer:
                     TimerContainerView()
-                } else if appState.selectedFile != nil {
+                case .file:
                     NoteContentView()
-                } else {
+                case .empty:
                     emptyState
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(.ultraThinMaterial)
+        .preferredColorScheme(appState.preferredColorScheme)
         .onAppear {
-            if let first = appState.noteFiles.first, appState.selectedFile == nil {
+            if case .empty = appState.activePanel, let first = appState.noteFiles.first {
                 appState.selectFile(first)
             }
         }
         .background(
-            // Hidden button for Cmd+B shortcut
             Button("") { appState.toggleSidebar() }
                 .keyboardShortcut("b", modifiers: .command)
                 .hidden()
@@ -51,5 +50,37 @@ struct MainView: View {
             Text("Select a folder in Settings")
                 .foregroundStyle(.secondary)
         }
+    }
+}
+
+struct SidebarDivider: View {
+    @Binding var width: Double
+    @State private var isDragging = false
+
+    var body: some View {
+        Rectangle()
+            .fill(Color.clear)
+            .frame(width: 6)
+            .overlay(
+                Rectangle()
+                    .fill(isDragging ? FlowbarColors.accent.opacity(0.5) : Color.secondary.opacity(0.15))
+                    .frame(width: 1)
+            )
+            .contentShape(Rectangle())
+            .onContinuousHover { phase in
+                switch phase {
+                case .active: NSCursor.resizeLeftRight.push()
+                case .ended: NSCursor.pop()
+                }
+            }
+            .gesture(
+                DragGesture()
+                    .onChanged { value in
+                        isDragging = true
+                        let newWidth = width + value.translation.width
+                        width = max(140, min(350, newWidth))
+                    }
+                    .onEnded { _ in isDragging = false }
+            )
     }
 }

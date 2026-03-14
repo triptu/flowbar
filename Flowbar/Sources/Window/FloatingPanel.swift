@@ -16,7 +16,7 @@ class FloatingPanel: NSPanel {
         isFloatingPanel = true
         level = .floating
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        isMovableByWindowBackground = false
+        isMovableByWindowBackground = true
         titlebarAppearsTransparent = true
         titleVisibility = .hidden
         backgroundColor = .clear
@@ -26,8 +26,7 @@ class FloatingPanel: NSPanel {
     }
 
     func setContent(_ view: some View) {
-        let hostingView = NSHostingView(rootView: view)
-        contentView = hostingView
+        contentView = NSHostingView(rootView: view)
     }
 
     override func close() {

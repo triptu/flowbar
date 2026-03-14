@@ -5,8 +5,11 @@ enum AppTheme: String, CaseIterable {
     case light, dark, system
 }
 
-enum BottomTab {
-    case settings, timer
+enum ActivePanel: Equatable {
+    case file(NoteFile)
+    case settings
+    case timer
+    case empty
 }
 
 @MainActor
@@ -18,18 +21,18 @@ final class AppState: ObservableObject {
     @AppStorage("popoverWidth") var popoverWidth: Double = 700
     @AppStorage("popoverHeight") var popoverHeight: Double = 500
     @AppStorage("sidebarVisible") var sidebarVisible: Bool = true
+    @AppStorage("sidebarWidth") var sidebarWidth: Double = 200
 
-    // MARK: - Navigation
-    @Published var selectedFile: NoteFile?
-    @Published var activeTab: BottomTab = .settings
-    @Published var showingSettings = false
-    @Published var showingTimer = false
+    // MARK: - Navigation (single source of truth)
+    @Published var activePanel: ActivePanel = .empty
+
+    var selectedFile: NoteFile? {
+        if case .file(let f) = activePanel { return f }
+        return nil
+    }
 
     // MARK: - Files
     @Published var noteFiles: [NoteFile] = []
-
-    // MARK: - Timer
-    @Published var timerShowingTodos = false
 
     // File watching
     private var dirWatcher: FileWatcher?
@@ -64,23 +67,29 @@ final class AppState: ObservableObject {
             .sorted { $0.lastPathComponent.localizedCaseInsensitiveCompare($1.lastPathComponent) == .orderedAscending }
             .map { NoteFile(url: $0) }
 
-        // Watch directory for changes
         dirWatcher = FileWatcher(url: url) { [weak self] in
             Task { @MainActor in
                 self?.loadFiles()
             }
         }
 
-        // Select first file if none selected
-        if selectedFile == nil, let first = noteFiles.first {
+        if case .empty = activePanel, let first = noteFiles.first {
             selectFile(first)
         }
     }
 
     func selectFile(_ file: NoteFile) {
-        selectedFile = file
+        activePanel = .file(file)
         loadFileContent(file)
         watchFile(file)
+    }
+
+    func showSettings() {
+        activePanel = .settings
+    }
+
+    func showTimer() {
+        activePanel = .timer
     }
 
     func loadFileContent(_ file: NoteFile) {
@@ -127,13 +136,15 @@ final class AppState: ObservableObject {
             sidebarVisible.toggle()
         }
     }
+
+    var preferredColorScheme: ColorScheme? {
+        switch theme {
+        case .light: return .light
+        case .dark: return .dark
+        case .system: return nil
+        }
+    }
 }
 
-// Make enums RawRepresentable for AppStorage
-extension AppTheme: RawRepresentable {
-    // Already has String rawValue
-}
-
-extension TypographySize: RawRepresentable {
-    // Already has String rawValue
-}
+extension AppTheme: RawRepresentable {}
+extension TypographySize: RawRepresentable {}
