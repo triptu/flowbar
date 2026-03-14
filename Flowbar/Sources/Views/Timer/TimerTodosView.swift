@@ -3,6 +3,8 @@ import SwiftUI
 struct TimerTodosView: View {
     @Environment(AppState.self) var appState
     @Environment(TimerService.self) var timerService
+    var onToggleView: () -> Void
+    var isShowingTodos: Bool
     @State private var searchText = ""
     @State private var hideDone = false
     @State private var sourceFilter: String? = nil
@@ -26,7 +28,7 @@ struct TimerTodosView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Filter bar: search + hide-done + source filter
+            // Combined toolbar: search + filters + todo list toggle
             HStack(spacing: 6) {
                 HStack(spacing: 4) {
                     Image(systemName: "magnifyingglass")
@@ -41,8 +43,8 @@ struct TimerTodosView: View {
                 .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.06)))
 
                 Button(action: { hideDone.toggle() }) {
-                    Image(systemName: hideDone ? "eye.slash" : "eye")
-                        .font(.system(size: 12))
+                    Image(systemName: hideDone ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                        .font(.system(size: 13))
                         .foregroundStyle(hideDone ? FlowbarColors.accent : Color.secondary.opacity(0.5))
                 }
                 .buttonStyle(.plain)
@@ -55,16 +57,33 @@ struct TimerTodosView: View {
                         Button(NoteFile.formatName(src)) { sourceFilter = src }
                     }
                 } label: {
-                    Image(systemName: "doc.text")
-                        .font(.system(size: 12))
-                        .foregroundStyle(sourceFilter != nil ? FlowbarColors.accent : Color.secondary.opacity(0.5))
+                    HStack(spacing: 2) {
+                        Image(systemName: "doc.text")
+                            .font(.system(size: 12))
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 8, weight: .semibold))
+                    }
+                    .foregroundStyle(sourceFilter != nil ? FlowbarColors.accent : Color.secondary.opacity(0.5))
                 }
                 .menuStyle(.borderlessButton)
-                .frame(width: 22)
+                .fixedSize()
                 .help("Filter by file")
+
+                Button(action: onToggleView) {
+                    Image(systemName: "list.bullet")
+                        .font(.system(size: 13))
+                        .padding(6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(isShowingTodos ? FlowbarColors.accent : Color.primary.opacity(0.06))
+                        )
+                        .foregroundStyle(isShowingTodos ? .white : .secondary)
+                }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 14)
-            .padding(.vertical, 4)
+            .padding(.top, 10)
+            .padding(.bottom, 6)
 
             ScrollView {
                 LazyVStack(spacing: 1) {
