@@ -28,7 +28,7 @@ struct MainView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background(.ultraThinMaterial)
+        .background(.regularMaterial)
         .preferredColorScheme(appState.preferredColorScheme)
         .onAppear {
             if case .empty = appState.activePanel, let first = appState.noteFiles.first {
@@ -55,32 +55,36 @@ struct MainView: View {
 
 struct SidebarDivider: View {
     @Binding var width: Double
-    @State private var isDragging = false
+    @GestureState private var dragOffset: CGFloat = 0
+    @State private var startWidth: Double = 0
 
     var body: some View {
         Rectangle()
             .fill(Color.clear)
-            .frame(width: 6)
+            .frame(width: 5)
             .overlay(
                 Rectangle()
-                    .fill(isDragging ? FlowbarColors.accent.opacity(0.5) : Color.secondary.opacity(0.15))
+                    .fill(Color.primary.opacity(0.08))
                     .frame(width: 1)
             )
             .contentShape(Rectangle())
-            .onContinuousHover { phase in
-                switch phase {
-                case .active: NSCursor.resizeLeftRight.push()
-                case .ended: NSCursor.pop()
+            .onHover { hovering in
+                if hovering {
+                    NSCursor.resizeLeftRight.push()
+                } else {
+                    NSCursor.pop()
                 }
             }
             .gesture(
-                DragGesture()
+                DragGesture(minimumDistance: 1)
                     .onChanged { value in
-                        isDragging = true
-                        let newWidth = width + value.translation.width
+                        if startWidth == 0 { startWidth = width }
+                        let newWidth = startWidth + value.translation.width
                         width = max(140, min(350, newWidth))
                     }
-                    .onEnded { _ in isDragging = false }
+                    .onEnded { _ in
+                        startWidth = 0
+                    }
             )
     }
 }

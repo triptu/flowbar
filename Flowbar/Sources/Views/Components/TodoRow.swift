@@ -8,76 +8,83 @@ struct TodoRow: View {
     let onNavigate: () -> Void
 
     private var isActive: Bool {
-        timerService.isRunning &&
+        (timerService.isRunning || timerService.isPaused) &&
         timerService.currentTodoText == todo.text &&
         timerService.currentSourceFile == todo.sourceFile.id
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            // Main row
-            HStack(spacing: 10) {
-                // State circle
-                Button(action: onToggle) {
-                    Circle()
-                        .fill(todo.isDone ? FlowbarColors.accent : Color.clear)
-                        .overlay(
-                            Circle().strokeBorder(todo.isDone ? FlowbarColors.accent : Color.secondary.opacity(0.5), lineWidth: 1.5)
+        HStack(alignment: .top, spacing: 10) {
+            // State circle
+            Button(action: onToggle) {
+                Circle()
+                    .fill(todo.isDone ? FlowbarColors.accent : Color.clear)
+                    .overlay(
+                        Circle().strokeBorder(
+                            todo.isDone ? FlowbarColors.accent : Color.primary.opacity(0.2),
+                            lineWidth: 1.5
                         )
-                        .overlay(
-                            todo.isDone ? Image(systemName: "checkmark").font(.system(size: 8, weight: .bold)).foregroundStyle(.white) : nil
-                        )
-                        .frame(width: 20, height: 20)
-                }
-                .buttonStyle(.plain)
+                    )
+                    .overlay(
+                        todo.isDone
+                            ? Image(systemName: "checkmark")
+                                .font(.system(size: 8, weight: .bold))
+                                .foregroundStyle(.white)
+                            : nil
+                    )
+                    .frame(width: 18, height: 18)
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 2)
 
-                // Title
+            // Title + source stacked
+            VStack(alignment: .leading, spacing: 3) {
                 Text(todo.text)
-                    .font(.system(size: 14, weight: isActive ? .semibold : .regular))
+                    .font(.system(size: 13, weight: isActive ? .semibold : .regular))
                     .strikethrough(todo.isDone)
-                    .opacity(todo.isDone ? 0.5 : 1)
+                    .opacity(todo.isDone ? 0.4 : 1)
                     .lineLimit(2)
 
-                Spacer()
-
-                // Play/Pause
-                if !todo.isDone {
-                    Button(action: onStart) {
-                        Image(systemName: isActive ? "pause.fill" : "play.fill")
-                            .font(.system(size: 12))
-                            .foregroundStyle(isActive ? FlowbarColors.timerActive : .secondary)
+                HStack(spacing: 0) {
+                    Button(action: onNavigate) {
+                        Text(todo.sourceFile.name)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.tertiary)
                     }
                     .buttonStyle(.plain)
+
+                    Spacer()
+
+                    if isActive {
+                        Text(TimerService.formatTime(timerService.elapsed))
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundStyle(FlowbarColors.accent)
+                    } else if todo.totalSeconds > 0 {
+                        Text(TimerService.formatTime(todo.totalSeconds))
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundStyle(.tertiary)
+                    }
                 }
             }
 
-            // Footer: source file + time
-            HStack {
-                Button(action: onNavigate) {
-                    Text(todo.sourceFile.name)
+            Spacer(minLength: 0)
+
+            // Play/Pause
+            if !todo.isDone {
+                Button(action: onStart) {
+                    Image(systemName: isActive ? "pause.fill" : "play.fill")
                         .font(.system(size: 11))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(isActive ? FlowbarColors.accent : Color.secondary.opacity(0.5))
                 }
                 .buttonStyle(.plain)
-
-                Spacer()
-
-                if isActive {
-                    Text(TimerService.formatTime(timerService.elapsed))
-                        .font(.system(size: 11, design: .monospaced))
-                        .foregroundStyle(FlowbarColors.timerActive)
-                } else if todo.totalSeconds > 0 {
-                    Text(TimerService.formatTime(todo.totalSeconds))
-                        .font(.system(size: 11, design: .monospaced))
-                        .foregroundStyle(.tertiary)
-                }
+                .padding(.top, 2)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
         .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(isActive ? FlowbarColors.timerActive.opacity(0.1) : Color.clear)
+            RoundedRectangle(cornerRadius: 6)
+                .fill(isActive ? FlowbarColors.accent.opacity(0.08) : Color.clear)
         )
     }
 }

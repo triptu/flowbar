@@ -3,18 +3,41 @@ import SwiftUI
 struct TimerContainerView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var timerService: TimerService
-    @State private var showingTodos: Bool? = nil // nil = auto
+    @State private var showingTodos: Bool? = nil
 
     private var effectiveShowingTodos: Bool {
-        showingTodos ?? !timerService.isRunning
+        if let override = showingTodos { return override }
+        return !timerService.isRunning && !timerService.isPaused
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            // Top bar: search (when todos) + toggle
-            timerToolbar
+            // Toolbar: always one line
+            HStack(spacing: 6) {
+                if effectiveShowingTodos {
+                    todosToolbar
+                }
+                Spacer(minLength: 0)
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showingTodos = !effectiveShowingTodos
+                    }
+                }) {
+                    Image(systemName: "list.bullet")
+                        .font(.system(size: 13))
+                        .padding(6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(effectiveShowingTodos ? FlowbarColors.accent : Color.primary.opacity(0.06))
+                        )
+                        .foregroundStyle(effectiveShowingTodos ? .white : .secondary)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 14)
+            .padding(.top, 10)
+            .padding(.bottom, 6)
 
-            // Content
             if effectiveShowingTodos {
                 TimerTodosView()
                     .transition(.move(edge: .trailing).combined(with: .opacity))
@@ -23,41 +46,23 @@ struct TimerContainerView: View {
                     .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: effectiveShowingTodos)
-    }
-
-    private var timerToolbar: some View {
-        HStack(spacing: 8) {
-            if effectiveShowingTodos {
-                TimerSearchBar()
+        .animation(.easeInOut(duration: 0.2), value: effectiveShowingTodos)
+        .onChange(of: timerService.isRunning) { old, new in
+            // When timer completes (was running, now stopped and not paused), show todos
+            if old && !new && !timerService.isPaused {
+                showingTodos = true
             }
-            Spacer()
-            Button(action: {
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    showingTodos = !effectiveShowingTodos
-                }
-            }) {
-                Image(systemName: "list.bullet")
-                    .font(.system(size: 14))
-                    .padding(7)
-                    .background(
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(effectiveShowingTodos ? FlowbarColors.timerActive : Color.secondary.opacity(0.15))
-                    )
-                    .foregroundStyle(effectiveShowingTodos ? .white : .secondary)
-            }
-            .buttonStyle(.plain)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 10)
-        .padding(.bottom, 4)
     }
-}
 
-struct TimerSearchBar: View {
-    @EnvironmentObject var appState: AppState
+    @ViewBuilder
+    private var todosToolbar: some View {
+        EmptyView() // Search/filter is inside TimerTodosView now
+    }
 
-    var body: some View {
-        EmptyView() // Search is now inside TimerTodosView's toolbar row
+    func switchToTodos() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            showingTodos = true
+        }
     }
 }

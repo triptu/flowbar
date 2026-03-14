@@ -1,11 +1,12 @@
 import SwiftUI
 
 enum FlowbarColors {
+    // Single accent — earthy sage green, used for ALL active/selected states
     static let accent = Color(hex: "8B9A6B")
-    static let accentLight = Color(hex: "6B7A4B")
-    static let sidebarSelected = Color(hex: "8B9A6B").opacity(0.25)
-    static let divider = Color(hex: "2A2A2A").opacity(0.5)
-    static let timerActive = Color(hex: "7CB342")
+
+    static var sidebarBg: Color {
+        Color.primary.opacity(0.04)
+    }
 }
 
 extension Color {

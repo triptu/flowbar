@@ -9,61 +9,57 @@ struct SettingsView: View {
                 Text("Settings")
                     .font(.system(size: appState.typography.titleSize, weight: .bold))
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Obsidian Folder Path")
-                        .font(.system(size: 14, weight: .medium))
+                settingsSection("Obsidian Folder Path") {
                     HStack {
                         TextField("/path/to/obsidian/vault/folder", text: $appState.folderPath)
                             .textFieldStyle(.roundedBorder)
-                            .onChange(of: appState.folderPath) {
-                                appState.loadFiles()
-                            }
+                            .onChange(of: appState.folderPath) { appState.loadFiles() }
                         Button("Browse...") { browseFolder() }
                             .buttonStyle(.bordered)
+                            .tint(FlowbarColors.accent)
                     }
                 }
 
-                Divider().opacity(0.3)
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Appearance")
-                        .font(.system(size: 14, weight: .medium))
-                    Picker("", selection: $appState.theme) {
-                        ForEach(AppTheme.allCases, id: \.self) { theme in
-                            Text(theme.rawValue.capitalized).tag(theme)
-                        }
-                    }
-                    .pickerStyle(.segmented)
+                settingsSection("Appearance") {
+                    FlowbarSegmentedControl(
+                        selection: $appState.theme,
+                        options: AppTheme.allCases,
+                        label: { $0.rawValue.capitalized }
+                    )
                     .frame(maxWidth: 300)
                 }
 
-                Divider().opacity(0.3)
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Typography")
-                        .font(.system(size: 14, weight: .medium))
-                    Picker("", selection: $appState.typography) {
-                        ForEach(TypographySize.allCases, id: \.self) { size in
-                            Text(size.rawValue.capitalized).tag(size)
-                        }
-                    }
-                    .pickerStyle(.segmented)
+                settingsSection("Typography") {
+                    FlowbarSegmentedControl(
+                        selection: $appState.typography,
+                        options: TypographySize.allCases,
+                        label: { $0.rawValue.capitalized }
+                    )
                     .frame(maxWidth: 300)
                 }
 
-                Divider().opacity(0.3)
+                settingsSection("Sidebar") {
+                    Text("Toggle with **\u{2318}B**")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                }
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Global Keyboard Shortcut")
-                        .font(.system(size: 14, weight: .medium))
-                    Button("Record Shortcut...") {}
-                        .buttonStyle(.bordered)
-                    Text("Double-tap Fn key to toggle Flowbar (default)")
-                        .font(.system(size: 12))
+                settingsSection("Global Keyboard Shortcut") {
+                    Text("Double-tap **Fn** key to toggle Flowbar")
+                        .font(.system(size: 13))
                         .foregroundStyle(.secondary)
                 }
             }
             .padding(24)
+        }
+    }
+
+    private func settingsSection(_ title: String, @ViewBuilder content: () -> some View) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.system(size: 14, weight: .medium))
+            content()
+            Divider().opacity(0.2)
         }
     }
 
@@ -77,5 +73,36 @@ struct SettingsView: View {
             appState.folderPath = url.path
             appState.loadFiles()
         }
+    }
+}
+
+// Custom segmented control using accent color
+struct FlowbarSegmentedControl<T: Hashable>: View {
+    @Binding var selection: T
+    let options: [T]
+    let label: (T) -> String
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(options, id: \.self) { option in
+                Button(action: { selection = option }) {
+                    Text(label(option))
+                        .font(.system(size: 13, weight: selection == option ? .semibold : .regular))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(selection == option ? FlowbarColors.accent : Color.clear)
+                        )
+                        .foregroundStyle(selection == option ? .white : .secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(3)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.primary.opacity(0.06))
+        )
     }
 }

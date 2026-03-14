@@ -5,7 +5,7 @@ struct TimerHomeView: View {
     @EnvironmentObject var timerService: TimerService
 
     var body: some View {
-        VStack(spacing: 0) {
+        Group {
             if timerService.isRunning || timerService.isPaused {
                 runningView
             } else {
@@ -20,7 +20,7 @@ struct TimerHomeView: View {
             Spacer()
 
             Text(timerService.currentTodoText)
-                .font(.system(size: 28, weight: .bold))
+                .font(.system(size: 26, weight: .bold))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
@@ -38,15 +38,15 @@ struct TimerHomeView: View {
                 }) {
                     HStack(spacing: 8) {
                         Image(systemName: timerService.isRunning ? "pause.fill" : "play.fill")
-                            .font(.system(size: 12))
+                            .font(.system(size: 11))
                         Text(timerService.isRunning ? "PAUSE" : "RESUME")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 13, weight: .semibold))
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(.ultraThinMaterial)
+                            .fill(Color.primary.opacity(0.08))
                     )
                 }
                 .buttonStyle(.plain)
@@ -54,12 +54,12 @@ struct TimerHomeView: View {
                 Button(action: { timerService.complete(folderPath: appState.folderPath) }) {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark")
-                            .font(.system(size: 12))
+                            .font(.system(size: 11))
                         Text("COMPLETE")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 13, weight: .semibold))
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
                             .fill(FlowbarColors.accent.opacity(0.3))
@@ -76,13 +76,13 @@ struct TimerHomeView: View {
         VStack(spacing: 12) {
             Spacer()
             Image(systemName: "clock")
-                .font(.system(size: 40))
-                .foregroundStyle(.secondary)
+                .font(.system(size: 36))
+                .foregroundStyle(.tertiary)
             Text("No timer running")
-                .font(.system(size: 16))
+                .font(.system(size: 15))
                 .foregroundStyle(.secondary)
-            Text("Start a timer from the todos list")
-                .font(.system(size: 13))
+            Text("Start from the todos list")
+                .font(.system(size: 12))
                 .foregroundStyle(.tertiary)
             Spacer()
         }

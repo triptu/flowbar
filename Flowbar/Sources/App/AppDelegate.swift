@@ -6,6 +6,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var popoverManager: PopoverManager!
     var appState: AppState!
     var timerService: TimerService!
+    var debugWindow: NSWindow?
     private var fnMonitor: Any?
     private var lastFnPress: Date?
 
@@ -21,20 +22,43 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         popoverManager.setContentView(mainView, timerService: timerService)
         setupDoubleFnShortcut()
+
+        #if DEBUG
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            let window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 700, height: 500),
+                styleMask: [.titled, .closable, .resizable, .miniaturizable],
+                backing: .buffered, defer: false
+            )
+            window.center()
+            window.titlebarAppearsTransparent = true
+            window.titleVisibility = .hidden
+            window.backgroundColor = .clear
+            window.isOpaque = false
+            window.hasShadow = true
+            window.contentView = NSHostingView(rootView:
+                MainView()
+                    .environmentObject(self.appState!)
+                    .environmentObject(self.timerService!)
+                    .environmentObject(self.popoverManager!)
+            )
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            self.debugWindow = window
+        }
+        #endif
     }
 
     private func setupDoubleFnShortcut() {
         fnMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
             guard let self else { return }
             let fnPressed = event.modifierFlags.contains(.function)
-            // Only trigger on Fn key alone (no other modifiers)
             let otherMods: NSEvent.ModifierFlags = [.shift, .control, .option, .command]
-            guard !event.modifierFlags.intersection(otherMods).isEmpty == false else { return }
+            guard event.modifierFlags.intersection(otherMods).isEmpty else { return }
 
             if fnPressed {
                 let now = Date()
                 if let last = self.lastFnPress, now.timeIntervalSince(last) < 0.4 {
-                    // Double-tap detected
                     self.lastFnPress = nil
                     DispatchQueue.main.async {
                         self.popoverManager.togglePopover(nil)

@@ -6,17 +6,20 @@ struct SidebarView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // Top area
             HStack {
-                Button(action: { appState.toggleSidebar() }) {
-                    Image(systemName: "sidebar.left")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
+                if !popoverManager.isFloating {
+                    Button(action: { appState.toggleSidebar() }) {
+                        Image(systemName: "sidebar.left")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
                 Spacer()
             }
             .padding(.horizontal, 12)
-            .padding(.top, popoverManager.isFloating ? 28 : 10)
+            .padding(.top, popoverManager.isFloating ? 4 : 10)
             .padding(.bottom, 4)
 
             ScrollView {
@@ -34,6 +37,7 @@ struct SidebarView: View {
             SidebarFooter()
         }
         .frame(maxHeight: .infinity)
+        .background(FlowbarColors.sidebarBg)
     }
 }
 
@@ -50,7 +54,7 @@ struct SidebarFileRow: View {
             .padding(.vertical, 8)
             .background(
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(isSelected ? FlowbarColors.accent.opacity(0.35) : Color.clear)
+                    .fill(isSelected ? FlowbarColors.accent.opacity(0.4) : Color.clear)
             )
             .contentShape(Rectangle())
     }

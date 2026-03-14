@@ -5,13 +5,18 @@ struct TimerTodosView: View {
     @EnvironmentObject var timerService: TimerService
     @State private var searchText = ""
     @State private var hideDone = false
+    @State private var sourceFilter: String? = nil
+    @State private var showSourcePicker = false
     @State private var todos: [TodoItem] = []
+
+    private var sourceFiles: [String] {
+        Array(Set(todos.map { $0.sourceFile.id })).sorted()
+    }
 
     var filteredTodos: [TodoItem] {
         var items = todos
-        if hideDone {
-            items = items.filter { !$0.isDone }
-        }
+        if hideDone { items = items.filter { !$0.isDone } }
+        if let src = sourceFilter { items = items.filter { $0.sourceFile.id == src } }
         if !searchText.isEmpty {
             items = items.filter { $0.text.localizedCaseInsensitiveContains(searchText) }
         }
@@ -20,36 +25,48 @@ struct TimerTodosView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Inline search + hide-done filter
-            HStack(spacing: 8) {
-                HStack {
+            // Filter bar: search + hide-done + source filter
+            HStack(spacing: 6) {
+                HStack(spacing: 4) {
                     Image(systemName: "magnifyingglass")
-                        .foregroundStyle(.secondary)
-                        .font(.system(size: 12))
-                    TextField("Search todo", text: $searchText)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                    TextField("Search", text: $searchText)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 13))
+                        .font(.system(size: 12))
                 }
-                .padding(6)
-                .background(
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(.ultraThinMaterial)
-                )
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+                .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.06)))
 
                 Button(action: { hideDone.toggle() }) {
                     Image(systemName: hideDone ? "eye.slash" : "eye")
-                        .font(.system(size: 13))
-                        .foregroundStyle(hideDone ? FlowbarColors.accent : .secondary)
+                        .font(.system(size: 12))
+                        .foregroundStyle(hideDone ? FlowbarColors.accent : Color.secondary.opacity(0.5))
                 }
                 .buttonStyle(.plain)
-                .help(hideDone ? "Show completed" : "Hide completed")
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 6)
+                .help(hideDone ? "Show done" : "Hide done")
 
-            // Todos list
+                Menu {
+                    Button("All Files") { sourceFilter = nil }
+                    Divider()
+                    ForEach(sourceFiles, id: \.self) { src in
+                        Button(NoteFile.displayName(for: src)) { sourceFilter = src }
+                    }
+                } label: {
+                    Image(systemName: "doc.text")
+                        .font(.system(size: 12))
+                        .foregroundStyle(sourceFilter != nil ? FlowbarColors.accent : Color.secondary.opacity(0.5))
+                }
+                .menuStyle(.borderlessButton)
+                .frame(width: 22)
+                .help("Filter by file")
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 4)
+
             ScrollView {
-                LazyVStack(spacing: 2) {
+                LazyVStack(spacing: 1) {
                     ForEach(filteredTodos) { todo in
                         TodoRow(todo: todo, timerService: timerService) {
                             toggleTodo(todo)
@@ -60,7 +77,8 @@ struct TimerTodosView: View {
                         }
                     }
                 }
-                .padding(12)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
             }
         }
         .onAppear { loadTodos() }
