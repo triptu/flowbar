@@ -126,10 +126,11 @@ defaults write com.flowbar.app theme dark  # or light, system
 
 ## After Making Changes
 
-1. **Build**: `xcodebuild ...` and verify no errors
+1. **Build**: `xcodebuild ...` and verify no errors.
 2. **Test visually**: Launch the app, screenshot key views, verify in both light and dark
-3. **Run /simplify**: Use the simplify skill to review code quality, reuse, and efficiency
-4. **Commit with context**: Describe what changed AND why
+3. Also run tests, and add/update tests as needed.
+4. **Run /simplify**: Use the simplify skill to review code quality, reuse, and efficiency
+5. **Commit with context**: Describe what changed AND why
 
 ## Extending the App
 

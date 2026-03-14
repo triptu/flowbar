@@ -6,7 +6,7 @@ struct TimerTodosView: View {
     var onToggleView: () -> Void
     var isShowingTodos: Bool
     @State private var searchText = ""
-    @State private var hideDone = false
+    @State private var showDone = false
     @State private var sourceFilter: String? = nil
     @State private var showSourcePicker = false
     @State private var todos: [TodoItem] = []
@@ -18,7 +18,7 @@ struct TimerTodosView: View {
 
     var filteredTodos: [TodoItem] {
         var items = todos
-        if hideDone { items = items.filter { !$0.isDone } }
+        if !showDone { items = items.filter { !$0.isDone } }
         if let src = sourceFilter { items = items.filter { $0.sourceFile.id == src } }
         if !searchText.isEmpty {
             items = items.filter { $0.text.localizedCaseInsensitiveContains(searchText) }
@@ -42,13 +42,13 @@ struct TimerTodosView: View {
                 .padding(.vertical, 5)
                 .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.06)))
 
-                Button(action: { hideDone.toggle() }) {
-                    Image(systemName: hideDone ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                Button(action: { showDone.toggle() }) {
+                    Image(systemName: showDone ? "checkmark.circle.fill" : "checkmark.circle")
                         .font(.system(size: 13))
-                        .foregroundStyle(hideDone ? FlowbarColors.accent : Color.secondary.opacity(0.5))
+                        .foregroundStyle(showDone ? FlowbarColors.accent : Color.secondary.opacity(0.5))
                 }
                 .buttonStyle(.plain)
-                .help(hideDone ? "Show done" : "Hide done")
+                .help(showDone ? "Hide completed" : "Show completed")
 
                 Menu {
                     Button("All Files") { sourceFilter = nil }

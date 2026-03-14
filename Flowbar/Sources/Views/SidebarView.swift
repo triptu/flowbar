@@ -6,20 +6,22 @@ struct SidebarView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Top area
-            HStack {
-                if !popoverManager.isFloating {
-                    Button(action: { appState.toggleSidebar() }) {
-                        Image(systemName: "sidebar.left")
-                            .font(.system(size: 13))
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
+            // Header bar — in floating mode, sits right of traffic lights
+            HStack(spacing: 8) {
+                if popoverManager.isFloating {
+                    // Space for traffic lights (close/minimize/zoom)
+                    Color.clear.frame(width: 52, height: 1)
                 }
+                Button(action: { appState.toggleSidebar() }) {
+                    Image(systemName: "sidebar.left")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
                 Spacer()
             }
             .padding(.horizontal, 12)
-            .padding(.top, popoverManager.isFloating ? 4 : 10)
+            .padding(.top, popoverManager.isFloating ? 12 : 10)
             .padding(.bottom, 4)
 
             ScrollView {

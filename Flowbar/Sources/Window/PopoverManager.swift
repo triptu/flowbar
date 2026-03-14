@@ -28,6 +28,7 @@ final class PopoverManager: NSObject {
 
         popover.behavior = .transient
         popover.animates = true
+        popover.delegate = self
 
         let quitItem = NSMenuItem(title: "Quit Flowbar", action: #selector(quitApp), keyEquivalent: "q")
         quitItem.target = self
@@ -81,12 +82,18 @@ final class PopoverManager: NSObject {
         guard let button = statusItem.button else { return }
         popover.contentSize = NSSize(width: appState.popoverWidth, height: appState.popoverHeight)
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        button.highlight(true)
         NSApp.activate(ignoringOtherApps: true)
         popover.contentViewController?.view.window?.makeKey()
     }
 
     func closePopover() {
         popover.performClose(nil)
+    }
+
+    /// Updates the menu bar button highlight to reflect whether the popover or panel is open.
+    private func updateButtonHighlight(_ highlighted: Bool) {
+        statusItem.button?.highlight(highlighted)
     }
 
     func floatPanel() {
@@ -109,8 +116,10 @@ final class PopoverManager: NSObject {
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
 
+        panel.delegate = self
         floatingPanel = panel
         isFloating = true
+        updateButtonHighlight(true)
     }
 
     func dockPanel() {
@@ -194,5 +203,26 @@ final class PopoverManager: NSObject {
         }
         image.isTemplate = true
         return image
+    }
+}
+
+// MARK: - NSPopoverDelegate
+/// Tracks popover close (including transient dismissal) to unhighlight the menu bar button.
+extension PopoverManager: NSPopoverDelegate {
+    func popoverDidClose(_ notification: Notification) {
+        if !isFloating {
+            updateButtonHighlight(false)
+        }
+    }
+}
+
+// MARK: - NSWindowDelegate
+/// Tracks floating panel close (e.g. via close button) to unhighlight the menu bar button.
+extension PopoverManager: NSWindowDelegate {
+    func windowWillClose(_ notification: Notification) {
+        guard notification.object as? FloatingPanel === floatingPanel else { return }
+        floatingPanel = nil
+        isFloating = false
+        updateButtonHighlight(false)
     }
 }
