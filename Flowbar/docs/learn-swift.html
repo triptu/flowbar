@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning Swift through Flowbar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ========== Reset & Base ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --sage: #8B9A6B;
+  --sage-dim: #8B9A6B88;
+  --sage-glow: #8B9A6B33;
+  --bg: #1a1e1a;
+  --bg-card: #22261f;
+  --bg-card-hover: #2a2e26;
+  --bg-sidebar: #1e221c;
+  --bg-code: #161916;
+  --text: #e0ddd4;
+  --text-dim: #a09d94;
+  --text-muted: #6a6a5e;
+  --border: #333830;
+  --orange: #d4a574;
+  --purple: #b088d4;
+  --yellow: #c4b46e;
+  --blue: #7eb8c9;
+  --red: #c97e7e;
+  --font-heading: 'Instrument Serif', serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--sage-dim); color: #fff; }
+
+/* ========== Nav ========== */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: #1a1e1aee;
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+nav .logo {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  color: var(--sage);
+  text-decoration: none;
+}
+nav .links { display: flex; gap: 28px; }
+nav .links a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: color 0.2s;
+}
+nav .links a:hover { color: var(--sage); }
+
+/* ========== Sections ========== */
+section {
+  padding: 100px 48px 60px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+section:first-of-type { padding-top: 120px; }
+
+h1 {
+  font-family: var(--font-heading);
+  font-size: 56px;
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+h1 em { color: var(--sage); font-style: italic; }
+
+h2 {
+  font-family: var(--font-heading);
+  font-size: 36px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+h2 .accent { color: var(--sage); }
+
+h3 {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+p.subtitle {
+  font-size: 17px;
+  color: var(--text-dim);
+  max-width: 640px;
+  line-height: 1.8;
+}
+
+/* ========== Hero ========== */
+#hero {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+#hero .badge {
+  display: inline-block;
+  padding: 6px 16px;
+  background: var(--sage-glow);
+  border: 1px solid var(--sage-dim);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sage);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  width: fit-content;
+}
+#hero .cta {
+  margin-top: 36px;
+  display: flex; gap: 16px; flex-wrap: wrap;
+}
+#hero .cta a {
+  padding: 12px 28px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+#hero .cta a.primary {
+  background: var(--sage);
+  color: var(--bg);
+}
+#hero .cta a.primary:hover { background: #9dae7d; transform: translateY(-1px); }
+#hero .cta a.secondary {
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+#hero .cta a.secondary:hover { border-color: var(--sage-dim); color: var(--sage); }
+
+/* ========== Architecture SVG ========== */
+#architecture .arch-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  margin-top: 24px;
+  overflow-x: auto;
+}
+#architecture svg text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--text);
+  pointer-events: none;
+}
+#architecture svg .node-rect {
+  rx: 8; ry: 8;
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+#architecture svg .node-rect:hover { filter: brightness(1.3); }
+#architecture svg .edge {
+  stroke-width: 1.5;
+  fill: none;
+  marker-end: url(#arrowhead);
+}
+#architecture svg .label-text {
+  font-size: 9px;
+  fill: var(--text-muted);
+  font-family: var(--font-body);
+}
+.arch-legend {
+  display: flex; gap: 20px; margin-top: 16px; flex-wrap: wrap;
+}
+.arch-legend span {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-dim);
+}
+.arch-legend span i {
+  width: 12px; height: 12px; border-radius: 3px; display: inline-block;
+}
+.node-highlight { animation: nodePulse 0.6s ease; }
+@keyframes nodePulse {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.8) drop-shadow(0 0 8px var(--sage)); }
+  100% { filter: brightness(1); }
+}
+.edge-highlight {
+  animation: edgeGlow 0.8s ease;
+}
+@keyframes edgeGlow {
+  0% { stroke-opacity: 0.3; stroke-width: 1.5; }
+  50% { stroke-opacity: 1; stroke-width: 3; }
+  100% { stroke-opacity: 0.3; stroke-width: 1.5; }
+}
+
+/* ========== File Explorer ========== */
+#explorer .explorer-wrap {
+  display: flex;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  height: 680px;
+  margin-top: 24px;
+}
+.file-tree {
+  width: 240px;
+  min-width: 240px;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 16px 0;
+}
+.file-tree .folder {
+  padding: 0;
+}
+.file-tree .folder-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 12px 20px 6px;
+  cursor: default;
+}
+.file-tree .file-item {
+  padding: 7px 20px 7px 32px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+  white-space: nowrap;
+}
+.file-tree .file-item:hover {
+  background: var(--sage-glow);
+  color: var(--text);
+}
+.file-tree .file-item.active {
+  color: var(--sage);
+  background: var(--sage-glow);
+  border-left-color: var(--sage);
+}
+.code-area {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+  position: relative;
+}
+.code-area pre {
+  margin: 0;
+  padding: 20px 24px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.9;
+  color: var(--text);
+  tab-size: 4;
+  counter-reset: line;
+  position: relative;
+}
+.code-area .code-path {
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 24px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  z-index: 5;
+}
+.code-line {
+  display: block;
+  position: relative;
+  padding-left: 48px;
+  min-height: 1.9em;
+}
+.code-line:hover { background: #ffffff06; }
+.code-line .ln {
+  position: absolute;
+  left: 0;
+  width: 36px;
+  text-align: right;
+  color: var(--text-muted);
+  opacity: 0.4;
+  font-size: 11px;
+  user-select: none;
+}
+/* Syntax colors */
+.kw { color: var(--sage); }
+.ty { color: var(--orange); }
+.pw { color: var(--purple); }
+.str { color: var(--yellow); }
+.cmt { color: var(--text-muted); font-style: italic; }
+.num { color: var(--blue); }
+.fn { color: #c9c1b8; }
+
+/* Annotations */
+.anno-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--sage);
+  color: var(--bg);
+  font-size: 9px;
+  font-weight: 700;
+  font-family: var(--font-body);
+  cursor: pointer;
+  margin-left: 8px;
+  vertical-align: middle;
+  position: relative;
+  transition: transform 0.15s, box-shadow 0.15s;
+  line-height: 1;
+}
+.anno-marker:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 10px var(--sage-dim);
+}
+.anno-popup {
+  position: fixed;
+  z-index: 2000;
+  background: var(--bg-card);
+  border: 1px solid var(--sage-dim);
+  border-radius: 12px;
+  padding: 16px 20px;
+  max-width: 400px;
+  box-shadow: 0 12px 40px #00000088;
+  animation: popIn 0.2s ease;
+  pointer-events: auto;
+}
+.anno-popup h4 {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--sage);
+  margin-bottom: 8px;
+}
+.anno-popup p {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+.anno-popup code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  background: var(--bg-code);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--sage);
+}
+.anno-popup .close-btn {
+  position: absolute;
+  top: 8px; right: 12px;
+  background: none; border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+}
+@keyframes popIn {
+  0% { opacity: 0; transform: translateY(4px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ========== Concepts Reference ========== */
+#concepts .concept-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+.concept-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  transition: border-color 0.2s;
+}
+.concept-card:hover { border-color: var(--sage-dim); }
+.concept-card .tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  margin-bottom: 12px;
+}
+.tag-types { background: var(--orange); color: var(--bg); }
+.tag-memory { background: var(--red); color: var(--bg); }
+.tag-swiftui { background: var(--purple); color: var(--bg); }
+.tag-concurrency { background: var(--blue); color: var(--bg); }
+.tag-patterns { background: var(--sage); color: var(--bg); }
+.concept-card h3 {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.concept-card p {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+.concept-card pre {
+  background: var(--bg-code);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.7;
+  overflow-x: auto;
+  color: var(--text);
+}
+
+/* ========== Data Flow ========== */
+#dataflow .flow-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+@media (max-width: 900px) {
+  #dataflow .flow-container { grid-template-columns: 1fr; }
+}
+.flow-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+}
+.flow-card h3 { margin-bottom: 20px; color: var(--sage); }
+.flow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 4px;
+  position: relative;
+}
+.flow-step .dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--sage);
+  margin-top: 6px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.flow-step .line-segment {
+  position: absolute;
+  left: 4px;
+  top: 16px;
+  width: 2px;
+  height: calc(100% + 4px);
+  background: var(--border);
+}
+.flow-step:last-child .line-segment { display: none; }
+.flow-step .step-content {
+  flex: 1;
+  padding-bottom: 20px;
+}
+.flow-step .step-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--sage);
+  margin-bottom: 2px;
+}
+.flow-step .step-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.flow-animate .dot {
+  animation: flowPulse 2s ease-in-out infinite;
+}
+.flow-step:nth-child(2) .dot { animation-delay: 0.3s; }
+.flow-step:nth-child(3) .dot { animation-delay: 0.6s; }
+.flow-step:nth-child(4) .dot { animation-delay: 0.9s; }
+.flow-step:nth-child(5) .dot { animation-delay: 1.2s; }
+.flow-step:nth-child(6) .dot { animation-delay: 1.5s; }
+.flow-step:nth-child(7) .dot { animation-delay: 1.8s; }
+@keyframes flowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--sage-dim); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+
+/* ========== Category tabs for concepts ========== */
+.concept-tabs {
+  display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.concept-tab {
+  padding: 7px 18px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  background: transparent;
+  transition: all 0.2s;
+}
+.concept-tab:hover { border-color: var(--sage-dim); color: var(--text); }
+.concept-tab.active { background: var(--sage); color: var(--bg); border-color: var(--sage); }
+
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ========== Divider ========== */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  max-width: 800px;
+  margin: 0 auto;
+}
+</style>
+</head>
+<body>
+
+<!-- ========== NAV ========== -->
+<nav>
+  <a href="#hero" class="logo">Flowbar</a>
+  <div class="links">
+    <a href="#hero">Home</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#explorer">Explorer</a>
+    <a href="#concepts">Concepts</a>
+    <a href="#dataflow">Data Flow</a>
+  </div>
+</nav>
+
+<!-- ========== HERO ========== -->
+<section id="hero">
+  <div class="badge">Interactive Learning Guide</div>
+  <h1>Learning Swift<br>through <em>Flowbar</em></h1>
+  <p class="subtitle">A hands-on guide to understanding Swift, SwiftUI, and macOS development by reading a real codebase &mdash; a menu bar app for Obsidian notes.</p>
+  <div class="cta">
+    <a href="#explorer" class="primary">Explore the Code</a>
+    <a href="#architecture" class="secondary">See the Architecture</a>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ========== ARCHITECTURE ========== -->
+<section id="architecture">
+  <h2><span class="accent">Architecture</span> Map</h2>
+  <p class="subtitle" style="margin-bottom: 20px;">Click any node to highlight its connections. This shows how the Flowbar app is wired together.</p>
+  <div class="arch-container">
+    <svg id="archSvg" width="1100" height="620" viewBox="0 0 1100 620">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#8B9A6B88"/>
+        </marker>
+        <marker id="arrowhead-hl" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#8B9A6B"/>
+        </marker>
+      </defs>
+
+      <!-- Edges (drawn first, behind nodes) -->
+      <!-- AppDelegate -> AppState -->
+      <path class="edge" id="e-ad-as" d="M200,80 C200,120 300,120 340,160" stroke="#8B9A6B44"/>
+      <text class="label-text" x="238" y="115">creates</text>
+      <!-- AppDelegate -> TimerService -->
+      <path class="edge" id="e-ad-ts" d="M200,80 C200,130 560,100 600,160" stroke="#8B9A6B44"/>
+      <text class="label-text" x="400" y="105">creates</text>
+      <!-- AppDelegate -> PopoverManager -->
+      <path class="edge" id="e-ad-pm" d="M200,80 C200,130 830,100 870,160" stroke="#8B9A6B44"/>
+      <text class="label-text" x="530" y="88">creates</text>
+
+      <!-- PopoverManager -> NSPopover -->
+      <path class="edge" id="e-pm-pop" d="M870,210 C870,240 780,260 780,280" stroke="#b088d444"/>
+      <text class="label-text" x="808" y="252">manages</text>
+      <!-- PopoverManager -> FloatingPanel -->
+      <path class="edge" id="e-pm-fp" d="M920,210 C950,250 1000,260 1000,280" stroke="#b088d444"/>
+      <text class="label-text" x="955" y="252">manages</text>
+
+      <!-- AppState -> NoteFile[], FileWatcher -->
+      <path class="edge" id="e-as-nf" d="M340,210 L240,280" stroke="#d4a57444"/>
+      <text class="label-text" x="268" y="248">owns</text>
+      <path class="edge" id="e-as-fw" d="M420,210 L440,280" stroke="#d4a57444"/>
+      <text class="label-text" x="410" y="248">owns</text>
+
+      <!-- TimerService -> DatabaseService -->
+      <path class="edge" id="e-ts-db" d="M620,210 L620,280" stroke="#7eb8c944"/>
+      <text class="label-text" x="628" y="248">uses</text>
+
+      <!-- MainView -> AppState -->
+      <path class="edge" id="e-mv-as" d="M200,420 C200,360 340,320 380,210" stroke="#8B9A6B22"/>
+      <text class="label-text" x="260" y="340">reads</text>
+      <!-- MainView -> PopoverManager -->
+      <path class="edge" id="e-mv-pm" d="M260,410 C400,360 800,300 880,210" stroke="#8B9A6B22"/>
+
+      <!-- MainView -> children -->
+      <path class="edge" id="e-mv-sb" d="M140,460 L60,510" stroke="#c4b46e44"/>
+      <path class="edge" id="e-mv-nc" d="M180,460 L180,510" stroke="#c4b46e44"/>
+      <path class="edge" id="e-mv-sv" d="M220,460 L300,510" stroke="#c4b46e44"/>
+      <path class="edge" id="e-mv-tc" d="M260,460 L440,510" stroke="#c4b46e44"/>
+
+      <!-- TimerContainerView -> children -->
+      <path class="edge" id="e-tc-th" d="M420,560 L380,590" stroke="#c4b46e44"/>
+      <path class="edge" id="e-tc-tt" d="M480,560 L540,590" stroke="#c4b46e44"/>
+
+      <!-- TimerTodosView -> TodoRow -->
+      <path class="edge" id="e-tt-tr" d="M580,590 C620,590 680,585 700,590" stroke="#c4b46e44"/>
+
+      <!-- MarkdownParser -> usage -->
+      <path class="edge" id="e-mp-tt" d="M900,540 C780,560 640,580 580,590" stroke="#d4a57422"/>
+      <text class="label-text" x="740" y="555">used by</text>
+      <path class="edge" id="e-mp-th" d="M880,540 C700,560 440,585 400,595" stroke="#d4a57422"/>
+
+      <!-- Nodes -->
+      <!-- AppDelegate -->
+      <g class="node" data-node="AppDelegate" onclick="highlightNode(this)">
+        <rect class="node-rect" x="100" y="40" width="200" height="42" fill="#2a2e26" stroke="#8B9A6B"/>
+        <text x="200" y="66" text-anchor="middle" font-size="12" font-weight="600">AppDelegate</text>
+      </g>
+      <!-- AppState -->
+      <g class="node" data-node="AppState" onclick="highlightNode(this)">
+        <rect class="node-rect" x="280" y="160" width="200" height="50" fill="#2a2e26" stroke="#d4a574"/>
+        <text x="380" y="182" text-anchor="middle" font-size="12" font-weight="600">AppState</text>
+        <text x="380" y="198" text-anchor="middle" font-size="9" fill="#a09d94">ObservableObject</text>
+      </g>
+      <!-- TimerService -->
+      <g class="node" data-node="TimerService" onclick="highlightNode(this)">
+        <rect class="node-rect" x="540" y="160" width="180" height="50" fill="#2a2e26" stroke="#7eb8c9"/>
+        <text x="630" y="182" text-anchor="middle" font-size="12" font-weight="600">TimerService</text>
+        <text x="630" y="198" text-anchor="middle" font-size="9" fill="#a09d94">ObservableObject</text>
+      </g>
+      <!-- PopoverManager -->
+      <g class="node" data-node="PopoverManager" onclick="highlightNode(this)">
+        <rect class="node-rect" x="790" y="160" width="200" height="50" fill="#2a2e26" stroke="#b088d4"/>
+        <text x="890" y="182" text-anchor="middle" font-size="12" font-weight="600">PopoverManager</text>
+        <text x="890" y="198" text-anchor="middle" font-size="9" fill="#a09d94">NSObject, Observable</text>
+      </g>
+
+      <!-- NoteFile[] -->
+      <g class="node" data-node="NoteFile" onclick="highlightNode(this)">
+        <rect class="node-rect" x="160" y="280" width="140" height="36" fill="#22261f" stroke="#d4a57488"/>
+        <text x="230" y="303" text-anchor="middle" font-size="11">NoteFile[]</text>
+      </g>
+      <!-- FileWatcher -->
+      <g class="node" data-node="FileWatcher" onclick="highlightNode(this)">
+        <rect class="node-rect" x="370" y="280" width="140" height="36" fill="#22261f" stroke="#d4a57488"/>
+        <text x="440" y="303" text-anchor="middle" font-size="11">FileWatcher</text>
+      </g>
+      <!-- DatabaseService -->
+      <g class="node" data-node="DatabaseService" onclick="highlightNode(this)">
+        <rect class="node-rect" x="550" y="280" width="160" height="36" fill="#22261f" stroke="#7eb8c988"/>
+        <text x="630" y="303" text-anchor="middle" font-size="11">DatabaseService</text>
+      </g>
+      <!-- NSPopover -->
+      <g class="node" data-node="NSPopover" onclick="highlightNode(this)">
+        <rect class="node-rect" x="720" y="280" width="120" height="36" fill="#22261f" stroke="#b088d488"/>
+        <text x="780" y="303" text-anchor="middle" font-size="11">NSPopover</text>
+      </g>
+      <!-- FloatingPanel -->
+      <g class="node" data-node="FloatingPanel" onclick="highlightNode(this)">
+        <rect class="node-rect" x="920" y="280" width="140" height="36" fill="#22261f" stroke="#b088d488"/>
+        <text x="990" y="303" text-anchor="middle" font-size="11">FloatingPanel</text>
+      </g>
+
+      <!-- MainView -->
+      <g class="node" data-node="MainView" onclick="highlightNode(this)">
+        <rect class="node-rect" x="100" y="410" width="200" height="50" fill="#2a2e26" stroke="#c4b46e"/>
+        <text x="200" y="432" text-anchor="middle" font-size="12" font-weight="600">MainView</text>
+        <text x="200" y="448" text-anchor="middle" font-size="9" fill="#a09d94">SwiftUI View</text>
+      </g>
+
+      <!-- View children -->
+      <g class="node" data-node="SidebarView" onclick="highlightNode(this)">
+        <rect class="node-rect" x="10" y="510" width="120" height="32" fill="#22261f" stroke="#c4b46e88"/>
+        <text x="70" y="530" text-anchor="middle" font-size="10">SidebarView</text>
+      </g>
+      <g class="node" data-node="NoteContentView" onclick="highlightNode(this)">
+        <rect class="node-rect" x="120" y="510" width="140" height="32" fill="#22261f" stroke="#c4b46e88"/>
+        <text x="190" y="530" text-anchor="middle" font-size="10">NoteContentView</text>
+      </g>
+      <g class="node" data-node="SettingsView" onclick="highlightNode(this)">
+        <rect class="node-rect" x="250" y="510" width="120" height="32" fill="#22261f" stroke="#c4b46e88"/>
+        <text x="310" y="530" text-anchor="middle" font-size="10">SettingsView</text>
+      </g>
+      <g class="node" data-node="TimerContainerView" onclick="highlightNode(this)">
+        <rect class="node-rect" x="380" y="510" width="160" height="50" fill="#22261f" stroke="#c4b46e88"/>
+        <text x="460" y="530" text-anchor="middle" font-size="10">TimerContainerView</text>
+        <text x="460" y="545" text-anchor="middle" font-size="8" fill="#a09d94">SwiftUI View</text>
+      </g>
+
+      <!-- Timer sub-views -->
+      <g class="node" data-node="TimerHomeView" onclick="highlightNode(this)">
+        <rect class="node-rect" x="320" y="585" width="130" height="28" fill="#1e221c" stroke="#c4b46e55"/>
+        <text x="385" y="603" text-anchor="middle" font-size="9">TimerHomeView</text>
+      </g>
+      <g class="node" data-node="TimerTodosView" onclick="highlightNode(this)">
+        <rect class="node-rect" x="480" y="585" width="130" height="28" fill="#1e221c" stroke="#c4b46e55"/>
+        <text x="545" y="603" text-anchor="middle" font-size="9">TimerTodosView</text>
+      </g>
+      <g class="node" data-node="TodoRow" onclick="highlightNode(this)">
+        <rect class="node-rect" x="640" y="585" width="100" height="28" fill="#1e221c" stroke="#c4b46e55"/>
+        <text x="690" y="603" text-anchor="middle" font-size="9">TodoRow</text>
+      </g>
+
+      <!-- MarkdownParser -->
+      <g class="node" data-node="MarkdownParser" onclick="highlightNode(this)">
+        <rect class="node-rect" x="830" y="510" width="160" height="36" fill="#22261f" stroke="#d4a57488"/>
+        <text x="910" y="533" text-anchor="middle" font-size="11">MarkdownParser</text>
+      </g>
+    </svg>
+  </div>
+  <div class="arch-legend">
+    <span><i style="background: var(--sage)"></i> App Core</span>
+    <span><i style="background: var(--orange)"></i> Models / Data</span>
+    <span><i style="background: var(--blue)"></i> Services</span>
+    <span><i style="background: var(--purple)"></i> Window Management</span>
+    <span><i style="background: var(--yellow)"></i> Views</span>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ========== FILE EXPLORER ========== -->
+<section id="explorer">
+  <h2><span class="accent">File</span> Explorer</h2>
+  <p class="subtitle" style="margin-bottom: 0;">Browse every file in the codebase with syntax highlighting and inline annotations. Click the numbered markers to learn Swift concepts.</p>
+  <div class="explorer-wrap">
+    <div class="file-tree" id="fileTree"></div>
+    <div class="code-area" id="codeArea">
+      <div class="code-path" id="codePath">Select a file to begin</div>
+      <pre id="codeContent"><code>
+  <span style="color: var(--text-muted); font-style: italic;">  ← Choose a file from the sidebar</span>
+      </code></pre>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ========== CONCEPTS ========== -->
+<section id="concepts">
+  <h2>Swift <span class="accent">Concepts</span> Reference</h2>
+  <p class="subtitle" style="margin-bottom: 20px;">A cheat-sheet of Swift and SwiftUI concepts, each with a real example from the Flowbar codebase.</p>
+  <div class="concept-tabs" id="conceptTabs">
+    <button class="concept-tab active" data-cat="all">All</button>
+    <button class="concept-tab" data-cat="types">Types</button>
+    <button class="concept-tab" data-cat="memory">Memory</button>
+    <button class="concept-tab" data-cat="swiftui">SwiftUI</button>
+    <button class="concept-tab" data-cat="concurrency">Concurrency</button>
+    <button class="concept-tab" data-cat="patterns">Patterns</button>
+  </div>
+  <div class="concept-grid" id="conceptGrid"></div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ========== DATA FLOW ========== -->
+<section id="dataflow">
+  <h2><span class="accent">Data Flow</span> Diagrams</h2>
+  <p class="subtitle" style="margin-bottom: 0;">Follow the data through two key user interactions.</p>
+  <div class="flow-container">
+    <div class="flow-card flow-animate">
+      <h3>How a Note Gets Loaded</h3>
+      <div class="flow-step"><div class="dot"></div><div class="line-segment"></div><div class="step-content"><div class="step-label">User clicks a file in SidebarView</div><div class="step-desc">The tap triggers a call to <code>appState.selectFile(file)</code>.</div></div></div>
+      <div class="flow-step"><div class="dot"></div><div class="line-segment"></div><div class="step-content"><div class="step-label">AppState.selectFile()</div><div class="step-desc">Sets <code>activePanel = .file(file)</code>, then calls <code>loadFileContent(file)</code>.</div></div></div>
+      <div class="flow-step"><div class="dot"></div><div class="line-segment"></div><div class="step-content"><div class="step-label">loadFileContent()</div><div class="step-desc">Reads the <code>.md</code> file from disk via <code>String(contentsOf:)</code>.</div></div></div>
+      <div class="flow-step"><div class="dot"></div><div class="line-segment"></div><div class="step-content"><div class="step-label">editorContent @Published</div><div class="step-desc">The <code>@Published</code> property emits a change. SwiftUI detects it.</div></div></div>
+      <div class="flow-step"><div class="dot"></div><div class="step-content"><div class="step-label">NoteContentView re-renders</div><div class="step-desc">The <code>TextEditor</code> bound to <code>editorContent</code> shows the new note.</div></div></div>
+    </div>
+
+    <div class="flow-card flow-animate">
+      <h3>How the Timer Works</h3>
+      <div class="flow-step"><div class="dot"></div><div class="line-segment"></div><div class="step-content"><div class="step-label">User clicks play on a TodoRow</div><div class="step-desc">Calls <code>timerService.start(todoText:, sourceFile:)</code>.</div></div></div>
+      <div class="flow-step"><div class="dot"></div><div class="line-segment"></div><div class="step-content"><div class="step-label">TimerService.start()</div><div class="step-desc">Inserts a new session into SQLite via <code>DatabaseService.startSession()</code>.</div></div></div>
+      <div class="flow-step"><div class="dot"></div><div class="line-segment"></div><div class="step-content"><div class="step-label">Timer ticks every second</div><div class="step-desc">A <code>Timer.scheduledTimer</code> fires, updating <code>elapsed</code> each tick.</div></div></div>
+      <div class="flow-step"><div class="dot"></div><div class="line-segment"></div><div class="step-content"><div class="step-label">elapsed @Published updates</div><div class="step-desc">SwiftUI views observing <code>timerService.elapsed</code> re-render automatically.</div></div></div>
+      <div class="flow-step"><div class="dot"></div><div class="line-segment"></div><div class="step-content"><div class="step-label">User clicks complete</div><div class="step-desc"><code>timerService.complete()</code> ends the DB session, returns the todo info.</div></div></div>
+      <div class="flow-step"><div class="dot"></div><div class="step-content"><div class="step-label">MarkdownParser marks done</div><div class="step-desc"><code>MarkdownParser.markTodoDone()</code> toggles <code>- [ ]</code> to <code>- [x]</code> in the file.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<div style="height: 80px;"></div>
+
+<!-- ========== POPUP CONTAINER ========== -->
+<div id="annoPopup" class="anno-popup" style="display:none;">
+  <button class="close-btn" onclick="closeAnnotation()">&times;</button>
+  <h4 id="annoTitle"></h4>
+  <p id="annoBody"></p>
+</div>
+
+<script>
+// ============================================================
+// DATA: Source Files
+// ============================================================
+const FILES = {
+  "App/FlowbarApp.swift": `import SwiftUI
+
+@main
+struct FlowbarApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
+    var body: some Scene {
+        Settings {
+            EmptyView()
+        }
+    }
+}`,
+
+  "App/AppDelegate.swift": `import AppKit
+import SwiftUI
+
+@MainActor
+class AppDelegate: NSObject, NSApplicationDelegate {
+    var popoverManager: PopoverManager!
+    var appState: AppState!
+    var timerService: TimerService!
+    private var fnMonitor: Any?
+    private var lastFnPress: Date?
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        appState = AppState()
+        timerService = TimerService()
+        popoverManager = PopoverManager(appState: appState)
+
+        let mainView = MainView()
+            .environmentObject(appState)
+            .environmentObject(timerService)
+            .environmentObject(popoverManager)
+
+        popoverManager.setContentView(mainView, timerService: timerService)
+        setupDoubleFnShortcut()
+    }
+
+    private func setupDoubleFnShortcut() {
+        fnMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            guard let self else { return }
+            let fnPressed = event.modifierFlags.contains(.function)
+            let otherMods: NSEvent.ModifierFlags = [.shift, .control, .option, .command]
+            guard event.modifierFlags.intersection(otherMods).isEmpty else { return }
+
+            if fnPressed {
+                let now = Date()
+                if let last = self.lastFnPress, now.timeIntervalSince(last) < 0.4 {
+                    self.lastFnPress = nil
+                    DispatchQueue.main.async {
+                        self.popoverManager.togglePopover(nil)
+                    }
+                } else {
+                    self.lastFnPress = now
+                }
+            }
+        }
+    }
+}`,
+
+  "App/AppState.swift": `import SwiftUI
+import Combine
+
+enum AppTheme: String, CaseIterable {
+    case light, dark, system
+}
+
+enum ActivePanel: Equatable {
+    case file(NoteFile)
+    case settings
+    case timer
+    case empty
+}
+
+@MainActor
+final class AppState: ObservableObject {
+    @AppStorage("folderPath") var folderPath: String = ""
+    @AppStorage("theme") var theme: AppTheme = .dark
+    @AppStorage("typography") var typography: TypographySize = .default
+    @AppStorage("popoverWidth") var popoverWidth: Double = 700
+    @AppStorage("popoverHeight") var popoverHeight: Double = 500
+    @AppStorage("sidebarVisible") var sidebarVisible: Bool = true
+    @AppStorage("sidebarWidth") var sidebarWidth: Double = 200
+
+    @Published var activePanel: ActivePanel = .empty
+
+    var selectedFile: NoteFile? {
+        if case .file(let f) = activePanel { return f }
+        return nil
+    }
+
+    @Published var noteFiles: [NoteFile] = []
+
+    private var dirWatcher: FileWatcher?
+    private var fileWatcher: FileWatcher?
+
+    @Published var editorContent: String = ""
+    private var saveTask: DispatchWorkItem?
+    private var isWriting = false
+
+    init() { loadFiles() }
+
+    func loadFiles() {
+        guard !folderPath.isEmpty else { noteFiles = []; return }
+        let url = URL(fileURLWithPath: folderPath)
+        guard let contents = try? FileManager.default.contentsOfDirectory(
+            at: url, includingPropertiesForKeys: [.contentModificationDateKey],
+            options: [.skipsHiddenFiles]
+        ) else { noteFiles = []; return }
+
+        noteFiles = contents
+            .filter { $0.pathExtension == "md" }
+            .sorted { $0.lastPathComponent.localizedCaseInsensitiveCompare($1.lastPathComponent) == .orderedAscending }
+            .map { NoteFile(url: $0) }
+
+        if dirWatcher == nil {
+            dirWatcher = FileWatcher(url: url) { [weak self] in
+                Task { @MainActor in self?.loadFiles() }
+            }
+        }
+        if case .empty = activePanel, let first = noteFiles.first { selectFile(first) }
+    }
+
+    func selectFile(_ file: NoteFile) {
+        activePanel = .file(file)
+        loadFileContent(file)
+        watchFile(file)
+    }
+
+    func showSettings() { activePanel = .settings }
+    func showTimer() { activePanel = .timer }
+
+    func loadFileContent(_ file: NoteFile) {
+        if let content = try? String(contentsOf: file.url, encoding: .utf8) { editorContent = content }
+    }
+
+    func saveFileContent() {
+        guard let file = selectedFile else { return }
+        saveTask?.cancel()
+        let task = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.isWriting = true
+            try? self.editorContent.write(to: file.url, atomically: true, encoding: .utf8)
+            self.isWriting = false
+        }
+        saveTask = task
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: task)
+    }
+
+    private func watchFile(_ file: NoteFile) {
+        fileWatcher = FileWatcher(url: file.url) { [weak self] in
+            Task { @MainActor in
+                guard let self, !self.isWriting else { return }
+                guard let current = self.selectedFile, current.id == file.id else { return }
+                self.loadFileContent(file)
+            }
+        }
+    }
+
+    func openInObsidian() {
+        guard let file = selectedFile else { return }
+        let vaultPath = URL(fileURLWithPath: folderPath).deletingLastPathComponent()
+        let vaultName = vaultPath.lastPathComponent
+        let relativePath = file.url.lastPathComponent
+        let encoded = relativePath.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? relativePath
+        let folderName = URL(fileURLWithPath: folderPath).lastPathComponent
+        if let url = URL(string: "obsidian://open?vault=\\(vaultName)&file=\\(folderName)/\\(encoded)") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    func toggleSidebar() {
+        withAnimation(.easeInOut(duration: 0.2)) { sidebarVisible.toggle() }
+    }
+
+    var preferredColorScheme: ColorScheme? {
+        switch theme {
+        case .light: return .light
+        case .dark: return .dark
+        case .system: return nil
+        }
+    }
+}`,
+
+  "Models/NoteFile.swift": `import Foundation
+
+struct NoteFile: Identifiable, Hashable {
+    let id: String
+    let url: URL
+    let name: String
+
+    init(url: URL) {
+        self.url = url
+        self.id = url.deletingPathExtension().lastPathComponent
+        self.name = Self.formatName(self.id)
+    }
+
+    static func formatName(_ id: String) -> String {
+        id.split(separator: "-")
+            .map { $0.prefix(1).uppercased() + $0.dropFirst() }
+            .joined(separator: " ")
+    }
+}`,
+
+  "Models/TodoItem.swift": `import Foundation
+
+struct TodoItem: Identifiable {
+    let id: String
+    let text: String
+    let isDone: Bool
+    let sourceFile: NoteFile
+    let lineIndex: Int
+
+    init(text: String, isDone: Bool, sourceFile: NoteFile, lineIndex: Int) {
+        self.text = text
+        self.isDone = isDone
+        self.sourceFile = sourceFile
+        self.lineIndex = lineIndex
+        self.id = "\\(sourceFile.id):\\(lineIndex):\\(text)"
+    }
+}`,
+
+  "Services/DatabaseService.swift": `import Foundation
+import SQLite3
+
+final class DatabaseService {
+    static let shared = DatabaseService()
+    private var db: OpaquePointer?
+
+    private init() {
+        openDatabase()
+        createTables()
+    }
+
+    deinit { sqlite3_close(db) }
+
+    private func openDatabase() {
+        let fileManager = FileManager.default
+        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let appDir = appSupport.appendingPathComponent("Flowbar", isDirectory: true)
+        try? fileManager.createDirectory(at: appDir, withIntermediateDirectories: true)
+        let dbPath = appDir.appendingPathComponent("flowbar.sqlite").path
+        if sqlite3_open(dbPath, &db) != SQLITE_OK {
+            print("Failed to open database at \\(dbPath)")
+        }
+    }
+
+    private func createTables() {
+        let sql = """
+        CREATE TABLE IF NOT EXISTS timer_sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            todo_text TEXT NOT NULL,
+            source_file TEXT NOT NULL,
+            started_at REAL NOT NULL,
+            ended_at REAL,
+            completed INTEGER DEFAULT 0
+        );
+        """
+        sqlite3_exec(db, sql, nil, nil, nil)
+    }
+
+    @discardableResult
+    func startSession(todoText: String, sourceFile: String) -> Int64 {
+        let sql = "INSERT INTO timer_sessions (todo_text, source_file, started_at) VALUES (?, ?, ?)"
+        var stmt: OpaquePointer?
+        sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
+        sqlite3_bind_text(stmt, 1, (todoText as NSString).utf8String, -1, nil)
+        sqlite3_bind_text(stmt, 2, (sourceFile as NSString).utf8String, -1, nil)
+        sqlite3_bind_double(stmt, 3, Date().timeIntervalSince1970)
+        sqlite3_step(stmt)
+        let rowId = sqlite3_last_insert_rowid(db)
+        sqlite3_finalize(stmt)
+        return rowId
+    }
+
+    func allTotalTimes() -> [String: TimeInterval] {
+        let sql = "SELECT todo_text, source_file, SUM(COALESCE(ended_at, ?) - started_at) as total FROM timer_sessions GROUP BY todo_text, source_file"
+        var stmt: OpaquePointer?
+        sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
+        sqlite3_bind_double(stmt, 1, Date().timeIntervalSince1970)
+        defer { sqlite3_finalize(stmt) }
+        var result: [String: TimeInterval] = [:]
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            let text = String(cString: sqlite3_column_text(stmt, 0))
+            let source = String(cString: sqlite3_column_text(stmt, 1))
+            let total = sqlite3_column_double(stmt, 2)
+            result["\\(text)|\\(source)"] = total
+        }
+        return result
+    }
+}`,
+
+  "Services/FileWatcher.swift": `import Foundation
+
+final class FileWatcher {
+    private var source: DispatchSourceFileSystemObject?
+    private var fileDescriptor: Int32 = -1
+    private let onChange: () -> Void
+
+    init(url: URL, onChange: @escaping () -> Void) {
+        self.onChange = onChange
+        startWatching(url: url)
+    }
+
+    deinit { stopWatching() }
+
+    func startWatching(url: URL) {
+        stopWatching()
+        fileDescriptor = open(url.path, O_EVTONLY)
+        guard fileDescriptor >= 0 else { return }
+        source = DispatchSource.makeFileSystemObjectSource(
+            fileDescriptor: fileDescriptor,
+            eventMask: [.write, .rename, .delete, .attrib],
+            queue: .main
+        )
+        source?.setEventHandler { [weak self] in self?.onChange() }
+        source?.setCancelHandler { [weak self] in
+            if let fd = self?.fileDescriptor, fd >= 0 { close(fd) }
+        }
+        source?.resume()
+    }
+
+    func stopWatching() {
+        source?.cancel()
+        source = nil
+        fileDescriptor = -1
+    }
+}`,
+
+  "Services/MarkdownParser.swift": `import Foundation
+
+enum MarkdownParser {
+    static func extractTodos(from url: URL, noteFile: NoteFile) -> [TodoItem] {
+        guard let content = try? String(contentsOf: url, encoding: .utf8) else { return [] }
+        let lines = content.components(separatedBy: "\\n")
+        var todos: [TodoItem] = []
+        for (index, line) in lines.enumerated() {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.hasPrefix("- [ ] ") {
+                todos.append(TodoItem(text: String(trimmed.dropFirst(6)), isDone: false, sourceFile: noteFile, lineIndex: index))
+            } else if trimmed.hasPrefix("- [x] ") || trimmed.hasPrefix("- [X] ") {
+                todos.append(TodoItem(text: String(trimmed.dropFirst(6)), isDone: true, sourceFile: noteFile, lineIndex: index))
+            }
+        }
+        return todos
+    }
+
+    static func toggleTodo(at lineIndex: Int, in url: URL) -> Bool {
+        guard var content = try? String(contentsOf: url, encoding: .utf8) else { return false }
+        var lines = content.components(separatedBy: "\\n")
+        guard lineIndex < lines.count else { return false }
+        let line = lines[lineIndex]
+        if line.contains("- [ ] ") {
+            lines[lineIndex] = line.replacingOccurrences(of: "- [ ] ", with: "- [x] ")
+        } else if line.contains("- [x] ") || line.contains("- [X] ") {
+            lines[lineIndex] = line.replacingOccurrences(of: "- [x] ", with: "- [ ] ")
+                .replacingOccurrences(of: "- [X] ", with: "- [ ] ")
+        } else { return false }
+        content = lines.joined(separator: "\\n")
+        do { try content.write(to: url, atomically: true, encoding: .utf8); return true }
+        catch { return false }
+    }
+
+    static func markTodoDone(text: String, in url: URL) {
+        guard let content = try? String(contentsOf: url, encoding: .utf8) else { return }
+        let lines = content.components(separatedBy: "\\n")
+        for (index, line) in lines.enumerated() {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.hasPrefix("- [ ] ") && String(trimmed.dropFirst(6)) == text {
+                _ = toggleTodo(at: index, in: url)
+                return
+            }
+        }
+    }
+}`,
+
+  "Services/TimerService.swift": `import Foundation
+import Combine
+import SwiftUI
+
+@MainActor
+final class TimerService: ObservableObject {
+    @Published var isRunning = false
+    @Published var isPaused = false
+    @Published var currentTodoText = ""
+    @Published var currentSourceFile = ""
+    @Published var elapsed: TimeInterval = 0
+
+    var hasActiveSession: Bool { isRunning || isPaused }
+
+    private var sessionId: Int64?
+    private var startedAt: Date?
+    private var pausedElapsed: TimeInterval = 0
+    private var timer: Timer?
+    private let db = DatabaseService.shared
+
+    init() { restoreActiveSession() }
+
+    func start(todoText: String, sourceFile: String) {
+        if hasActiveSession { stopSession() }
+        sessionId = db.startSession(todoText: todoText, sourceFile: sourceFile)
+        currentTodoText = todoText
+        currentSourceFile = sourceFile
+        startedAt = Date()
+        elapsed = 0
+        pausedElapsed = 0
+        isRunning = true
+        isPaused = false
+        startTicking()
+    }
+
+    func pause() {
+        guard isRunning else { return }
+        timer?.invalidate(); timer = nil
+        pausedElapsed = elapsed
+        isRunning = false; isPaused = true
+    }
+
+    func resume() {
+        guard isPaused else { return }
+        startedAt = Date()
+        isRunning = true; isPaused = false
+        startTicking()
+    }
+
+    @discardableResult
+    func complete() -> (todoText: String, sourceFile: String)? {
+        guard hasActiveSession, let id = sessionId else { return nil }
+        let result = (todoText: currentTodoText, sourceFile: currentSourceFile)
+        db.endSession(id: id, completed: true)
+        cleanup()
+        return result
+    }
+
+    func isTracking(todoText: String, sourceFile: String) -> Bool {
+        hasActiveSession && currentTodoText == todoText && currentSourceFile == sourceFile
+    }
+
+    private func startTicking() {
+        timer?.invalidate()
+        let base = pausedElapsed
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, let start = self.startedAt else { return }
+                self.elapsed = base + Date().timeIntervalSince(start)
+            }
+        }
+    }
+
+    func allTotalTimes() -> [String: TimeInterval] { db.allTotalTimes() }
+
+    static func formatTime(_ seconds: TimeInterval) -> String {
+        String(format: "%02d:%02d", Int(seconds) / 60, Int(seconds) % 60)
+    }
+
+    private func cleanup() {
+        timer?.invalidate(); timer = nil
+        isRunning = false; isPaused = false
+        sessionId = nil; startedAt = nil
+        elapsed = 0; pausedElapsed = 0
+        currentTodoText = ""; currentSourceFile = ""
+    }
+    private func stopSession() {
+        if let id = sessionId { db.endSession(id: id, completed: false) }
+        timer?.invalidate(); timer = nil
+    }
+    private func restoreActiveSession() {
+        if let s = db.activeSession() {
+            sessionId = s.id; currentTodoText = s.todoText
+            currentSourceFile = s.sourceFile; startedAt = s.startedAt
+            isRunning = true; startTicking()
+        }
+    }
+}`,
+
+  "Theme/Colors.swift": `import SwiftUI
+
+enum FlowbarColors {
+    static let accent = Color(hex: "8B9A6B")
+    static var sidebarBg: Color { Color.primary.opacity(0.04) }
+}
+
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let r = Double((int >> 16) & 0xFF) / 255.0
+        let g = Double((int >> 8) & 0xFF) / 255.0
+        let b = Double(int & 0xFF) / 255.0
+        self.init(red: r, green: g, blue: b)
+    }
+}`,
+
+  "Theme/Typography.swift": `import SwiftUI
+
+enum TypographySize: String, CaseIterable {
+    case small, \`default\`, large
+
+    var bodySize: CGFloat {
+        switch self {
+        case .small: return 12
+        case .default: return 14
+        case .large: return 16
+        }
+    }
+    var titleSize: CGFloat {
+        switch self {
+        case .small: return 20
+        case .default: return 24
+        case .large: return 28
+        }
+    }
+}`,
+
+  "Views/MainView.swift": `import SwiftUI
+
+struct MainView: View {
+    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var popoverManager: PopoverManager
+
+    var body: some View {
+        HStack(spacing: 0) {
+            if appState.sidebarVisible {
+                SidebarView()
+                    .frame(width: CGFloat(appState.sidebarWidth))
+                    .transition(.move(edge: .leading).combined(with: .opacity))
+                SidebarDivider(width: $appState.sidebarWidth)
+            }
+            Group {
+                switch appState.activePanel {
+                case .settings: SettingsView()
+                case .timer: TimerContainerView()
+                case .file: NoteContentView()
+                case .empty: emptyState
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .background(.regularMaterial)
+        .preferredColorScheme(appState.preferredColorScheme)
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "folder.badge.questionmark")
+                .font(.system(size: 40))
+                .foregroundStyle(.secondary)
+            Text("Select a folder in Settings")
+                .foregroundStyle(.secondary)
+        }
+    }
+}`,
+
+  "Window/PopoverManager.swift": `import AppKit
+import SwiftUI
+
+@MainActor
+final class PopoverManager: NSObject, ObservableObject {
+    let statusItem: NSStatusItem
+    let popover: NSPopover
+    @Published var isFloating = false
+    private var floatingPanel: FloatingPanel?
+    private var appState: AppState
+    private var timerService: TimerService?
+
+    init(appState: AppState) {
+        self.appState = appState
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        popover = NSPopover()
+        super.init()
+        popover.behavior = .transient
+        popover.animates = true
+        if let button = statusItem.button {
+            button.image = NSImage(systemSymbolName: "sparkle", accessibilityDescription: "Flowbar")
+            button.action = #selector(togglePopover(_:))
+            button.target = self
+        }
+    }
+
+    func showPopover() {
+        guard let button = statusItem.button else { return }
+        popover.contentSize = NSSize(width: appState.popoverWidth, height: appState.popoverHeight)
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    func floatPanel() {
+        guard let timerService else { return }
+        let size = NSSize(width: appState.popoverWidth, height: appState.popoverHeight)
+        let screen = NSScreen.main ?? NSScreen.screens.first!
+        let origin = NSPoint(x: screen.frame.midX - size.width / 2, y: screen.frame.midY - size.height / 2)
+        closePopover()
+        let panel = FloatingPanel(contentRect: NSRect(origin: origin, size: size), appState: appState)
+        let mainView = MainView()
+            .environmentObject(appState)
+            .environmentObject(timerService)
+            .environmentObject(self)
+        panel.setContent(mainView)
+        panel.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        floatingPanel = panel
+        isFloating = true
+    }
+
+    @objc func togglePopover(_ sender: Any?) {
+        if popover.isShown { closePopover() } else { showPopover() }
+    }
+    func closePopover() { popover.performClose(nil) }
+    func setContentView(_ view: some View, timerService: TimerService) {
+        self.timerService = timerService
+        popover.contentViewController = NSHostingController(rootView: view)
+        popover.contentSize = NSSize(width: appState.popoverWidth, height: appState.popoverHeight)
+    }
+}`,
+
+  "Window/FloatingPanel.swift": `import AppKit
+import SwiftUI
+
+class FloatingPanel: NSPanel {
+    private var appState: AppState?
+
+    init(contentRect: NSRect, appState: AppState) {
+        self.appState = appState
+        super.init(contentRect: contentRect,
+            styleMask: [.titled, .closable, .resizable, .miniaturizable, .nonactivatingPanel, .utilityWindow],
+            backing: .buffered, defer: false)
+        isFloatingPanel = true
+        level = .floating
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        isMovableByWindowBackground = false
+        titlebarAppearsTransparent = true
+        titleVisibility = .hidden
+        backgroundColor = .clear
+        isOpaque = false
+        hasShadow = true
+        minSize = NSSize(width: 400, height: 300)
+    }
+
+    func setContent(_ view: some View) { contentView = NSHostingView(rootView: view) }
+
+    override func close() {
+        if let state = appState {
+            state.popoverWidth = Double(frame.width)
+            state.popoverHeight = Double(frame.height)
+        }
+        super.close()
+    }
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+}`
+};
+
+// ============================================================
+// ANNOTATIONS: keyed by file path, line number (1-based)
+// ============================================================
+const ANNOTATIONS = {
+  "App/FlowbarApp.swift": {
+    3: { title: "@main", body: "Marks the entry point of the application. Swift looks for this attribute to know where to start. It replaces the traditional <code>main.swift</code> file. The struct conforming to <code>App</code> becomes the root of the entire app lifecycle." },
+    5: { title: "@NSApplicationDelegateAdaptor", body: "Bridges SwiftUI's <code>App</code> protocol with AppKit's <code>NSApplicationDelegate</code>. Since Flowbar needs AppKit features (menu bar icon, popover, global keyboard shortcuts), this adapter lets us use an old-school delegate alongside modern SwiftUI." },
+    7: { title: "some Scene", body: "The <code>some</code> keyword creates an <em>opaque return type</em>. It means \"this returns something that conforms to <code>Scene</code>, but the caller doesn't need to know exactly what type.\" This enables SwiftUI's declarative API without exposing complex generic types." }
+  },
+  "App/AppDelegate.swift": {
+    4: { title: "@MainActor", body: "Ensures all code in this class runs on the main thread. In macOS/iOS, UI work must happen on the main thread. <code>@MainActor</code> is a Swift concurrency annotation that makes this guarantee at compile time, preventing subtle threading bugs." },
+    5: { title: "class vs struct", body: "AppDelegate is a <code>class</code> (reference type), not a <code>struct</code> (value type). Classes are used here because: (1) NSObject requires it, (2) we need a single shared instance, (3) we need identity (delegates are passed by reference). Structs are preferred for data; classes for objects with identity." },
+    6: { title: "Implicitly Unwrapped Optional (!)", body: "The <code>!</code> after the type means this is an implicitly unwrapped optional. It starts as <code>nil</code> but will be set in <code>applicationDidFinishLaunching</code> before anyone uses it. After that, you can use it without <code>if let</code> unwrapping. Dangerous if used before initialization!" },
+    18: { title: ".environmentObject()", body: "Injects an observable object into the SwiftUI view hierarchy. Any descendant view can access it with <code>@EnvironmentObject</code>. This is SwiftUI's dependency injection system &mdash; like React's Context API. Objects flow down the tree automatically." },
+    25: { title: "[weak self]", body: "Prevents a <em>retain cycle</em> (memory leak). Closures capture variables by strong reference by default. Since this closure is stored in <code>fnMonitor</code>, which is owned by <code>self</code>, a strong capture would create a cycle: self &rarr; fnMonitor &rarr; closure &rarr; self. <code>[weak self]</code> breaks this cycle." },
+    26: { title: "guard let", body: "An early-return pattern. <code>guard let self else { return }</code> unwraps the weak self reference. If self has been deallocated (is nil), it exits early. This keeps the \"happy path\" code un-indented, unlike nested <code>if let</code> blocks." }
+  },
+  "App/AppState.swift": {
+    15: { title: "@MainActor + ObservableObject", body: "This class is the app's central state. <code>ObservableObject</code> is a protocol that lets SwiftUI watch for changes. When any <code>@Published</code> property changes, all views observing this object re-render. Think of it like React's <code>useState</code> but for an entire state container." },
+    16: { title: "@AppStorage", body: "A property wrapper that reads/writes to <code>UserDefaults</code> automatically. It's reactive too &mdash; changes trigger UI updates. The string parameter is the UserDefaults key. This is how Flowbar persists settings between app launches without any manual save/load code." },
+    24: { title: "@Published", body: "Marks a property as observable. When this value changes, SwiftUI automatically re-renders any view that reads it. Under the hood, it uses Combine's <code>Publisher</code> system. This is the core of SwiftUI's reactivity &mdash; like React's <code>setState</code>." },
+    26: { title: "Computed Property", body: "A computed property has no stored value &mdash; it calculates the result each time it's accessed. <code>var selectedFile: NoteFile?</code> derives its value from <code>activePanel</code>. The <code>{ get }</code> body runs on every access. This is a common pattern for derived state." },
+    27: { title: "if case pattern matching", body: "Swift's pattern matching extracts the associated value from an enum. <code>if case .file(let f) = activePanel</code> checks if activePanel is the <code>.file</code> case, and if so, binds the associated <code>NoteFile</code> to <code>f</code>. This is how you work with enums that carry data." },
+    39: { title: "guard ... else { return }", body: "The <code>guard</code> statement ensures a condition is true before proceeding. If it fails, you must exit the scope (return, throw, break). This pattern keeps functions flat and readable &mdash; all the error handling is at the top, and the main logic is un-indented below." },
+    50: { title: "Trailing Closure Syntax", body: "When the last parameter of a function is a closure, Swift lets you write it outside the parentheses. <code>.map { NoteFile(url: $0) }</code> is short for <code>.map({ NoteFile(url: $0) })</code>. The <code>$0</code> is a shorthand for the first closure parameter." },
+    55: { title: "[weak self] + Task { @MainActor }", body: "A common Swift concurrency pattern. The <code>[weak self]</code> prevents retain cycles. <code>Task { @MainActor in ... }</code> creates an async task that runs on the main thread. The <code>self?</code> uses optional chaining &mdash; if self is nil, the whole expression evaluates to nil safely." }
+  },
+  "Models/NoteFile.swift": {
+    3: { title: "struct + Protocols", body: "A <code>struct</code> is a value type &mdash; it's copied when passed around (like a number or string). <code>Identifiable</code> requires an <code>id</code> property (needed for SwiftUI lists). <code>Hashable</code> lets it be used in sets and as dictionary keys. Structs are the default choice for data in Swift." },
+    8: { title: "init(url: URL)", body: "A custom initializer. Unlike classes, structs get a free memberwise init, but you can write your own. Here, it computes <code>id</code> and <code>name</code> from the URL. <code>self.url = url</code> distinguishes the property from the parameter. <code>Self</code> (capital S) refers to the type itself." },
+    13: { title: "Static Method", body: "<code>static func</code> belongs to the type itself, not an instance. You call it as <code>NoteFile.formatName()</code> or <code>Self.formatName()</code> inside the type. Static methods can't access instance properties. They're used for utility functions that logically belong to the type." }
+  },
+  "Models/TodoItem.swift": {
+    3: { title: "struct TodoItem: Identifiable", body: "Another value-type data model. <code>Identifiable</code> requires a unique <code>id</code> property, which SwiftUI uses to track items in lists efficiently (like React's <code>key</code> prop). The <code>id</code> here is computed from the file, line number, and text to ensure uniqueness." },
+    9: { title: "String Interpolation", body: "<code>\"\\(sourceFile.id):\\(lineIndex):\\(text)\"</code> embeds values inside a string. Swift uses <code>\\(...)</code> syntax (backslash-parentheses) instead of template literals. Any expression that conforms to <code>CustomStringConvertible</code> can be interpolated." }
+  },
+  "Services/DatabaseService.swift": {
+    4: { title: "Singleton Pattern", body: "<code>static let shared</code> creates a single global instance. Because it's <code>let</code> (immutable), it's thread-safe and initialized lazily on first access. This is Swift's recommended singleton pattern. The <code>private init()</code> below prevents anyone else from creating instances." },
+    7: { title: "private init()", body: "A private initializer means only code inside this type can create an instance. Combined with <code>static let shared</code>, this enforces the singleton pattern: exactly one DatabaseService exists in the entire app." },
+    11: { title: "deinit", body: "Called when an object is about to be deallocated. Only classes have <code>deinit</code> (structs don't need it since they're value types). Here it closes the SQLite database connection. This is part of Swift's ARC (Automatic Reference Counting) memory management." },
+    29: { title: "@discardableResult", body: "Tells the compiler it's OK to ignore the return value. Without this, calling <code>startSession()</code> without using the returned <code>Int64</code> would produce a warning. This is a common pattern for functions where the return value is sometimes useful but not always needed." },
+    5: { title: "OpaquePointer", body: "A type-erased C pointer, used when interacting with C libraries like SQLite3. Swift imports C APIs directly, and <code>OpaquePointer?</code> represents a nullable C pointer. The <code>?</code> makes it an optional &mdash; it can be <code>nil</code> (like null in other languages)." }
+  },
+  "Services/FileWatcher.swift": {
+    9: { title: "@escaping closure", body: "<code>@escaping</code> means this closure will outlive the function call. It's stored in a property and called later when a file changes. Non-escaping closures (the default) can only be called within the function. The compiler requires you to be explicit about escaping closures." },
+    17: { title: "DispatchSource for file monitoring", body: "A low-level GCD (Grand Central Dispatch) API that watches file system events. The <code>eventMask</code> specifies which changes to watch: writes, renames, deletes, and attribute changes. This is how Flowbar live-reloads when you edit a file in Obsidian." },
+    19: { title: "[weak self] in closure", body: "The event handler closure captures <code>self</code> weakly. Since <code>source</code> owns this closure and <code>self</code> owns <code>source</code>, a strong capture would create a retain cycle. <code>self?</code> uses optional chaining &mdash; if the FileWatcher is deallocated, the closure safely does nothing." }
+  },
+  "Services/MarkdownParser.swift": {
+    3: { title: "enum with no cases", body: "An enum with only static methods and no cases acts as a <em>namespace</em>. You can't create an instance of it (which is the point &mdash; it's just a collection of utility functions). This is the Swift equivalent of a static utility class." },
+    4: { title: "guard let ... else { return [] }", body: "Early return with a default value. If the file can't be read, we immediately return an empty array instead of crashing. <code>try?</code> converts a throwing function into an optional: success gives the value, failure gives <code>nil</code>." },
+    7: { title: ".enumerated()", body: "Iterates over a collection while providing both the index and the element. <code>for (index, line) in lines.enumerated()</code> is equivalent to <code>for i, line in enumerate(lines)</code> in Python. The tuple <code>(index, line)</code> is destructured automatically." }
+  },
+  "Services/TimerService.swift": {
+    5: { title: "@MainActor + ObservableObject", body: "Like AppState, TimerService is an observable state container that must run on the main thread. Multiple <code>@Published</code> properties track timer state. Any SwiftUI view that accesses these properties (via <code>@EnvironmentObject</code>) will automatically update when they change." },
+    6: { title: "@Published var isRunning", body: "Each <code>@Published</code> property is a reactive signal. When <code>isRunning</code> changes from <code>false</code> to <code>true</code>, every view reading it re-renders. This is how the play/pause button updates without any manual notification code." },
+    11: { title: "Computed Property (hasActiveSession)", body: "<code>var hasActiveSession: Bool { isRunning || isPaused }</code> is a computed property with no setter. It derives its value from other state. It's recalculated each time it's read. This avoids storing redundant state that could get out of sync." },
+    43: { title: "Named Tuple Return", body: "<code>-> (todoText: String, sourceFile: String)?</code> returns a named tuple (or nil). Tuples are lightweight ways to return multiple values without defining a struct. The <code>?</code> makes the whole tuple optional &mdash; the function returns nil if there's no active session." },
+    52: { title: "Timer.scheduledTimer", body: "Creates a repeating timer that fires every second. The closure uses <code>[weak self]</code> to avoid retaining the TimerService. Inside, <code>Task { @MainActor in ... }</code> ensures the UI-bound <code>elapsed</code> property is updated on the main thread." }
+  },
+  "Theme/Colors.swift": {
+    3: { title: "Caseless Enum as Namespace", body: "Like MarkdownParser, this enum has no cases &mdash; it's used purely as a namespace for color constants. <code>static let</code> creates compile-time constants. This is idiomatic Swift for grouping related constants." },
+    4: { title: "static let vs static var", body: "<code>static let accent</code> is a constant computed once and cached forever. <code>static var sidebarBg</code> uses a computed getter (the <code>{ }</code> block) and recalculates every access. Use <code>let</code> for fixed values, <code>var</code> for dynamic ones." },
+    8: { title: "Extension", body: "<code>extension Color { init(hex:) }</code> adds a new initializer to SwiftUI's <code>Color</code> type without subclassing. Extensions can add methods, computed properties, and initializers to any type &mdash; even ones you don't own. This is one of Swift's most powerful features." }
+  },
+  "Theme/Typography.swift": {
+    3: { title: "Enum with Raw Values", body: "<code>enum TypographySize: String</code> gives each case an implicit String raw value (\"small\", \"default\", \"large\"). <code>CaseIterable</code> automatically provides an <code>allCases</code> array for iteration. The backtick around <code>\\`default\\`</code> is needed because \"default\" is a reserved keyword." },
+    5: { title: "Computed Property on Enum", body: "Enums can have computed properties with <code>switch self</code> to return different values per case. This is more type-safe than a dictionary lookup. The compiler ensures you handle all cases (exhaustive switching)." }
+  },
+  "Views/MainView.swift": {
+    4: { title: "@EnvironmentObject", body: "Reads an observable object that was injected by a parent view using <code>.environmentObject()</code>. It's like React's <code>useContext()</code>. The type must match exactly. If no matching object exists in the environment, the app crashes &mdash; so it's important to inject it early (AppDelegate does this)." },
+    7: { title: "var body: some View", body: "Every SwiftUI view must have a <code>body</code> property that returns <code>some View</code>. This is a computed property that SwiftUI calls to get the view's content. The <code>some View</code> opaque return type lets you return any combination of views without specifying the complex nested generic type." },
+    12: { title: "$appState.sidebarWidth", body: "The <code>$</code> prefix creates a <code>Binding</code> &mdash; a two-way connection to the property. <code>appState.sidebarWidth</code> just reads the value, but <code>$appState.sidebarWidth</code> can both read AND write. The <code>SidebarDivider</code> uses this binding to update the width when the user drags it." },
+    15: { title: "switch in ViewBuilder", body: "SwiftUI's <code>@ViewBuilder</code> (implicit in <code>body</code>) supports <code>switch</code> statements to conditionally show different views. Each case returns a different view type. This is how Flowbar switches between the note editor, settings, timer, and empty state based on <code>activePanel</code>." },
+    24: { title: "private var (computed view)", body: "Extracting a view into a <code>private var</code> is a common SwiftUI pattern for readability. This computed property returns a <code>View</code>, keeping <code>body</code> clean. It's equivalent to extracting a component in React, but without creating a separate struct." }
+  },
+  "Window/PopoverManager.swift": {
+    4: { title: "NSObject + ObservableObject", body: "Inherits from both <code>NSObject</code> (required for Objective-C interop, like <code>@objc</code> methods and <code>NSStatusBar</code>) and conforms to <code>ObservableObject</code> (for SwiftUI reactivity). This bridges the old AppKit world with modern SwiftUI." },
+    8: { title: "@Published var isFloating", body: "When the user \"detaches\" the popover into a floating window, this published property changes to <code>true</code>. Any view reading <code>popoverManager.isFloating</code> will instantly re-render to reflect the new state." },
+    15: { title: "super.init()", body: "Calls the parent class initializer. In Swift, you must initialize all your own properties BEFORE calling <code>super.init()</code>. This is stricter than most languages &mdash; it prevents accessing uninitialized state during parent initialization." },
+    36: { title: "@objc func", body: "The <code>@objc</code> attribute exposes this method to Objective-C runtime. Required here because <code>button.action = #selector(togglePopover(_:))</code> uses Objective-C's selector mechanism. This is an example of Swift/Objective-C interop that's common in macOS development." },
+    23: { title: "some View parameter", body: "<code>func setContentView(_ view: some View, ...)</code> uses an opaque parameter type. It accepts any SwiftUI view without making the function generic. This is syntactic sugar for <code>func setContentView&lt;V: View&gt;(_ view: V, ...)</code>." }
+  },
+  "Window/FloatingPanel.swift": {
+    4: { title: "class inheritance", body: "<code>FloatingPanel: NSPanel</code> inherits from <code>NSPanel</code>, which is itself a subclass of <code>NSWindow</code>. Class inheritance lets you override behavior (like <code>close()</code> below) while reusing the parent's functionality. Structs can't inherit &mdash; only classes can." },
+    21: { title: "override func close()", body: "Overrides the parent class's <code>close()</code> method to save the window size before closing. <code>super.close()</code> calls the original implementation. This is the template method pattern &mdash; hook into the lifecycle to add custom behavior." },
+    26: { title: "override var (computed)", body: "Overrides a parent's computed property. <code>canBecomeKey</code> returns <code>true</code> to allow keyboard input. In the parent class, panels default to <code>false</code>. Overriding computed properties is how you customize behavior in class hierarchies." }
+  }
+};
+
+// ============================================================
+// CONCEPTS DATA
+// ============================================================
+const CONCEPTS = [
+  { cat: "types", title: "struct", desc: "Value types that are copied on assignment. Preferred for data models in Swift. They're stack-allocated and don't need reference counting.", code: '<span class="kw">struct</span> <span class="ty">NoteFile</span>: <span class="ty">Identifiable</span>, <span class="ty">Hashable</span> {\n    <span class="kw">let</span> id: <span class="ty">String</span>\n    <span class="kw">let</span> url: <span class="ty">URL</span>\n    <span class="kw">let</span> name: <span class="ty">String</span>\n}' },
+  { cat: "types", title: "class", desc: "Reference types passed by pointer. Used when you need identity, inheritance, or a single shared instance (like AppDelegate, AppState).", code: '<span class="pw">@MainActor</span>\n<span class="kw">final class</span> <span class="ty">AppState</span>: <span class="ty">ObservableObject</span> {\n    <span class="pw">@Published</span> <span class="kw">var</span> noteFiles: [<span class="ty">NoteFile</span>] = []\n}' },
+  { cat: "types", title: "enum with associated values", desc: "Like tagged unions. Each case can carry different data. The compiler enforces exhaustive handling via switch.", code: '<span class="kw">enum</span> <span class="ty">ActivePanel</span>: <span class="ty">Equatable</span> {\n    <span class="kw">case</span> file(<span class="ty">NoteFile</span>)\n    <span class="kw">case</span> settings\n    <span class="kw">case</span> timer\n    <span class="kw">case</span> empty\n}' },
+  { cat: "types", title: "protocol", desc: "Defines a contract (like an interface). Types \"conform\" to protocols by implementing required properties and methods. Protocols enable polymorphism without inheritance.", code: '<span class="cmt">// Identifiable requires an `id` property</span>\n<span class="kw">struct</span> <span class="ty">NoteFile</span>: <span class="ty">Identifiable</span> {\n    <span class="kw">let</span> id: <span class="ty">String</span>  <span class="cmt">// satisfies the protocol</span>\n}' },
+  { cat: "memory", title: "ARC (Automatic Reference Counting)", desc: "Swift automatically tracks how many references point to each class instance. When the count reaches zero, the object is deallocated. No garbage collector needed.", code: '<span class="cmt">// Each variable pointing to an object increments its count</span>\n<span class="kw">var</span> a = <span class="ty">AppState</span>()  <span class="cmt">// refcount = 1</span>\n<span class="kw">var</span> b = a             <span class="cmt">// refcount = 2</span>\nb = <span class="kw">nil</span>               <span class="cmt">// refcount = 1</span>\na = <span class="kw">nil</span>               <span class="cmt">// refcount = 0 → deallocated</span>' },
+  { cat: "memory", title: "[weak self]", desc: "Prevents retain cycles in closures. A weak reference doesn't increment the reference count, so the object can be deallocated even if the closure still exists.", code: '<span class="cmt">// Without [weak self]: closure → self → closure (leak!)</span>\nfnMonitor = <span class="ty">NSEvent</span>.addGlobalMonitor... { [<span class="kw">weak self</span>] event <span class="kw">in</span>\n    <span class="kw">guard let self else</span> { <span class="kw">return</span> }\n    <span class="cmt">// safe to use self here</span>\n}' },
+  { cat: "memory", title: "deinit", desc: "Called when an object is about to be freed. Used for cleanup like closing database connections or removing observers.", code: '<span class="kw">final class</span> <span class="ty">DatabaseService</span> {\n    <span class="kw">private var</span> db: <span class="ty">OpaquePointer</span>?\n    <span class="kw">deinit</span> { sqlite3_close(db) }\n}' },
+  { cat: "swiftui", title: "View protocol + body", desc: "Every SwiftUI view is a struct conforming to View. The body property returns the view's content, called by SwiftUI whenever state changes.", code: '<span class="kw">struct</span> <span class="ty">MainView</span>: <span class="ty">View</span> {\n    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {\n        <span class="ty">HStack</span>(spacing: <span class="num">0</span>) {\n            <span class="ty">SidebarView</span>()\n            <span class="ty">NoteContentView</span>()\n        }\n    }\n}' },
+  { cat: "swiftui", title: "@State & @Binding", desc: "@State creates local view state (owned by the view). @Binding creates a two-way reference to state owned elsewhere. The $ prefix creates a binding.", code: '<span class="cmt">// Parent owns the state</span>\n<span class="pw">@State</span> <span class="kw">var</span> text = <span class="str">"Hello"</span>\n<span class="ty">TextField</span>(<span class="str">"Edit"</span>, text: <span class="kw">$</span>text)\n\n<span class="cmt">// Child receives a binding</span>\n<span class="pw">@Binding</span> <span class="kw">var</span> width: <span class="ty">Double</span>' },
+  { cat: "swiftui", title: "@EnvironmentObject", desc: "Reads an ObservableObject injected by an ancestor view. Changes to @Published properties trigger re-renders. Like React Context.", code: '<span class="cmt">// Inject in parent:</span>\n<span class="ty">MainView</span>()\n    .environmentObject(appState)\n\n<span class="cmt">// Read in any descendant:</span>\n<span class="pw">@EnvironmentObject</span> <span class="kw">var</span> appState: <span class="ty">AppState</span>' },
+  { cat: "swiftui", title: "@AppStorage", desc: "A property wrapper that persists to UserDefaults and triggers view updates. Combines persistence with reactivity in one line.", code: '<span class="pw">@AppStorage</span>(<span class="str">"folderPath"</span>) <span class="kw">var</span> folderPath: <span class="ty">String</span> = <span class="str">""</span>\n<span class="pw">@AppStorage</span>(<span class="str">"theme"</span>) <span class="kw">var</span> theme: <span class="ty">AppTheme</span> = .dark\n<span class="cmt">// Automatically saved & restored between launches</span>' },
+  { cat: "swiftui", title: "View Modifiers", desc: "Methods chained onto views to modify appearance or behavior. Each modifier returns a new view wrapping the original.", code: '<span class="ty">SidebarView</span>()\n    .frame(width: <span class="ty">CGFloat</span>(appState.sidebarWidth))\n    .transition(.move(edge: .leading)\n        .combined(with: .opacity))' },
+  { cat: "concurrency", title: "@MainActor", desc: "A global actor that ensures code runs on the main thread. Required for UI updates. Applied to entire classes or individual functions.", code: '<span class="pw">@MainActor</span>\n<span class="kw">final class</span> <span class="ty">AppState</span>: <span class="ty">ObservableObject</span> {\n    <span class="cmt">// All properties and methods here</span>\n    <span class="cmt">// are guaranteed to run on main thread</span>\n}' },
+  { cat: "concurrency", title: "Task { @MainActor in }", desc: "Creates an async task pinned to the main thread. Used to hop back to the main thread from a background context.", code: '<span class="ty">FileWatcher</span>(url: url) { [<span class="kw">weak self</span>] <span class="kw">in</span>\n    <span class="ty">Task</span> { <span class="pw">@MainActor</span> <span class="kw">in</span>\n        <span class="kw">self</span>?.loadFiles()\n    }\n}' },
+  { cat: "concurrency", title: "DispatchQueue", desc: "GCD (Grand Central Dispatch) queues for scheduling work. .main is the UI thread, .global() is for background work.", code: '<span class="ty">DispatchQueue</span>.main.asyncAfter(\n    deadline: .now() + <span class="num">0.5</span>\n) { [<span class="kw">weak self</span>] <span class="kw">in</span>\n    <span class="kw">self</span>?.saveContent()\n}' },
+  { cat: "concurrency", title: "Timer.scheduledTimer", desc: "Creates a repeating timer on the current run loop. Used for the focus timer's 1-second ticks.", code: 'timer = <span class="ty">Timer</span>.scheduledTimer(\n    withTimeInterval: <span class="num">1.0</span>,\n    repeats: <span class="kw">true</span>\n) { [<span class="kw">weak self</span>] _ <span class="kw">in</span>\n    <span class="ty">Task</span> { <span class="pw">@MainActor</span> <span class="kw">in</span>\n        <span class="kw">self</span>?.elapsed = ...\n    }\n}' },
+  { cat: "patterns", title: "guard let (early return)", desc: "Ensures a condition is met before proceeding. The else clause must exit the scope. Keeps code flat by handling failures first.", code: '<span class="kw">func</span> saveFileContent() {\n    <span class="kw">guard let</span> file = selectedFile <span class="kw">else</span> { <span class="kw">return</span> }\n    <span class="cmt">// file is now safely unwrapped here</span>\n    <span class="cmt">// no nesting needed!</span>\n}' },
+  { cat: "patterns", title: "if let (optional binding)", desc: "Safely unwraps an optional. The bound variable is only available inside the if block.", code: '<span class="kw">if let</span> content = <span class="kw">try</span>? <span class="ty">String</span>(contentsOf: file.url) {\n    editorContent = content\n}\n<span class="cmt">// content is not available here</span>' },
+  { cat: "patterns", title: "Optional chaining (?)", desc: "Safely accesses properties/methods on an optional. If any link in the chain is nil, the whole expression returns nil.", code: '<span class="kw">let</span> name = file?.url.lastPathComponent\n<span class="cmt">// type is String? (optional)</span>\n<span class="cmt">// if file is nil, name is nil (no crash)</span>' },
+  { cat: "patterns", title: "Trailing closure syntax", desc: "When the last argument is a closure, it can be written after the parentheses. This makes DSL-like code possible.", code: '<span class="cmt">// Full syntax:</span>\ncontents.filter({ $0.pathExtension == <span class="str">"md"</span> })\n\n<span class="cmt">// Trailing closure (idiomatic):</span>\ncontents.filter { $0.pathExtension == <span class="str">"md"</span> }' },
+  { cat: "patterns", title: "$ prefix (Binding projection)", desc: "The $ prefix on a property wrapper accesses its \"projected value\". For @State, @Published, and @AppStorage, this creates a Binding for two-way data flow.", code: '<span class="cmt">// $appState.sidebarWidth is a Binding&lt;Double&gt;</span>\n<span class="ty">SidebarDivider</span>(width: <span class="kw">$</span>appState.sidebarWidth)\n\n<span class="cmt">// The divider can now read AND write the width</span>' }
+];
+
+// ============================================================
+// SYNTAX HIGHLIGHTER
+// ============================================================
+function highlightSwift(code) {
+  // Escape HTML first
+  let html = code
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Comments (// and ///) — must be done first
+  html = html.replace(/(\/\/\/?.*)$/gm, '<span class="cmt">$1</span>');
+
+  // Multi-line strings (""") — simplified
+  html = html.replace(/("""[\s\S]*?""")/g, '<span class="str">$1</span>');
+
+  // Strings
+  html = html.replace(/("(?:[^"\\]|\\.)*?")/g, function(m) {
+    if (m.indexOf('class="') !== -1 || m.indexOf('span') !== -1) return m;
+    return '<span class="str">' + m + '</span>';
+  });
+
+  // Property wrappers
+  html = html.replace(/(@(?:MainActor|Published|AppStorage|EnvironmentObject|State|Binding|ViewBuilder|objc|main|discardableResult|NSApplicationDelegateAdaptor|escaping))/g, '<span class="pw">$1</span>');
+
+  // Keywords
+  const kwList = ['import','struct','class','enum','func','var','let','if','else','guard','switch','case','return','for','in','private','static','final','override','some','self','super','nil','true','false','try','catch','do','throw','throws','where','as','is','init','deinit','defer','protocol','extension','typealias','weak','mutating'];
+  const kwRe = new RegExp('\\b(' + kwList.join('|') + ')\\b', 'g');
+  html = html.replace(kwRe, function(m, kw, offset, str) {
+    // Don't highlight inside already-tagged spans
+    const before = str.substring(Math.max(0, offset - 30), offset);
+    if (before.match(/<span[^>]*>(?:[^<]*)$/)) return m;
+    return '<span class="kw">' + kw + '</span>';
+  });
+
+  // Types (capitalized words that look like types)
+  const typeList = ['String','Int','Int32','Int64','Bool','URL','Date','Double','CGFloat','Any','Void','TimeInterval','View','Scene','App','NSObject','NSApplicationDelegate','ObservableObject','Equatable','Hashable','Identifiable','CaseIterable','RawRepresentable','NoteFile','AppState','TimerService','PopoverManager','FloatingPanel','FileWatcher','DatabaseService','TodoItem','MarkdownParser','FlowbarColors','TypographySize','AppTheme','ActivePanel','MainView','SidebarView','NoteContentView','SettingsView','TimerContainerView','SidebarDivider','NSStatusItem','NSPopover','NSPanel','NSWindow','NSSize','NSPoint','NSRect','NSScreen','NSEvent','NSImage','NSApp','NSWorkspace','NSHostingController','NSHostingView','NSStatusBar','ColorScheme','Color','HStack','VStack','Group','Text','Image','EmptyView','Settings','DispatchWorkItem','DispatchQueue','DispatchSource','DispatchSourceFileSystemObject','Timer','FileManager','Scanner','CharacterSet','Notification','Combine','OpaquePointer','ModifierFlags'];
+  const tyRe = new RegExp('\\b(' + typeList.join('|') + ')\\b', 'g');
+  html = html.replace(tyRe, function(m, ty, offset, str) {
+    const before = str.substring(Math.max(0, offset - 30), offset);
+    if (before.match(/<span[^>]*>(?:[^<]*)$/) || before.match(/class="/)) return m;
+    return '<span class="ty">' + ty + '</span>';
+  });
+
+  // Numbers
+  html = html.replace(/\b(\d+\.?\d*)\b/g, function(m, num, offset, str) {
+    const before = str.substring(Math.max(0, offset - 30), offset);
+    if (before.match(/<span[^>]*>(?:[^<]*)$/)) return m;
+    return '<span class="num">' + num + '</span>';
+  });
+
+  return html;
+}
+
+// ============================================================
+// FILE TREE
+// ============================================================
+function buildFileTree() {
+  const tree = document.getElementById('fileTree');
+  const folders = {};
+  Object.keys(FILES).forEach(path => {
+    const parts = path.split('/');
+    const folder = parts[0];
+    if (!folders[folder]) folders[folder] = [];
+    folders[folder].push({ path, name: parts[1] });
+  });
+
+  const folderOrder = ['App', 'Models', 'Services', 'Theme', 'Views', 'Window'];
+  folderOrder.forEach(folder => {
+    if (!folders[folder]) return;
+    const div = document.createElement('div');
+    div.className = 'folder';
+    div.innerHTML = '<div class="folder-name">' + folder + '/</div>';
+    folders[folder].forEach(file => {
+      const item = document.createElement('div');
+      item.className = 'file-item';
+      item.textContent = file.name;
+      item.dataset.path = file.path;
+      item.onclick = () => selectFile(file.path);
+      div.appendChild(item);
+    });
+    tree.appendChild(div);
+  });
+}
+
+function selectFile(path) {
+  // Update active state
+  document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+  document.querySelector('.file-item[data-path="' + path + '"]')?.classList.add('active');
+
+  // Update code
+  const codePath = document.getElementById('codePath');
+  const codeContent = document.getElementById('codeContent');
+  codePath.textContent = path;
+
+  const source = FILES[path];
+  const lines = source.split('\n');
+  const annotations = ANNOTATIONS[path] || {};
+  let annoCounter = 1;
+  const annoMap = {}; // line -> annotation number
+
+  // Pre-assign numbers
+  Object.keys(annotations).sort((a,b) => a - b).forEach(line => {
+    annoMap[parseInt(line)] = annoCounter++;
+  });
+
+  let html = '';
+  lines.forEach((line, i) => {
+    const lineNum = i + 1;
+    const highlighted = highlightSwift(line);
+    let annoHtml = '';
+    if (annoMap[lineNum]) {
+      const n = annoMap[lineNum];
+      annoHtml = ' <span class="anno-marker" data-file="' + path + '" data-line="' + lineNum + '" onclick="showAnnotation(event, this)">' + n + '</span>';
+    }
+    html += '<span class="code-line"><span class="ln">' + lineNum + '</span>' + (highlighted || ' ') + annoHtml + '</span>\n';
+  });
+
+  codeContent.innerHTML = html;
+}
+
+// ============================================================
+// ANNOTATIONS POPUP
+// ============================================================
+function showAnnotation(event, marker) {
+  event.stopPropagation();
+  const file = marker.dataset.file;
+  const line = parseInt(marker.dataset.line);
+  const anno = ANNOTATIONS[file]?.[line];
+  if (!anno) return;
+
+  const popup = document.getElementById('annoPopup');
+  const title = document.getElementById('annoTitle');
+  const body = document.getElementById('annoBody');
+
+  title.innerHTML = anno.title;
+  body.innerHTML = anno.body;
+
+  // Position near the marker
+  const rect = marker.getBoundingClientRect();
+  let left = rect.right + 12;
+  let top = rect.top - 10;
+
+  // Keep on screen
+  if (left + 400 > window.innerWidth) left = rect.left - 412;
+  if (top + 200 > window.innerHeight) top = window.innerHeight - 220;
+  if (top < 60) top = 60;
+
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+  popup.style.display = 'block';
+}
+
+function closeAnnotation() {
+  document.getElementById('annoPopup').style.display = 'none';
+}
+
+// Close popup when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.anno-popup') && !e.target.closest('.anno-marker')) {
+    closeAnnotation();
+  }
+});
+
+// ============================================================
+// CONCEPTS GRID
+// ============================================================
+function buildConcepts(filter) {
+  const grid = document.getElementById('conceptGrid');
+  const filtered = filter === 'all' ? CONCEPTS : CONCEPTS.filter(c => c.cat === filter);
+  grid.innerHTML = filtered.map(c => {
+    const tagClass = 'tag-' + c.cat;
+    return '<div class="concept-card"><span class="tag ' + tagClass + '">' + c.cat + '</span><h3>' + c.title + '</h3><p>' + c.desc + '</p><pre>' + c.code + '</pre></div>';
+  }).join('');
+}
+
+document.getElementById('conceptTabs').addEventListener('click', function(e) {
+  if (!e.target.classList.contains('concept-tab')) return;
+  document.querySelectorAll('.concept-tab').forEach(t => t.classList.remove('active'));
+  e.target.classList.add('active');
+  buildConcepts(e.target.dataset.cat);
+});
+
+// ============================================================
+// ARCHITECTURE INTERACTION
+// ============================================================
+const EDGES = {
+  'AppDelegate': ['e-ad-as', 'e-ad-ts', 'e-ad-pm'],
+  'AppState': ['e-ad-as', 'e-as-nf', 'e-as-fw', 'e-mv-as'],
+  'TimerService': ['e-ad-ts', 'e-ts-db'],
+  'PopoverManager': ['e-ad-pm', 'e-pm-pop', 'e-pm-fp', 'e-mv-pm'],
+  'NoteFile': ['e-as-nf'],
+  'FileWatcher': ['e-as-fw'],
+  'DatabaseService': ['e-ts-db'],
+  'NSPopover': ['e-pm-pop'],
+  'FloatingPanel': ['e-pm-fp'],
+  'MainView': ['e-mv-as', 'e-mv-pm', 'e-mv-sb', 'e-mv-nc', 'e-mv-sv', 'e-mv-tc'],
+  'SidebarView': ['e-mv-sb'],
+  'NoteContentView': ['e-mv-nc'],
+  'SettingsView': ['e-mv-sv'],
+  'TimerContainerView': ['e-mv-tc', 'e-tc-th', 'e-tc-tt'],
+  'TimerHomeView': ['e-tc-th', 'e-mp-th'],
+  'TimerTodosView': ['e-tc-tt', 'e-tt-tr', 'e-mp-tt'],
+  'TodoRow': ['e-tt-tr'],
+  'MarkdownParser': ['e-mp-tt', 'e-mp-th']
+};
+
+function highlightNode(nodeEl) {
+  const name = nodeEl.dataset.node;
+  const edges = EDGES[name] || [];
+
+  // Reset all edges
+  document.querySelectorAll('.edge').forEach(e => {
+    e.style.stroke = '';
+    e.style.strokeOpacity = '';
+    e.classList.remove('edge-highlight');
+  });
+
+  // Reset all nodes
+  document.querySelectorAll('.node-rect').forEach(r => {
+    r.classList.remove('node-highlight');
+  });
+
+  // Highlight this node
+  nodeEl.querySelector('.node-rect').classList.add('node-highlight');
+
+  // Highlight connected edges
+  edges.forEach(id => {
+    const edge = document.getElementById(id);
+    if (edge) {
+      edge.classList.add('edge-highlight');
+      edge.style.stroke = '#8B9A6B';
+      edge.style.strokeOpacity = '1';
+      edge.style.markerEnd = 'url(#arrowhead-hl)';
+      setTimeout(() => {
+        edge.style.stroke = '';
+        edge.style.strokeOpacity = '';
+        edge.style.markerEnd = 'url(#arrowhead)';
+      }, 800);
+    }
+  });
+
+  // If there's a matching file, select it
+  const fileMap = {
+    'AppDelegate': 'App/AppDelegate.swift',
+    'AppState': 'App/AppState.swift',
+    'TimerService': 'Services/TimerService.swift',
+    'PopoverManager': 'Window/PopoverManager.swift',
+    'FloatingPanel': 'Window/FloatingPanel.swift',
+    'MainView': 'Views/MainView.swift',
+    'NoteFile': 'Models/NoteFile.swift',
+    'FileWatcher': 'Services/FileWatcher.swift',
+    'DatabaseService': 'Services/DatabaseService.swift',
+    'MarkdownParser': 'Services/MarkdownParser.swift'
+  };
+  if (fileMap[name]) {
+    selectFile(fileMap[name]);
+    // Scroll explorer into view smoothly after a moment
+    setTimeout(() => {
+      document.getElementById('explorer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+buildFileTree();
+buildConcepts('all');
+// Select first file by default
+selectFile('App/FlowbarApp.swift');
+</script>
+</body>
+</html>
