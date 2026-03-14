@@ -1,0 +1,20 @@
+<!-- Flowbar Icon: River Stone with Flow Groove -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#8B9A6B">
+  <path fill-rule="evenodd" clip-rule="evenodd" d="
+    M12 2.5
+    C7 2.5 2.5 7 2.5 12
+    C2.5 17 7 21.5 12 21.5
+    C17 21.5 21.5 17 21.5 12
+    C21.5 7 17 2.5 12 2.5
+    Z
+    M3.8 11.2
+    Q7 8.8 10.5 10.8
+    Q12 11.8 13.5 12.2
+    Q17 13 20.2 10.8
+    L20.2 12.8
+    Q17 15 13.5 14.2
+    Q12 13.8 10.5 12.8
+    Q7 10.8 3.8 13.2
+    Z
+  "/>
+</svg>
