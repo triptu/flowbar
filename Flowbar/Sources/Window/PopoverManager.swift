@@ -29,7 +29,6 @@ final class PopoverManager: NSObject {
 
         popover.behavior = .transient
         popover.animates = true
-        popover.delegate = self
 
         let quitItem = NSMenuItem(title: "Quit Flowbar", action: #selector(quitApp), keyEquivalent: "q")
         quitItem.target = self
@@ -53,6 +52,12 @@ final class PopoverManager: NSObject {
                 return nil
             }
             return event
+        }
+    }
+
+    deinit {
+        if let monitor = rightClickMonitor {
+            NSEvent.removeMonitor(monitor)
         }
     }
 
@@ -202,9 +207,6 @@ final class PopoverManager: NSObject {
         return image
     }
 }
-
-// MARK: - NSPopoverDelegate
-extension PopoverManager: NSPopoverDelegate {}
 
 // MARK: - NSWindowDelegate
 /// Tracks floating panel close (e.g. via close button) to reset isFloating state.
