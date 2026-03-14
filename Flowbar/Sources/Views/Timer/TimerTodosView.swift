@@ -8,6 +8,7 @@ struct TimerTodosView: View {
     @State private var sourceFilter: String? = nil
     @State private var showSourcePicker = false
     @State private var todos: [TodoItem] = []
+    @State private var totalTimes: [String: TimeInterval] = [:]
 
     private var sourceFiles: [String] {
         Array(Set(todos.map { $0.sourceFile.id })).sorted()
@@ -51,7 +52,7 @@ struct TimerTodosView: View {
                     Button("All Files") { sourceFilter = nil }
                     Divider()
                     ForEach(sourceFiles, id: \.self) { src in
-                        Button(NoteFile.displayName(for: src)) { sourceFilter = src }
+                        Button(NoteFile.formatName(src)) { sourceFilter = src }
                     }
                 } label: {
                     Image(systemName: "doc.text")
@@ -68,7 +69,12 @@ struct TimerTodosView: View {
             ScrollView {
                 LazyVStack(spacing: 1) {
                     ForEach(filteredTodos) { todo in
-                        TodoRow(todo: todo, timerService: timerService) {
+                        let key = "\(todo.text)|\(todo.sourceFile.id)"
+                        TodoRow(
+                            todo: todo,
+                            totalSeconds: totalTimes[key] ?? 0,
+                            timerService: timerService
+                        ) {
                             toggleTodo(todo)
                         } onStart: {
                             startTimer(for: todo)
@@ -92,28 +98,22 @@ struct TimerTodosView: View {
             let extracted = MarkdownParser.extractTodos(from: file.url, noteFile: file)
             allTodos.append(contentsOf: extracted)
         }
-        for i in allTodos.indices {
-            let total = timerService.totalTime(forTodo: allTodos[i].text, sourceFile: allTodos[i].sourceFile.id)
-            allTodos[i].totalSeconds = total
-            allTodos[i].isRunning = timerService.isRunning &&
-                timerService.currentTodoText == allTodos[i].text &&
-                timerService.currentSourceFile == allTodos[i].sourceFile.id
-        }
+        totalTimes = timerService.allTotalTimes()
         todos = allTodos
     }
 
     private func toggleTodo(_ todo: TodoItem) {
         _ = MarkdownParser.toggleTodo(at: todo.lineIndex, in: todo.sourceFile.url)
+        // onChange handlers will trigger loadTodos via noteFiles or isRunning changes
         loadTodos()
     }
 
     private func startTimer(for todo: TodoItem) {
-        if timerService.isRunning && timerService.currentTodoText == todo.text {
+        if timerService.isTracking(todoText: todo.text, sourceFile: todo.sourceFile.id) {
             timerService.pause()
         } else {
             timerService.start(todoText: todo.text, sourceFile: todo.sourceFile.id)
         }
-        loadTodos()
     }
 
     private func navigateToFile(_ todo: TodoItem) {

@@ -1,5 +1,10 @@
 import SwiftUI
 
+/// Container that switches between the timer home screen and the todos list.
+///
+/// When no timer is active, defaults to showing todos. When a timer is running,
+/// shows TimerHomeView. The user can toggle between them with the list button.
+/// Listens to timerService.isRunning changes to auto-switch when a timer completes.
 struct TimerContainerView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var timerService: TimerService
@@ -7,16 +12,13 @@ struct TimerContainerView: View {
 
     private var effectiveShowingTodos: Bool {
         if let override = showingTodos { return override }
-        return !timerService.isRunning && !timerService.isPaused
+        return !timerService.hasActiveSession
     }
 
     var body: some View {
         VStack(spacing: 0) {
             // Toolbar: always one line
             HStack(spacing: 6) {
-                if effectiveShowingTodos {
-                    todosToolbar
-                }
                 Spacer(minLength: 0)
                 Button(action: {
                     withAnimation(.easeInOut(duration: 0.2)) {
@@ -52,17 +54,6 @@ struct TimerContainerView: View {
             if old && !new && !timerService.isPaused {
                 showingTodos = true
             }
-        }
-    }
-
-    @ViewBuilder
-    private var todosToolbar: some View {
-        EmptyView() // Search/filter is inside TimerTodosView now
-    }
-
-    func switchToTodos() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            showingTodos = true
         }
     }
 }

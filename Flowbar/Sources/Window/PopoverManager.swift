@@ -1,6 +1,11 @@
 import AppKit
 import SwiftUI
 
+/// Manages the menu bar status item, popover, and floating panel lifecycle.
+///
+/// Owns the NSStatusItem (menu bar icon) and the NSPopover. Can switch between
+/// popover mode (attached to menu bar) and floating panel mode (detached window).
+/// Injected as an @EnvironmentObject so views can trigger float/dock and read isFloating.
 @MainActor
 final class PopoverManager: NSObject, ObservableObject {
     let statusItem: NSStatusItem

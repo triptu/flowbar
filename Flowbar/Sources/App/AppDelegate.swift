@@ -1,12 +1,16 @@
 import AppKit
 import SwiftUI
 
+/// App entry point that wires together the core services and the menu bar item.
+///
+/// Creates AppState, TimerService, and PopoverManager on launch, then injects them
+/// as environment objects into the SwiftUI view hierarchy. Also sets up the double-Fn
+/// global keyboard shortcut to toggle the popover from anywhere in macOS.
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     var popoverManager: PopoverManager!
     var appState: AppState!
     var timerService: TimerService!
-    var debugWindow: NSWindow?
     private var fnMonitor: Any?
     private var lastFnPress: Date?
 
@@ -22,31 +26,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         popoverManager.setContentView(mainView, timerService: timerService)
         setupDoubleFnShortcut()
-
-        #if DEBUG
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 700, height: 500),
-                styleMask: [.titled, .closable, .resizable, .miniaturizable],
-                backing: .buffered, defer: false
-            )
-            window.center()
-            window.titlebarAppearsTransparent = true
-            window.titleVisibility = .hidden
-            window.backgroundColor = .clear
-            window.isOpaque = false
-            window.hasShadow = true
-            window.contentView = NSHostingView(rootView:
-                MainView()
-                    .environmentObject(self.appState!)
-                    .environmentObject(self.timerService!)
-                    .environmentObject(self.popoverManager!)
-            )
-            window.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
-            self.debugWindow = window
-        }
-        #endif
     }
 
     private func setupDoubleFnShortcut() {

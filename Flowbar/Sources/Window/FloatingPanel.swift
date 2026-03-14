@@ -1,6 +1,11 @@
 import AppKit
 import SwiftUI
 
+/// A detached floating window used when the user "pops out" from the menu bar popover.
+///
+/// Configured as an always-on-top utility panel that joins all Spaces. Saves its
+/// size back to AppState on close so the popover remembers the last used dimensions.
+/// Created by PopoverManager.floatPanel() and destroyed by dockPanel().
 class FloatingPanel: NSPanel {
     private var appState: AppState?
 

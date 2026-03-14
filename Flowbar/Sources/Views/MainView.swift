@@ -1,5 +1,10 @@
 import SwiftUI
 
+/// Root view that combines the sidebar and content area.
+///
+/// Reads activePanel from AppState to decide what to show: a note editor,
+/// settings, the timer, or an empty state. The sidebar is togglable with Cmd+B.
+/// Used identically in both popover and floating panel modes.
 struct MainView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var popoverManager: PopoverManager

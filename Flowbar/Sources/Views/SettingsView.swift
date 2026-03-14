@@ -71,7 +71,6 @@ struct SettingsView: View {
         panel.message = "Select your Obsidian notes folder"
         if panel.runModal() == .OK, let url = panel.url {
             appState.folderPath = url.path
-            appState.loadFiles()
         }
     }
 }

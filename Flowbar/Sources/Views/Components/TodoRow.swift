@@ -2,15 +2,14 @@ import SwiftUI
 
 struct TodoRow: View {
     let todo: TodoItem
+    let totalSeconds: TimeInterval
     let timerService: TimerService
     let onToggle: () -> Void
     let onStart: () -> Void
     let onNavigate: () -> Void
 
     private var isActive: Bool {
-        (timerService.isRunning || timerService.isPaused) &&
-        timerService.currentTodoText == todo.text &&
-        timerService.currentSourceFile == todo.sourceFile.id
+        timerService.isTracking(todoText: todo.text, sourceFile: todo.sourceFile.id)
     }
 
     var body: some View {
@@ -59,8 +58,8 @@ struct TodoRow: View {
                         Text(TimerService.formatTime(timerService.elapsed))
                             .font(.system(size: 11, design: .monospaced))
                             .foregroundStyle(FlowbarColors.accent)
-                    } else if todo.totalSeconds > 0 {
-                        Text(TimerService.formatTime(todo.totalSeconds))
+                    } else if totalSeconds > 0 {
+                        Text(TimerService.formatTime(totalSeconds))
                             .font(.system(size: 11, design: .monospaced))
                             .foregroundStyle(.tertiary)
                     }

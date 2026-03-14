@@ -21,8 +21,7 @@
 		8995DCB6F7D39DB04F49F5FC /* DatabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475F8AB060E4655AA80A13E0 /* DatabaseService.swift */; };
 		94477EDEB696C005201FDF33 /* PopoverManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4666F986226364CA59E93D /* PopoverManager.swift */; };
 		97C23CB05145842759114559 /* TimerContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AB02F728664A2670EEFCAF /* TimerContainerView.swift */; };
-		9D686700F4760ADD703C6CB6 /* TimerSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2D64D923DF6305C39AF112 /* TimerSession.swift */; };
-		A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2938A16169339850B84E63 /* AppState.swift */; };
+A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2938A16169339850B84E63 /* AppState.swift */; };
 		A1C37D455CD1DEEE92C0F49F /* FloatingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19927FCA0D6E052D93303A86 /* FloatingPanel.swift */; };
 		A34CDF3EB4CF83E179BEF2BA /* TimerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39083BC43A019B06241FB227 /* TimerService.swift */; };
 		B09973A5834843B57F506206 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 679770A71B494E81BD99BB16 /* SettingsView.swift */; };
@@ -40,8 +39,7 @@
 		3BE9090CD422B39C22928F8C /* NoteContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteContentView.swift; sourceTree = "<group>"; };
 		4437CE287B73D4B42D2A7488 /* TodoRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoRow.swift; sourceTree = "<group>"; };
 		475F8AB060E4655AA80A13E0 /* DatabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseService.swift; sourceTree = "<group>"; };
-		4D2D64D923DF6305C39AF112 /* TimerSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerSession.swift; sourceTree = "<group>"; };
-		4DAC8FE70A4CC25EFC1101BE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+4DAC8FE70A4CC25EFC1101BE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4E055DC9A0DE8A87522720A1 /* TodoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItem.swift; sourceTree = "<group>"; };
 		542C5A78074B276391DA809D /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		635F72DDE09908762049B42B /* NoteFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteFile.swift; sourceTree = "<group>"; };
@@ -122,7 +120,6 @@
 			isa = PBXGroup;
 			children = (
 				635F72DDE09908762049B42B /* NoteFile.swift */,
-				4D2D64D923DF6305C39AF112 /* TimerSession.swift */,
 				4E055DC9A0DE8A87522720A1 /* TodoItem.swift */,
 			);
 			path = Models;
@@ -246,8 +243,7 @@
 				97C23CB05145842759114559 /* TimerContainerView.swift in Sources */,
 				66E4356102C5E6AD78E1EA11 /* TimerHomeView.swift in Sources */,
 				A34CDF3EB4CF83E179BEF2BA /* TimerService.swift in Sources */,
-				9D686700F4760ADD703C6CB6 /* TimerSession.swift in Sources */,
-				521CE08AE3FC9244CE92C597 /* TimerTodosView.swift in Sources */,
+521CE08AE3FC9244CE92C597 /* TimerTodosView.swift in Sources */,
 				13B7ED8967A1A4B824777752 /* TodoItem.swift in Sources */,
 				525F0DBEC750803D29A5BE5C /* TodoRow.swift in Sources */,
 				33F5E63DCB5F9DD94C47FD32 /* Typography.swift in Sources */,

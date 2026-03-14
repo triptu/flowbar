@@ -12,6 +12,12 @@ enum ActivePanel: Equatable {
     case empty
 }
 
+/// Central source of truth for the app's navigation, file list, and editor content.
+///
+/// Owns the folder path (persisted via @AppStorage), the list of markdown NoteFiles,
+/// and the currently selected file's editor text. Sets up directory and file watchers
+/// so the UI stays in sync when files change on disk (e.g. edits from Obsidian).
+/// An isWriting flag prevents the file watcher from reloading content we just saved.
 @MainActor
 final class AppState: ObservableObject {
     // MARK: - Settings
@@ -41,6 +47,7 @@ final class AppState: ObservableObject {
     // MARK: - Editor
     @Published var editorContent: String = ""
     private var saveTask: DispatchWorkItem?
+    private var isWriting = false
 
     init() {
         loadFiles()
@@ -67,9 +74,12 @@ final class AppState: ObservableObject {
             .sorted { $0.lastPathComponent.localizedCaseInsensitiveCompare($1.lastPathComponent) == .orderedAscending }
             .map { NoteFile(url: $0) }
 
-        dirWatcher = FileWatcher(url: url) { [weak self] in
-            Task { @MainActor in
-                self?.loadFiles()
+        // Only create dirWatcher if it doesn't already exist (avoid fd churn)
+        if dirWatcher == nil {
+            dirWatcher = FileWatcher(url: url) { [weak self] in
+                Task { @MainActor in
+                    self?.loadFiles()
+                }
             }
         }
 
@@ -103,7 +113,9 @@ final class AppState: ObservableObject {
         saveTask?.cancel()
         let task = DispatchWorkItem { [weak self] in
             guard let self else { return }
+            self.isWriting = true
             try? self.editorContent.write(to: file.url, atomically: true, encoding: .utf8)
+            self.isWriting = false
         }
         saveTask = task
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: task)
@@ -112,7 +124,8 @@ final class AppState: ObservableObject {
     private func watchFile(_ file: NoteFile) {
         fileWatcher = FileWatcher(url: file.url) { [weak self] in
             Task { @MainActor in
-                guard let self, let current = self.selectedFile, current.id == file.id else { return }
+                guard let self, !self.isWriting else { return }
+                guard let current = self.selectedFile, current.id == file.id else { return }
                 self.loadFileContent(file)
             }
         }

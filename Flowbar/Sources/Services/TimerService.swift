@@ -2,6 +2,12 @@ import Foundation
 import Combine
 import SwiftUI
 
+/// Manages the stopwatch timer for tracking time spent on todos.
+///
+/// Supports start, pause, resume, and complete. Persists sessions to SQLite via DatabaseService.
+/// Does NOT modify markdown files — the caller is responsible for marking todos done.
+/// Views observe @Published properties to update the UI; hasActiveSession and isTracking()
+/// provide convenient checks without duplicating the isRunning/isPaused logic everywhere.
 @MainActor
 final class TimerService: ObservableObject {
     @Published var isRunning = false
@@ -9,6 +15,9 @@ final class TimerService: ObservableObject {
     @Published var currentTodoText = ""
     @Published var currentSourceFile = ""
     @Published var elapsed: TimeInterval = 0
+
+    /// True when a timer session exists (running or paused)
+    var hasActiveSession: Bool { isRunning || isPaused }
 
     private var sessionId: Int64?
     private var startedAt: Date?
@@ -32,10 +41,7 @@ final class TimerService: ObservableObject {
     }
 
     func start(todoText: String, sourceFile: String) {
-        if isRunning || isPaused {
-            stopSession()
-        }
-
+        if hasActiveSession { stopSession() }
         sessionId = db.startSession(todoText: todoText, sourceFile: sourceFile)
         currentTodoText = todoText
         currentSourceFile = sourceFile
@@ -64,33 +70,31 @@ final class TimerService: ObservableObject {
         startTicking()
     }
 
+    /// Ends the session without marking the todo done. Clears all state.
     func stop() {
-        guard isRunning || isPaused, let id = sessionId else { return }
+        guard hasActiveSession, let id = sessionId else { return }
         db.endSession(id: id, completed: false)
         cleanup()
     }
 
-    func complete(folderPath: String) {
-        guard (isRunning || isPaused), let id = sessionId else { return }
-        let fileURL = URL(fileURLWithPath: folderPath).appendingPathComponent(currentSourceFile + ".md")
-        if let content = try? String(contentsOf: fileURL, encoding: .utf8) {
-            let lines = content.components(separatedBy: "\n")
-            for (index, line) in lines.enumerated() {
-                let trimmed = line.trimmingCharacters(in: .whitespaces)
-                if trimmed.hasPrefix("- [ ] ") && String(trimmed.dropFirst(6)) == currentTodoText {
-                    _ = MarkdownParser.toggleTodo(at: index, in: fileURL)
-                    break
-                }
-            }
-        }
+    /// Ends the session and marks it as completed in the database.
+    /// Returns the (todoText, sourceFile) so the caller can mark the todo done in the markdown.
+    @discardableResult
+    func complete() -> (todoText: String, sourceFile: String)? {
+        guard hasActiveSession, let id = sessionId else { return nil }
+        let result = (todoText: currentTodoText, sourceFile: currentSourceFile)
         db.endSession(id: id, completed: true)
         cleanup()
+        return result
+    }
+
+    /// Check if a specific todo is being tracked (running or paused)
+    func isTracking(todoText: String, sourceFile: String) -> Bool {
+        hasActiveSession && currentTodoText == todoText && currentSourceFile == sourceFile
     }
 
     private func stopSession() {
-        if let id = sessionId {
-            db.endSession(id: id, completed: false)
-        }
+        if let id = sessionId { db.endSession(id: id, completed: false) }
         timer?.invalidate()
         timer = nil
     }
@@ -119,8 +123,15 @@ final class TimerService: ObservableObject {
         }
     }
 
+    // MARK: - Queries
+
     func totalTime(forTodo text: String, sourceFile: String) -> TimeInterval {
         db.totalTime(forTodo: text, sourceFile: sourceFile)
+    }
+
+    /// Batch query: get total time for all todos at once (avoids N+1)
+    func allTotalTimes() -> [String: TimeInterval] {
+        db.allTotalTimes()
     }
 
     static func formatTime(_ seconds: TimeInterval) -> String {

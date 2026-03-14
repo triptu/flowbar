@@ -6,7 +6,7 @@ struct TimerHomeView: View {
 
     var body: some View {
         Group {
-            if timerService.isRunning || timerService.isPaused {
+            if timerService.hasActiveSession {
                 runningView
             } else {
                 idleView
@@ -51,7 +51,14 @@ struct TimerHomeView: View {
                 }
                 .buttonStyle(.plain)
 
-                Button(action: { timerService.complete(folderPath: appState.folderPath) }) {
+                Button(action: {
+                    if let completed = timerService.complete() {
+                        // Mark the todo done in the markdown file
+                        let fileURL = URL(fileURLWithPath: appState.folderPath)
+                            .appendingPathComponent(completed.sourceFile + ".md")
+                        MarkdownParser.markTodoDone(text: completed.todoText, in: fileURL)
+                    }
+                }) {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark")
                             .font(.system(size: 11))
