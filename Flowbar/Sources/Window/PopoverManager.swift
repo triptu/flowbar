@@ -17,21 +17,46 @@ final class PopoverManager: NSObject {
     @ObservationIgnored private var floatingPanel: FloatingPanel?
     @ObservationIgnored private var appState: AppState
     @ObservationIgnored private var timerService: TimerService?
+    @ObservationIgnored private var statusMenu: NSMenu
 
     init(appState: AppState) {
         self.appState = appState
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         popover = NSPopover()
+        statusMenu = NSMenu()
         super.init()
 
         popover.behavior = .transient
         popover.animates = true
 
+        let quitItem = NSMenuItem(title: "Quit Flowbar", action: #selector(quitApp), keyEquivalent: "q")
+        quitItem.target = self
+        statusMenu.addItem(quitItem)
+
         if let button = statusItem.button {
             button.image = NSImage(systemSymbolName: "sparkle", accessibilityDescription: "Flowbar")
-            button.action = #selector(togglePopover(_:))
+            button.action = #selector(handleStatusItemClick(_:))
             button.target = self
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
+    }
+
+    @objc private func handleStatusItemClick(_ sender: Any?) {
+        guard let event = NSApp.currentEvent else {
+            togglePopover(sender)
+            return
+        }
+        if event.type == .rightMouseUp {
+            statusItem.menu = statusMenu
+            statusItem.button?.performClick(nil)
+            statusItem.menu = nil
+        } else {
+            togglePopover(sender)
+        }
+    }
+
+    @objc private func quitApp() {
+        NSApp.terminate(nil)
     }
 
     func setContentView(_ view: some View, timerService: TimerService) {
