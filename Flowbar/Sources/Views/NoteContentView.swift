@@ -42,9 +42,20 @@ struct NoteContentView: View {
             }
             .buttonStyle(.plain)
             .help("Open in Obsidian")
+
+            if !popoverManager.isFloating {
+                Button(action: { popoverManager.floatPanel() }) {
+                    Image(systemName: "pip.enter")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("Pop out as overlay")
+            }
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 12)
+        .padding(.top, 8)
+        .padding(.bottom, 8)
     }
 }
 
