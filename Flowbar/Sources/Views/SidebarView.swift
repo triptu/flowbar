@@ -16,7 +16,7 @@ struct SidebarView: View {
                 Spacer()
             }
             .padding(.horizontal, 12)
-            .padding(.top, popoverManager.isFloating ? 6 : 10)
+            .padding(.top, popoverManager.isFloating ? 28 : 10)
             .padding(.bottom, 4)
 
             ScrollView {
