@@ -21,13 +21,13 @@ enum AccentColor: String, CaseIterable {
     /// (light P3, dark P3) — single source of truth for both variants
     private var p3Pair: (light: P3, dark: P3) {
         switch self {
-        case .sage:     return ((0.32, 0.50, 0.30), (0.52, 0.82, 0.46))  // herb green / vivid leaf
-        case .ocean:    return ((0.18, 0.44, 0.58), (0.34, 0.76, 0.88))  // deep water / bright cyan
-        case .lavender: return ((0.40, 0.34, 0.64), (0.64, 0.56, 0.88))  // soft indigo / wisteria
-        case .amber:    return ((0.64, 0.46, 0.14), (0.88, 0.70, 0.28))  // warm honey / golden hour
-        case .clay:     return ((0.60, 0.32, 0.24), (0.88, 0.56, 0.46))  // terracotta / warm peach
-        case .slate:    return ((0.30, 0.36, 0.46), (0.54, 0.64, 0.76))  // cool ink / blue steel
-        case .rose:     return ((0.62, 0.30, 0.42), (0.88, 0.52, 0.64))  // dusty wine / soft blush
+        case .sage:     return ((0.32, 0.50, 0.30), (0.34, 0.56, 0.30))  // herb green / deep leaf
+        case .ocean:    return ((0.18, 0.44, 0.58), (0.20, 0.50, 0.62))  // deep water / dark cyan
+        case .lavender: return ((0.40, 0.34, 0.64), (0.42, 0.36, 0.64))  // soft indigo / deep wisteria
+        case .amber:    return ((0.64, 0.46, 0.14), (0.62, 0.48, 0.16))  // warm honey / deep gold
+        case .clay:     return ((0.60, 0.32, 0.24), (0.62, 0.36, 0.28))  // terracotta / deep clay
+        case .slate:    return ((0.30, 0.36, 0.46), (0.34, 0.40, 0.52))  // cool ink / dark steel
+        case .rose:     return ((0.62, 0.30, 0.42), (0.62, 0.32, 0.42))  // dusty wine / deep rose
         }
     }
 
