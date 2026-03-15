@@ -92,7 +92,7 @@ struct SidebarFileRow: View {
             } else {
                 Text(file.name)
                     .font(.system(size: appState.settings.typography.sidebarSize))
-                    .foregroundStyle(isSelected ? .white : .secondary)
+                    .foregroundStyle(isSelected ? .primary : .secondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
