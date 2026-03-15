@@ -7,9 +7,10 @@ import SwiftUI
 /// size back to AppState on close so dimensions persist across sessions.
 /// The full title bar is the drag region. Traffic lights sit inside it over the sidebar.
 class FloatingPanel: NSPanel {
-    /// Width of the standard traffic light buttons area (close/minimize/zoom).
-    /// Used by SidebarView to inset its header past the buttons.
-    static let trafficLightWidth: CGFloat = 76
+    /// Horizontal offset where traffic lights start (aligned with sidebar item text).
+    static let trafficLightX: CGFloat = 20
+    /// Width past the traffic lights area. Used by SidebarView to inset its header.
+    static let trafficLightWidth: CGFloat = 80
 
     private let appState: AppState
     private var initialSize: NSSize = .zero
@@ -39,6 +40,18 @@ class FloatingPanel: NSPanel {
 
     func setContent(_ view: some View) {
         contentView = NSHostingView(rootView: view)
+        repositionTrafficLights()
+    }
+
+    /// Move traffic lights so they align horizontally with sidebar item text.
+    private func repositionTrafficLights() {
+        let types: [NSWindow.ButtonType] = [.closeButton, .miniaturizeButton, .zoomButton]
+        let spacing: CGFloat = 20 // center-to-center
+        for (i, type) in types.enumerated() {
+            guard let button = standardWindowButton(type) else { continue }
+            let x = Self.trafficLightX + CGFloat(i) * spacing
+            button.setFrameOrigin(NSPoint(x: x, y: button.frame.origin.y))
+        }
     }
 
     override func close() {

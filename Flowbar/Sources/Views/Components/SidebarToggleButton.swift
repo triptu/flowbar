@@ -6,7 +6,7 @@ struct SidebarToggleButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: "sidebar.left")
-                .font(.system(size: 13))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.secondary)
         }
         .buttonStyle(.plain)
