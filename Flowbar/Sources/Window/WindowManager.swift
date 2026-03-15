@@ -103,10 +103,10 @@ final class WindowManager: NSObject {
 
         // Load saved frame for this Space, or center with default size
         let frame: NSRect
-        if let saved = appState.windowFrame(forSpace: spaceID) {
+        if let saved = appState.settings.windowFrame(forSpace: spaceID) {
             frame = saved
         } else {
-            let size = AppState.defaultWindowSize
+            let size = SettingsState.defaultWindowSize
             let screen = NSScreen.main ?? NSScreen.screens.first!
             frame = NSRect(
                 x: screen.frame.midX - size.width / 2,
@@ -115,7 +115,9 @@ final class WindowManager: NSObject {
             )
         }
 
-        let newPanel = FloatingPanel(contentRect: frame, appState: appState, spaceID: spaceID)
+        let newPanel = FloatingPanel(contentRect: frame, spaceID: spaceID) { [weak self] frame, spaceID in
+            self?.appState.settings.saveWindowFrame(frame, forSpace: spaceID)
+        }
         let mainView = MainView()
             .environment(appState)
             .environment(timerService)

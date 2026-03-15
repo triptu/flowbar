@@ -31,7 +31,7 @@ struct TimerHomeView: View {
                 .padding(.horizontal, 32)
 
             Text(TimerService.formatTime(timerService.elapsed))
-                .font(.system(size: appState.typography.timerSize, weight: .light, design: .monospaced))
+                .font(.system(size: appState.settings.typography.timerSize, weight: .light, design: .monospaced))
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 16) {
@@ -54,7 +54,7 @@ struct TimerHomeView: View {
                 Button(action: {
                     if let completed = timerService.complete() {
                         // Mark the todo done in the markdown file
-                        let fileURL = URL(fileURLWithPath: appState.folderPath)
+                        let fileURL = URL(fileURLWithPath: appState.settings.folderPath)
                             .appendingPathComponent(completed.sourceFile + ".md")
                         MarkdownParser.markTodoDone(text: completed.todoText, in: fileURL)
                     }
@@ -69,7 +69,7 @@ struct TimerHomeView: View {
                     .padding(.vertical, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(appState.accent.opacity(0.3))
+                            .fill(appState.settings.accent.opacity(0.3))
                     )
                 }
                 .buttonStyle(.plain)

@@ -17,22 +17,22 @@ struct SidebarView: View {
 
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 2) {
-                    ForEach(appState.noteFiles) { file in
+                    ForEach(appState.sidebar.noteFiles) { file in
                         SidebarFileRow(
                             file: file,
-                            isSelected: appState.selectedFile?.id == file.id,
-                            isRenaming: appState.renamingFileID == file.id
+                            isSelected: appState.sidebar.selectedFile?.id == file.id,
+                            isRenaming: appState.sidebar.renamingFileID == file.id
                         )
                         .onTapGesture(count: 2) {
                             appState.startRename(file)
                         }
                         .onTapGesture {
                             // If renaming a different file, commit that rename first
-                            if let renaming = appState.renamingFileID, renaming != file.id {
+                            if let renaming = appState.sidebar.renamingFileID, renaming != file.id {
                                 appState.commitRename()
                             }
                             // Skip select while this row is in rename mode
-                            if appState.renamingFileID != file.id {
+                            if appState.sidebar.renamingFileID != file.id {
                                 appState.selectFile(file)
                             }
                         }
@@ -82,18 +82,18 @@ struct SidebarFileRow: View {
         Group {
             if isRenaming {
                 RenameTextField(
-                    text: appState.renameText,
-                    fontSize: appState.typography.sidebarSize,
-                    accentColor: appState.accentColor.nsColor,
+                    text: appState.sidebar.renameText,
+                    fontSize: appState.settings.typography.sidebarSize,
+                    accentColor: appState.settings.accentColor.nsColor,
                     onCommit: { newName in
-                        appState.renameText = newName
+                        appState.sidebar.renameText = newName
                         appState.commitRename()
                     },
                     onCancel: { appState.cancelRename() }
                 )
             } else {
                 Text(file.name)
-                    .font(.system(size: appState.typography.sidebarSize))
+                    .font(.system(size: appState.settings.typography.sidebarSize))
                     .foregroundStyle(isSelected ? .white : .secondary)
             }
         }
@@ -102,7 +102,7 @@ struct SidebarFileRow: View {
         .padding(.vertical, 8)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill(isSelected ? appState.accent.opacity(0.4) : Color.clear)
+                .fill(isSelected ? appState.settings.accent.opacity(0.4) : Color.clear)
         )
         .contentShape(Rectangle())
     }

@@ -9,16 +9,16 @@ struct MainView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            if appState.sidebarVisible {
+            if appState.sidebar.sidebarVisible {
                 SidebarView()
-                    .frame(width: CGFloat(appState.sidebarWidth))
+                    .frame(width: CGFloat(appState.sidebar.sidebarWidth))
                     .transition(.move(edge: .leading).combined(with: .opacity))
 
                 SidebarDivider()
             }
 
             Group {
-                switch appState.activePanel {
+                switch appState.sidebar.activePanel {
                 case .settings:
                     SettingsView()
                 case .timer:
@@ -33,7 +33,7 @@ struct MainView: View {
             .ignoresSafeArea(.all, edges: .top)
         }
         .background(.regularMaterial)
-        .preferredColorScheme(appState.preferredColorScheme)
+        .preferredColorScheme(appState.settings.preferredColorScheme)
         .background(keyboardShortcuts)
     }
 
@@ -107,19 +107,19 @@ struct SidebarDivider: View {
                     }
                     .onChanged { _ in
                         if dragStartWidth == nil {
-                            dragStartWidth = appState.sidebarWidth
+                            dragStartWidth = appState.sidebar.sidebarWidth
                         }
                     }
                     .onEnded { value in
-                        let start = dragStartWidth ?? appState.sidebarWidth
+                        let start = dragStartWidth ?? appState.sidebar.sidebarWidth
                         let raw = start + value.translation.width
                         dragStartWidth = nil
                         if raw < collapseThreshold {
                             withAnimation(.easeInOut(duration: 0.2)) {
-                                appState.sidebarVisible = false
+                                appState.sidebar.sidebarVisible = false
                             }
                         } else {
-                            appState.sidebarWidth = max(minWidth, min(maxWidth, raw))
+                            appState.sidebar.sidebarWidth = max(minWidth, min(maxWidth, raw))
                         }
                     }
             )
@@ -127,7 +127,7 @@ struct SidebarDivider: View {
                 guard let start = dragStartWidth else { return }
                 let raw = start + dragOffset
                 if raw >= collapseThreshold {
-                    appState.sidebarWidth = max(minWidth, min(maxWidth, raw))
+                    appState.sidebar.sidebarWidth = max(minWidth, min(maxWidth, raw))
                 }
             }
     }

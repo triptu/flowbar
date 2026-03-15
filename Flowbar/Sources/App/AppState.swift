@@ -12,209 +12,207 @@ enum ActivePanel: Equatable {
     case empty
 }
 
-/// Central source of truth for the app's navigation, file list, and editor content.
+/// Thin coordinator that holds the three sub-states and provides cross-cutting methods.
 ///
-/// Owns the folder path (persisted via UserDefaults), the list of markdown NoteFiles,
-/// and the currently selected file's editor text. Sets up directory and file watchers
-/// so the UI stays in sync when files change on disk (e.g. edits from Obsidian).
-/// An isWriting flag prevents the file watcher from reloading content we just saved.
+/// Views access sub-state via `appState.settings`, `appState.sidebar`, `appState.editor`.
+/// Methods that touch multiple sub-states (selectFile, createNewFile, trashFile, etc.) live here.
 @Observable
 @MainActor
 final class AppState {
-    // MARK: - Persistence
-    /// Injectable UserDefaults — tests pass a throwaway suite to avoid polluting the app's real settings.
-    @ObservationIgnored let defaults: UserDefaults
-
-    // MARK: - Settings (persisted to UserDefaults)
-    var folderPath: String {
-        didSet { defaults.set(folderPath, forKey: "folderPath") }
-    }
-    var theme: AppTheme {
-        didSet { defaults.set(theme.rawValue, forKey: "theme") }
-    }
-    var typography: TypographySize {
-        didSet { defaults.set(typography.rawValue, forKey: "typography") }
-    }
-    var accentColor: AccentColor {
-        didSet { defaults.set(accentColor.rawValue, forKey: "accentColor") }
-    }
-
-    /// Reactive accent color — views should use this instead of reading from a static.
-    /// Since AppState is @Observable, any view reading this will re-render on change.
-    var accent: Color { accentColor.color }
-    /// Per-Space window frames: [SpaceID: [x, y, width, height]]
-    @ObservationIgnored var windowFrames: [String: [Double]] {
-        didSet { defaults.set(windowFrames, forKey: "windowFrames") }
-    }
-    var sidebarVisible: Bool {
-        didSet { if sidebarVisible != oldValue { defaults.set(sidebarVisible, forKey: "sidebarVisible") } }
-    }
-    var sidebarWidth: Double {
-        didSet { if sidebarWidth != oldValue { defaults.set(sidebarWidth, forKey: "sidebarWidth") } }
-    }
-
-    // MARK: - Navigation (single source of truth)
-    var activePanel: ActivePanel = .empty
-
-    var selectedFile: NoteFile? {
-        if case .file(let f) = activePanel { return f }
-        return nil
-    }
-
-    // MARK: - Files
-    var noteFiles: [NoteFile] = []
-
-    // File watching
-    @ObservationIgnored private var dirWatcher: FileWatcher?
-    @ObservationIgnored private var fileWatcher: FileWatcher?
-
-    // MARK: - Editor
-    var editorContent: String = ""
-    @ObservationIgnored private var saveTask: DispatchWorkItem?
-    @ObservationIgnored private var isWriting = false
+    let settings: SettingsState
+    let sidebar: SidebarState
+    let editor: EditorState
 
     init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
-        self.folderPath = defaults.string(forKey: "folderPath") ?? ""
-        self.theme = AppTheme(rawValue: defaults.string(forKey: "theme") ?? "") ?? .dark
-        self.typography = TypographySize(rawValue: defaults.string(forKey: "typography") ?? "") ?? .default
-        self.accentColor = AccentColor(rawValue: defaults.string(forKey: "accentColor") ?? "") ?? .sage
-        self.windowFrames = defaults.object(forKey: "windowFrames") as? [String: [Double]] ?? [:]
-        self.sidebarVisible = defaults.object(forKey: "sidebarVisible") as? Bool ?? true
-        self.sidebarWidth = defaults.object(forKey: "sidebarWidth") as? Double ?? 200
+        self.settings = SettingsState(defaults: defaults)
+        self.sidebar = SidebarState(defaults: defaults)
+        self.editor = EditorState()
         loadFiles()
     }
 
+    // MARK: - Folder path (atomic set + reload)
+
+    func setFolderPath(_ path: String) {
+        settings.folderPath = path
+        loadFiles()
+    }
+
+    // MARK: - File loading
+
     func loadFiles() {
-        guard !folderPath.isEmpty else {
-            noteFiles = []
+        guard !settings.folderPath.isEmpty else {
+            sidebar.noteFiles = []
             return
         }
 
-        let url = URL(fileURLWithPath: folderPath)
+        let url = URL(fileURLWithPath: settings.folderPath)
         guard let contents = try? FileManager.default.contentsOfDirectory(
             at: url,
             includingPropertiesForKeys: [.contentModificationDateKey],
             options: [.skipsHiddenFiles]
         ) else {
-            noteFiles = []
+            sidebar.noteFiles = []
             return
         }
 
-        noteFiles = contents
+        sidebar.noteFiles = contents
             .filter { $0.pathExtension == "md" }
             .sorted { $0.lastPathComponent.localizedCaseInsensitiveCompare($1.lastPathComponent) == .orderedAscending }
             .map { NoteFile(url: $0) }
 
-        // Only create dirWatcher if it doesn't already exist (avoid fd churn)
-        if dirWatcher == nil {
-            dirWatcher = FileWatcher(url: url) { [weak self] in
-                Task { @MainActor in
-                    self?.loadFiles()
-                }
+        editor.watchDirectory(at: url) { [weak self] in
+            Task { @MainActor in
+                self?.loadFiles()
             }
         }
 
-        if case .empty = activePanel, let first = noteFiles.first {
+        if case .empty = sidebar.activePanel, let first = sidebar.noteFiles.first {
             selectFile(first)
         }
     }
 
+    // MARK: - File selection (crosses sidebar + editor)
+
     func selectFile(_ file: NoteFile) {
-        activePanel = .file(file)
-        loadFileContent(file)
-        watchFile(file)
+        sidebar.activePanel = .file(file)
+        editor.loadFileContent(file)
+        editor.watchFile(file) { [weak self] in
+            guard let self else { return }
+            guard let current = self.sidebar.selectedFile, current.id == file.id else { return }
+            self.editor.loadFileContent(file)
+        }
     }
 
-    func showSettings() {
-        activePanel = .settings
-    }
+    // MARK: - Navigation (delegate to sidebar, some cross-cutting)
 
-    func showTimer() {
-        activePanel = .timer
-    }
-
-    // MARK: - Per-Space window frame
-
-    /// Default window size for new Spaces
-    static let defaultWindowSize = NSSize(width: 700, height: 500)
-
-    func windowFrame(forSpace spaceID: Int) -> NSRect? {
-        guard let vals = windowFrames[String(spaceID)], vals.count == 4 else { return nil }
-        return NSRect(x: vals[0], y: vals[1], width: vals[2], height: vals[3])
-    }
-
-    func saveWindowFrame(_ frame: NSRect, forSpace spaceID: Int) {
-        let newVal = [
-            Double(frame.origin.x), Double(frame.origin.y),
-            Double(frame.width), Double(frame.height)
-        ]
-        let key = String(spaceID)
-        guard windowFrames[key] != newVal else { return }
-        windowFrames[key] = newVal
-    }
+    func showSettings() { sidebar.showSettings() }
+    func showTimer() { sidebar.showTimer() }
+    func toggleSidebar() { sidebar.toggleSidebar() }
 
     func returnToFiles() {
-        if let file = noteFiles.first {
+        if let file = sidebar.noteFiles.first {
             selectFile(file)
         } else {
-            activePanel = .empty
+            sidebar.activePanel = .empty
         }
     }
 
-    func loadFileContent(_ file: NoteFile) {
-        // Cancel any pending save so we don't overwrite external changes
-        saveTask?.cancel()
-        saveTask = nil
-        isWriting = false
+    func selectNextFile() { selectAdjacentFile(offset: 1) }
+    func selectPreviousFile() { selectAdjacentFile(offset: -1) }
 
-        if let content = try? String(contentsOf: file.url, encoding: .utf8) {
-            editorContent = content
+    private func selectAdjacentFile(offset: Int) {
+        let files = sidebar.noteFiles
+        guard !files.isEmpty else { return }
+        guard let current = sidebar.selectedFile,
+              let idx = files.firstIndex(where: { $0.id == current.id }) else {
+            selectFile(files[0])
+            return
         }
+        let target = (idx + offset + files.count) % files.count
+        selectFile(files[target])
     }
+
+    // MARK: - Editor save (crosses sidebar + editor)
 
     func saveFileContent() {
-        guard let file = selectedFile else { return }
-        saveTask?.cancel()
-        // Mark writing immediately so the file watcher ignores events during debounce
-        isWriting = true
-        // Capture content now so a file-switch during debounce doesn't write wrong content
-        let contentToSave = editorContent
-        let task = DispatchWorkItem { [weak self] in
-            guard let self else { return }
-            try? contentToSave.write(to: file.url, atomically: true, encoding: .utf8)
-            // Atomic write creates a new inode — re-establish watcher on the new file
-            self.watchFile(file)
-            // Brief delay before clearing flag so FSEvents from our write are ignored
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                self?.isWriting = false
-            }
-        }
-        saveTask = task
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: task)
+        editor.saveFileContent(for: sidebar.selectedFile)
     }
 
-    private func watchFile(_ file: NoteFile) {
-        fileWatcher = FileWatcher(url: file.url) { [weak self] in
-            Task { @MainActor in
-                guard let self, !self.isWriting else { return }
-                guard let current = self.selectedFile, current.id == file.id else { return }
-                self.loadFileContent(file)
+    // MARK: - File operations (cross sidebar + editor + settings)
+
+    func createNewFile() {
+        guard !settings.folderPath.isEmpty else { return }
+        let folderURL = URL(fileURLWithPath: settings.folderPath)
+        var name = "untitled"
+        var counter = 1
+        while FileManager.default.fileExists(atPath: folderURL.appendingPathComponent("\(name).md").path) {
+            name = "untitled-\(counter)"
+            counter += 1
+        }
+        let fileURL = folderURL.appendingPathComponent("\(name).md")
+        FileManager.default.createFile(atPath: fileURL.path, contents: Data())
+        editor.suppressNextDirectoryEvent()
+        loadFiles()
+        if let newFile = sidebar.noteFiles.first(where: { $0.id == name }) {
+            selectFile(newFile)
+            startRename(newFile)
+        }
+    }
+
+    func commitRename() {
+        guard let fileID = sidebar.renamingFileID,
+              let file = sidebar.noteFiles.first(where: { $0.id == fileID }) else {
+            sidebar.renamingFileID = nil
+            return
+        }
+        let trimmed = sidebar.renameText.trimmingCharacters(in: .whitespaces)
+        sidebar.renamingFileID = nil
+        moveFile(file, toDisplayName: trimmed)
+    }
+
+    func startRename(_ file: NoteFile) {
+        sidebar.startRename(file)
+    }
+
+    func cancelRename() {
+        sidebar.cancelRename()
+    }
+
+    /// Convenience for callers (and tests) that already know the file and new name.
+    func renameFile(_ file: NoteFile, to newName: String) {
+        moveFile(file, toDisplayName: newName)
+    }
+
+    /// Shared rename logic: validates the new name, moves the file on disk, reloads, and re-selects.
+    private func moveFile(_ file: NoteFile, toDisplayName displayName: String) {
+        let trimmed = displayName.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        let kebab = NoteFile.toKebabCase(trimmed)
+        guard !kebab.isEmpty, kebab != file.id else { return }
+        let newURL = file.url.deletingLastPathComponent().appendingPathComponent("\(kebab).md")
+        guard !FileManager.default.fileExists(atPath: newURL.path) else { return }
+        do {
+            try FileManager.default.moveItem(at: file.url, to: newURL)
+            let wasSelected = sidebar.selectedFile?.id == file.id
+            editor.suppressNextDirectoryEvent()
+            loadFiles()
+            if wasSelected, let renamed = sidebar.noteFiles.first(where: { $0.id == kebab }) {
+                selectFile(renamed)
+            }
+        } catch {}
+    }
+
+    func trashFile(_ file: NoteFile) {
+        let wasSelected = sidebar.selectedFile?.id == file.id
+        do {
+            try FileManager.default.trashItem(at: file.url, resultingItemURL: nil)
+        } catch {
+            return
+        }
+        editor.suppressNextDirectoryEvent()
+        loadFiles()
+        if wasSelected {
+            if let first = sidebar.noteFiles.first {
+                selectFile(first)
+            } else {
+                sidebar.activePanel = .empty
             }
         }
     }
+
+    // MARK: - External app integration
 
     func openInObsidian() {
-        guard let file = selectedFile else { return }
+        guard let file = sidebar.selectedFile else { return }
         openInObsidian(file)
     }
 
     func openInObsidian(_ file: NoteFile) {
-        let vaultPath = URL(fileURLWithPath: folderPath).deletingLastPathComponent()
+        let vaultPath = URL(fileURLWithPath: settings.folderPath).deletingLastPathComponent()
         let vaultName = vaultPath.lastPathComponent
         let relativePath = file.url.lastPathComponent
         let encoded = relativePath.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? relativePath
-        let folderName = URL(fileURLWithPath: folderPath).lastPathComponent
+        let folderName = URL(fileURLWithPath: settings.folderPath).lastPathComponent
 
         if let url = URL(string: "obsidian://open?vault=\(vaultName)&file=\(folderName)/\(encoded)") {
             NSWorkspace.shared.open(url)
@@ -223,134 +221,5 @@ final class AppState {
 
     func revealInFinder(_ file: NoteFile) {
         NSWorkspace.shared.activateFileViewerSelecting([file.url])
-    }
-
-    func createNewFile() {
-        guard !folderPath.isEmpty else { return }
-        let folderURL = URL(fileURLWithPath: folderPath)
-        var name = "untitled"
-        var counter = 1
-        // Find unique filename
-        while FileManager.default.fileExists(atPath: folderURL.appendingPathComponent("\(name).md").path) {
-            name = "untitled-\(counter)"
-            counter += 1
-        }
-        let fileURL = folderURL.appendingPathComponent("\(name).md")
-        FileManager.default.createFile(atPath: fileURL.path, contents: Data())
-        loadFiles()
-        if let newFile = noteFiles.first(where: { $0.id == name }) {
-            selectFile(newFile)
-            startRename(newFile)
-        }
-    }
-
-    // MARK: - Rename
-
-    /// Non-nil when a sidebar row is in inline-rename mode
-    var renamingFileID: String?
-    /// The live text in the rename field — stored here so any caller can commit
-    var renameText = ""
-
-    func startRename(_ file: NoteFile) {
-        renameText = file.name
-        renamingFileID = file.id
-    }
-
-    func commitRename() {
-        guard let fileID = renamingFileID,
-              let file = noteFiles.first(where: { $0.id == fileID }) else {
-            renamingFileID = nil
-            return
-        }
-        let trimmed = renameText.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else {
-            renamingFileID = nil
-            return
-        }
-        let kebab = NoteFile.toKebabCase(trimmed)
-        guard !kebab.isEmpty, kebab != file.id else {
-            renamingFileID = nil
-            return
-        }
-        let newURL = file.url.deletingLastPathComponent().appendingPathComponent("\(kebab).md")
-        guard !FileManager.default.fileExists(atPath: newURL.path) else {
-            renamingFileID = nil
-            return
-        }
-        do {
-            try FileManager.default.moveItem(at: file.url, to: newURL)
-            let wasSelected = selectedFile?.id == file.id
-            renamingFileID = nil
-            loadFiles()
-            if wasSelected, let renamed = noteFiles.first(where: { $0.id == kebab }) {
-                selectFile(renamed)
-            }
-        } catch {
-            renamingFileID = nil
-        }
-    }
-
-    func cancelRename() {
-        renamingFileID = nil
-    }
-
-    /// Convenience for callers (and tests) that already know the file and new name
-    func renameFile(_ file: NoteFile, to newName: String) {
-        renamingFileID = file.id
-        renameText = newName
-        commitRename()
-    }
-
-    func trashFile(_ file: NoteFile) {
-        let wasSelected = selectedFile?.id == file.id
-        do {
-            try FileManager.default.trashItem(at: file.url, resultingItemURL: nil)
-        } catch {
-            return
-        }
-        loadFiles()
-        if wasSelected {
-            if let first = noteFiles.first {
-                selectFile(first)
-            } else {
-                activePanel = .empty
-            }
-        }
-    }
-
-    func toggleSidebar() {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            sidebarVisible.toggle()
-        }
-    }
-
-    func selectNextFile() {
-        guard !noteFiles.isEmpty else { return }
-        guard let current = selectedFile,
-              let idx = noteFiles.firstIndex(where: { $0.id == current.id }) else {
-            selectFile(noteFiles[0])
-            return
-        }
-        let next = (idx + 1) % noteFiles.count
-        selectFile(noteFiles[next])
-    }
-
-    func selectPreviousFile() {
-        guard !noteFiles.isEmpty else { return }
-        guard let current = selectedFile,
-              let idx = noteFiles.firstIndex(where: { $0.id == current.id }) else {
-            selectFile(noteFiles[0])
-            return
-        }
-        let prev = (idx - 1 + noteFiles.count) % noteFiles.count
-        selectFile(noteFiles[prev])
-    }
-
-    var preferredColorScheme: ColorScheme? {
-        switch theme {
-        case .light: return .light
-        case .dark: return .dark
-        case .system: return nil
-        }
     }
 }

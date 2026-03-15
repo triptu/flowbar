@@ -3,8 +3,8 @@ import SwiftUI
 struct SidebarFooter: View {
     @Environment(AppState.self) var appState
 
-    private var isSettings: Bool { appState.activePanel == .settings }
-    private var isTimer: Bool { appState.activePanel == .timer }
+    private var isSettings: Bool { appState.sidebar.activePanel == .settings }
+    private var isTimer: Bool { appState.sidebar.activePanel == .timer }
 
     var body: some View {
         HStack(spacing: 4) {
@@ -30,7 +30,7 @@ struct SidebarFooter: View {
             .padding(.vertical, 8)
             .background(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(isActive ? appState.accent.opacity(0.3) : Color.clear)
+                    .fill(isActive ? appState.settings.accent.opacity(0.3) : Color.clear)
             )
             .contentShape(Rectangle())
         }

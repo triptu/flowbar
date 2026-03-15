@@ -3,29 +3,36 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppState.self) var appState
 
+    @State private var folderPathInput = ""
+    @State private var folderPathDebounce: DispatchWorkItem?
+
     var body: some View {
-        @Bindable var appState = appState
+        @Bindable var settings = appState.settings
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Settings")
-                    .font(.system(size: appState.typography.titleSize, weight: .bold))
+                    .font(.system(size: appState.settings.typography.titleSize, weight: .bold))
 
                 settingsSection("Markdown Folder Path") {
                     HStack {
-                        TextField("/path/to/markdown/folder", text: $appState.folderPath)
+                        TextField("/path/to/markdown/folder", text: $folderPathInput)
                             .textFieldStyle(.roundedBorder)
-                            .onChange(of: appState.folderPath) { _, _ in
-                                appState.loadFiles()
+                            .onAppear { folderPathInput = appState.settings.folderPath }
+                            .onChange(of: folderPathInput) { _, newValue in
+                                folderPathDebounce?.cancel()
+                                let task = DispatchWorkItem { appState.setFolderPath(newValue) }
+                                folderPathDebounce = task
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: task)
                             }
                         Button("Browse...") { browseFolder() }
                             .buttonStyle(.bordered)
-                            .tint(appState.accent)
+                            .tint(appState.settings.accent)
                     }
                 }
 
                 settingsSection("Appearance") {
-                    settingsPickerRow("Theme", selection: $appState.theme, options: AppTheme.allCases) { $0.rawValue.capitalized }
-                    settingsPickerRow("Text Size", selection: $appState.typography, options: TypographySize.allCases) { $0.rawValue.capitalized }
+                    settingsPickerRow("Theme", selection: $settings.theme, options: AppTheme.allCases) { $0.rawValue.capitalized }
+                    settingsPickerRow("Text Size", selection: $settings.typography, options: TypographySize.allCases) { $0.rawValue.capitalized }
                     accentColorRow
                 }
 
@@ -86,11 +93,11 @@ struct SettingsView: View {
                         .frame(width: 18, height: 18)
                         .overlay(
                             Circle()
-                                .strokeBorder(Color.primary.opacity(appState.accentColor == color ? 0.6 : 0), lineWidth: 1.5)
+                                .strokeBorder(Color.primary.opacity(appState.settings.accentColor == color ? 0.6 : 0), lineWidth: 1.5)
                         )
-                        .scaleEffect(appState.accentColor == color ? 1.15 : 1.0)
-                        .animation(.easeInOut(duration: 0.15), value: appState.accentColor)
-                        .onTapGesture { appState.accentColor = color }
+                        .scaleEffect(appState.settings.accentColor == color ? 1.15 : 1.0)
+                        .animation(.easeInOut(duration: 0.15), value: appState.settings.accentColor)
+                        .onTapGesture { appState.settings.accentColor = color }
                         .help(color.displayName)
                 }
             }
@@ -122,7 +129,8 @@ struct SettingsView: View {
         panel.allowsMultipleSelection = false
         panel.message = "Select your markdown notes folder"
         if panel.runModal() == .OK, let url = panel.url {
-            appState.folderPath = url.path
+            folderPathInput = url.path
+            appState.setFolderPath(url.path)
         }
     }
 }

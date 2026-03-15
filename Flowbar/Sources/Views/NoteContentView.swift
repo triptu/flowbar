@@ -9,13 +9,13 @@ struct NoteContentView: View {
             Divider().opacity(0.2)
 
             TextEditor(text: Binding(
-                get: { appState.editorContent },
+                get: { appState.editor.editorContent },
                 set: { newValue in
-                    appState.editorContent = newValue
+                    appState.editor.editorContent = newValue
                     appState.saveFileContent()
                 }
             ))
-                .font(.system(size: appState.typography.bodySize))
+                .font(.system(size: appState.settings.typography.bodySize))
                 .scrollContentBackground(.hidden)
                 .padding(16)
         }
@@ -23,12 +23,12 @@ struct NoteContentView: View {
 
     private var noteHeader: some View {
         HStack(spacing: 10) {
-            if !appState.sidebarVisible {
+            if !appState.sidebar.sidebarVisible {
                 SidebarToggleButton { appState.toggleSidebar() }
             }
 
-            Text(appState.selectedFile?.name ?? "")
-                .font(.system(size: appState.typography.titleSize, weight: .bold))
+            Text(appState.sidebar.selectedFile?.name ?? "")
+                .font(.system(size: appState.settings.typography.titleSize, weight: .bold))
 
             Spacer()
 
@@ -39,7 +39,7 @@ struct NoteContentView: View {
             .buttonStyle(.plain)
             .help("Open in Obsidian")
         }
-        .padding(.leading, appState.sidebarVisible ? 20 : FloatingPanel.trafficLightWidth)
+        .padding(.leading, appState.sidebar.sidebarVisible ? 20 : FloatingPanel.trafficLightWidth)
         .padding(.trailing, 20)
         .padding(.top, 10)
         .padding(.bottom, 10)

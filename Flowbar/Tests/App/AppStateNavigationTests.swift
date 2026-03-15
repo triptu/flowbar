@@ -8,8 +8,8 @@ struct AppStateNavigationTests {
 
     private func makeAppState(fileNames: [String]) -> AppState {
         let state = AppState(defaults: UserDefaults(suiteName: "com.flowbar.tests-\(UUID().uuidString)")!)
-        state.activePanel = .empty
-        state.noteFiles = fileNames.map { NoteFile(url: URL(fileURLWithPath: "/tmp/\($0).md")) }
+        state.sidebar.activePanel = .empty
+        state.sidebar.noteFiles = fileNames.map { NoteFile(url: URL(fileURLWithPath: "/tmp/\($0).md")) }
         return state
     }
 
@@ -20,9 +20,9 @@ struct AppStateNavigationTests {
     ] as [([String], Int, String)])
     func selectNextFile(files: [String], startIndex: Int, expectedId: String) {
         let state = makeAppState(fileNames: files)
-        state.selectFile(state.noteFiles[startIndex])
+        state.selectFile(state.sidebar.noteFiles[startIndex])
         state.selectNextFile()
-        #expect(state.selectedFile?.id == expectedId)
+        #expect(state.sidebar.selectedFile?.id == expectedId)
     }
 
     @Test("selectPreviousFile cycles backward", arguments: [
@@ -32,48 +32,48 @@ struct AppStateNavigationTests {
     ] as [([String], Int, String)])
     func selectPreviousFile(files: [String], startIndex: Int, expectedId: String) {
         let state = makeAppState(fileNames: files)
-        state.selectFile(state.noteFiles[startIndex])
+        state.selectFile(state.sidebar.noteFiles[startIndex])
         state.selectPreviousFile()
-        #expect(state.selectedFile?.id == expectedId)
+        #expect(state.sidebar.selectedFile?.id == expectedId)
     }
 
     @Test("selectNextFile with no selection selects first")
     func nextFileNoSelection() {
         let state = makeAppState(fileNames: ["a", "b", "c"])
         state.selectNextFile()
-        #expect(state.selectedFile?.id == "a")
+        #expect(state.sidebar.selectedFile?.id == "a")
     }
 
     @Test("selectPreviousFile with no selection selects first")
     func previousFileNoSelection() {
         let state = makeAppState(fileNames: ["a", "b", "c"])
         state.selectPreviousFile()
-        #expect(state.selectedFile?.id == "a")
+        #expect(state.sidebar.selectedFile?.id == "a")
     }
 
     @Test("selectNextFile on empty list stays nil")
     func nextFileEmptyList() {
         let state = makeAppState(fileNames: [])
         state.selectNextFile()
-        #expect(state.selectedFile == nil)
+        #expect(state.sidebar.selectedFile == nil)
     }
 
     @Test("selectPreviousFile on empty list stays nil")
     func previousFileEmptyList() {
         let state = makeAppState(fileNames: [])
         state.selectPreviousFile()
-        #expect(state.selectedFile == nil)
+        #expect(state.sidebar.selectedFile == nil)
     }
 
     @Test("single file stays selected for both directions")
     func singleFile() {
         let state = makeAppState(fileNames: ["only"])
-        state.selectFile(state.noteFiles[0])
+        state.selectFile(state.sidebar.noteFiles[0])
 
         state.selectNextFile()
-        #expect(state.selectedFile?.id == "only")
+        #expect(state.sidebar.selectedFile?.id == "only")
 
         state.selectPreviousFile()
-        #expect(state.selectedFile?.id == "only")
+        #expect(state.sidebar.selectedFile?.id == "only")
     }
 }

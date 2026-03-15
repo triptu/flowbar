@@ -38,7 +38,7 @@ struct TimerContainerView: View {
                             .padding(6)
                             .background(
                                 RoundedRectangle(cornerRadius: 6)
-                                    .fill(effectiveShowingTodos ? appState.accent : Color.primary.opacity(0.06))
+                                    .fill(effectiveShowingTodos ? appState.settings.accent : Color.primary.opacity(0.06))
                             )
                             .foregroundStyle(effectiveShowingTodos ? .white : .secondary)
                     }

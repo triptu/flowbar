@@ -22,7 +22,7 @@ struct FileOperationsTests {
         }
 
         state = AppState(defaults: UserDefaults(suiteName: "com.flowbar.tests-\(UUID().uuidString)")!)
-        state.folderPath = tempDir.path
+        state.settings.folderPath = tempDir.path
         state.loadFiles()
     }
 
@@ -30,22 +30,22 @@ struct FileOperationsTests {
 
     @Test("createNewFile adds untitled.md")
     func createNewFile() {
-        let countBefore = state.noteFiles.count
+        let countBefore = state.sidebar.noteFiles.count
         state.createNewFile()
 
-        #expect(state.noteFiles.count == countBefore + 1)
-        #expect(state.selectedFile?.id == "untitled")
-        #expect(state.renamingFileID == "untitled")
+        #expect(state.sidebar.noteFiles.count == countBefore + 1)
+        #expect(state.sidebar.selectedFile?.id == "untitled")
+        #expect(state.sidebar.renamingFileID == "untitled")
         #expect(FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("untitled.md").path))
     }
 
     @Test("createNewFile increments when untitled exists")
     func createNewFileIncrement() {
         state.createNewFile()
-        #expect(state.selectedFile?.id == "untitled")
+        #expect(state.sidebar.selectedFile?.id == "untitled")
 
         state.createNewFile()
-        #expect(state.selectedFile?.id == "untitled-1")
+        #expect(state.sidebar.selectedFile?.id == "untitled-1")
         #expect(FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("untitled-1.md").path))
     }
 
@@ -53,11 +53,11 @@ struct FileOperationsTests {
 
     @Test("renameFile changes the filename on disk")
     func renameFile() {
-        let file = state.noteFiles.first { $0.id == "alpha" }!
+        let file = state.sidebar.noteFiles.first { $0.id == "alpha" }!
         state.selectFile(file)
         state.renameFile(file, to: "New Name")
 
-        #expect(state.selectedFile?.id == "new-name")
+        #expect(state.sidebar.selectedFile?.id == "new-name")
         #expect(FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("new-name.md").path))
         #expect(!FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("alpha.md").path))
     }
@@ -68,9 +68,9 @@ struct FileOperationsTests {
         ("alpha", "   "),
     ] as [(String, String)])
     func renameNoOp(fileId: String, newName: String) {
-        let file = state.noteFiles.first { $0.id == fileId }!
+        let file = state.sidebar.noteFiles.first { $0.id == fileId }!
         state.selectFile(file)
-        state.renamingFileID = file.id
+        state.sidebar.renamingFileID = file.id
         state.renameFile(file, to: newName)
 
         #expect(FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("\(fileId).md").path))
@@ -80,40 +80,40 @@ struct FileOperationsTests {
 
     @Test("trashFile removes file and auto-selects another")
     func trashFile() {
-        let file = state.noteFiles.first { $0.id == "alpha" }!
+        let file = state.sidebar.noteFiles.first { $0.id == "alpha" }!
         state.selectFile(file)
-        let countBefore = state.noteFiles.count
+        let countBefore = state.sidebar.noteFiles.count
 
         state.trashFile(file)
 
-        #expect(state.noteFiles.count == countBefore - 1)
+        #expect(state.sidebar.noteFiles.count == countBefore - 1)
         #expect(!FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("alpha.md").path))
-        #expect(state.selectedFile != nil)
-        #expect(state.selectedFile?.id != "alpha")
+        #expect(state.sidebar.selectedFile != nil)
+        #expect(state.sidebar.selectedFile?.id != "alpha")
     }
 
     @Test("trashFile on non-selected file keeps current selection")
     func trashNonSelectedFile() {
-        let alpha = state.noteFiles.first { $0.id == "alpha" }!
-        let beta = state.noteFiles.first { $0.id == "beta" }!
+        let alpha = state.sidebar.noteFiles.first { $0.id == "alpha" }!
+        let beta = state.sidebar.noteFiles.first { $0.id == "beta" }!
         state.selectFile(alpha)
 
         state.trashFile(beta)
 
-        #expect(state.selectedFile?.id == "alpha")
+        #expect(state.sidebar.selectedFile?.id == "alpha")
     }
 
     @Test("trashing the last file goes to empty state")
     func trashLastFile() {
-        for file in state.noteFiles where file.id != "alpha" {
+        for file in state.sidebar.noteFiles where file.id != "alpha" {
             state.trashFile(file)
         }
-        let last = state.noteFiles.first { $0.id == "alpha" }!
+        let last = state.sidebar.noteFiles.first { $0.id == "alpha" }!
         state.selectFile(last)
 
         state.trashFile(last)
 
-        #expect(state.selectedFile == nil)
-        #expect(state.activePanel == .empty)
+        #expect(state.sidebar.selectedFile == nil)
+        #expect(state.sidebar.activePanel == .empty)
     }
 }

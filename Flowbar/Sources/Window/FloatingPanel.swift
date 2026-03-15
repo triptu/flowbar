@@ -4,7 +4,7 @@ import SwiftUI
 /// The overlay window shown when the user clicks the menu bar icon or presses double-Fn.
 ///
 /// Configured as an always-on-top utility panel that joins all Spaces. Saves its
-/// size back to AppState on close so dimensions persist across sessions.
+/// size back via an onClose callback so dimensions persist across sessions.
 /// The full title bar is the drag region. Traffic lights sit inside it over the sidebar.
 class FloatingPanel: NSPanel {
     /// Horizontal offset where traffic lights start (aligned with sidebar item text).
@@ -12,13 +12,14 @@ class FloatingPanel: NSPanel {
     /// Width past the traffic lights area. Used by SidebarView to inset its header.
     static let trafficLightWidth: CGFloat = 80
 
-    private let appState: AppState
+    /// Called with (frame, spaceID) when the panel closes, so the caller can persist the window frame.
+    private let onClose: (NSRect, Int) -> Void
     private var initialSize: NSSize = .zero
     /// The Space ID this panel was created on, used to save per-Space frame
     let spaceID: Int
 
-    init(contentRect: NSRect, appState: AppState, spaceID: Int) {
-        self.appState = appState
+    init(contentRect: NSRect, spaceID: Int, onClose: @escaping (NSRect, Int) -> Void) {
+        self.onClose = onClose
         self.spaceID = spaceID
         super.init(
             contentRect: contentRect,
@@ -58,7 +59,7 @@ class FloatingPanel: NSPanel {
     }
 
     override func close() {
-        appState.saveWindowFrame(frame, forSpace: spaceID)
+        onClose(frame, spaceID)
         super.close()
     }
 
