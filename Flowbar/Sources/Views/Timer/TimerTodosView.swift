@@ -6,8 +6,8 @@ struct TimerTodosView: View {
     var onToggleView: () -> Void
     var isShowingTodos: Bool
     @State private var searchText = ""
-    @State private var showDone = false
-    @State private var sourceFilter: String? = nil
+    @AppStorage("todoFilter.showDone") private var showDone = false
+    @AppStorage("todoFilter.sourceFile") private var sourceFilter: String = ""
     @State private var showSourcePicker = false
     @State private var todos: [TodoItem] = []
     @State private var totalTimes: [String: TimeInterval] = [:]
@@ -19,7 +19,7 @@ struct TimerTodosView: View {
     var filteredTodos: [TodoItem] {
         var items = todos
         if !showDone { items = items.filter { !$0.isDone } }
-        if let src = sourceFilter { items = items.filter { $0.sourceFile.id == src } }
+        if !sourceFilter.isEmpty { items = items.filter { $0.sourceFile.id == sourceFilter } }
         if !searchText.isEmpty {
             items = items.filter { $0.text.localizedCaseInsensitiveContains(searchText) }
         }
@@ -51,7 +51,7 @@ struct TimerTodosView: View {
                 .help(showDone ? "Hide completed" : "Show completed")
 
                 Menu {
-                    Button("All Files") { sourceFilter = nil }
+                    Button("All Files") { sourceFilter = "" }
                     Divider()
                     ForEach(sourceFiles, id: \.self) { src in
                         Button(src) { sourceFilter = src }
@@ -63,7 +63,7 @@ struct TimerTodosView: View {
                         Image(systemName: "chevron.down")
                             .font(.system(size: 8, weight: .semibold))
                     }
-                    .foregroundStyle(sourceFilter != nil ? appState.settings.accent : Color.secondary.opacity(0.5))
+                    .foregroundStyle(!sourceFilter.isEmpty ? appState.settings.accent : Color.secondary.opacity(0.5))
                 }
                 .menuStyle(.borderlessButton)
                 .fixedSize()
