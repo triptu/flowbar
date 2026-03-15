@@ -3,6 +3,7 @@ import SwiftUI
 struct TimerHomeView: View {
     @Environment(AppState.self) var appState
     @Environment(TimerService.self) var timerService
+    @State private var previousTotal: TimeInterval = 0
 
     var body: some View {
         Group {
@@ -20,6 +21,13 @@ struct TimerHomeView: View {
             timerService.togglePlayPause()
             return .handled
         }
+        .onAppear { refreshPreviousTotal() }
+        .onChange(of: timerService.currentTodoText) { _, _ in refreshPreviousTotal() }
+    }
+
+    private func refreshPreviousTotal() {
+        guard timerService.hasActiveSession else { previousTotal = 0; return }
+        previousTotal = timerService.totalTime(forTodo: timerService.currentTodoText, sourceFile: timerService.currentSourceFile)
     }
 
     private var runningView: some View {
@@ -34,6 +42,12 @@ struct TimerHomeView: View {
             Text(TimerService.formatTime(timerService.elapsed))
                 .font(.system(size: appState.settings.typography.timerSize, weight: .light, design: .monospaced))
                 .foregroundStyle(.secondary)
+
+            if previousTotal > 0 {
+                Text("+ \(TimerService.formatTime(previousTotal)) = \(TimerService.formatTime(previousTotal + timerService.elapsed))")
+                    .font(.system(size: 13, design: .monospaced))
+                    .foregroundStyle(.tertiary)
+            }
 
             HStack(spacing: 16) {
                 Button(action: { timerService.togglePlayPause() }) {

@@ -18,7 +18,7 @@ struct TodoRow: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .center, spacing: 10) {
             Button(action: onToggle) {
                 Circle()
                     .fill(todo.isDone ? appState.settings.accent : Color.clear)
@@ -32,7 +32,7 @@ struct TodoRow: View {
                         todo.isDone
                             ? Image(systemName: "checkmark")
                                 .font(.system(size: 8, weight: .bold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(.primary)
                             : nil
                     )
                     .frame(width: 18, height: 18)
@@ -50,16 +50,14 @@ struct TodoRow: View {
 
                     Spacer(minLength: 4)
 
-                    if !todo.isDone {
-                        Button(action: onStart) {
-                            Image(systemName: isRunning ? "pause.fill" : "play.fill")
-                                .font(.system(size: 11))
-                                .foregroundStyle(isTracked ? appState.settings.accent : Color.secondary.opacity(0.5))
-                                .frame(width: 24, height: 24)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
+                    Button(action: onStart) {
+                        Image(systemName: isRunning ? "pause.fill" : "play.fill")
+                            .font(.system(size: 11))
+                            .foregroundStyle(isTracked ? appState.settings.accent : Color.secondary.opacity(0.5))
+                            .frame(width: 24, height: 24)
+                            .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
                 }
 
                 HStack(spacing: 0) {
@@ -73,7 +71,7 @@ struct TodoRow: View {
                     Spacer()
 
                     if isTracked {
-                        Text(TimerService.formatTime(timerService.elapsed))
+                        Text(TimerService.formatTime(totalSeconds + timerService.elapsed))
                             .font(.system(size: 11, design: .monospaced))
                             .foregroundStyle(appState.settings.accent)
                     } else if totalSeconds > 0 {

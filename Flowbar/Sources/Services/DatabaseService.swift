@@ -74,12 +74,11 @@ final class DatabaseService {
     }
 
     func totalTime(forTodo text: String, sourceFile: String) -> TimeInterval {
-        let sql = "SELECT SUM(COALESCE(ended_at, ?) - started_at) FROM timer_sessions WHERE todo_text = ? AND source_file = ?"
+        let sql = "SELECT SUM(ended_at - started_at) FROM timer_sessions WHERE todo_text = ? AND source_file = ? AND ended_at IS NOT NULL"
         var stmt: OpaquePointer?
         sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
-        sqlite3_bind_double(stmt, 1, Date().timeIntervalSince1970)
-        sqlite3_bind_text(stmt, 2, (text as NSString).utf8String, -1, nil)
-        sqlite3_bind_text(stmt, 3, (sourceFile as NSString).utf8String, -1, nil)
+        sqlite3_bind_text(stmt, 1, (text as NSString).utf8String, -1, nil)
+        sqlite3_bind_text(stmt, 2, (sourceFile as NSString).utf8String, -1, nil)
         var total: TimeInterval = 0
         if sqlite3_step(stmt) == SQLITE_ROW {
             total = sqlite3_column_double(stmt, 0)
@@ -90,10 +89,9 @@ final class DatabaseService {
 
     /// Batch query: returns total time per todo (key = "todoText|sourceFile")
     func allTotalTimes() -> [String: TimeInterval] {
-        let sql = "SELECT todo_text, source_file, SUM(COALESCE(ended_at, ?) - started_at) as total FROM timer_sessions GROUP BY todo_text, source_file"
+        let sql = "SELECT todo_text, source_file, SUM(ended_at - started_at) as total FROM timer_sessions WHERE ended_at IS NOT NULL GROUP BY todo_text, source_file"
         var stmt: OpaquePointer?
         sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
-        sqlite3_bind_double(stmt, 1, Date().timeIntervalSince1970)
         defer { sqlite3_finalize(stmt) }
         var result: [String: TimeInterval] = [:]
         while sqlite3_step(stmt) == SQLITE_ROW {

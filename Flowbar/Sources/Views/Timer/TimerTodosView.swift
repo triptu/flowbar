@@ -42,42 +42,32 @@ struct TimerTodosView: View {
                 .padding(.vertical, 5)
                 .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.06)))
 
+                Menu {
+                    Picker(selection: $sourceFilter) {
+                        Text("All Files").tag("")
+                        Divider()
+                        ForEach(sourceFiles, id: \.self) { src in
+                            Text(src).tag(src)
+                        }
+                    } label: {}
+                } label: {
+                    toolbarIcon("doc.text", isActive: !sourceFilter.isEmpty)
+                }
+                .menuIndicator(.hidden)
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                // Force Menu label re-render when filter changes (SwiftUI borderlessButton caching bug)
+                .id(sourceFilter)
+                .help("Filter by file")
+
                 Button(action: { showDone.toggle() }) {
-                    Image(systemName: showDone ? "checkmark.circle.fill" : "checkmark.circle")
-                        .font(.system(size: 13))
-                        .foregroundStyle(showDone ? appState.settings.accent : Color.secondary.opacity(0.5))
+                    toolbarIcon("checkmark", isActive: showDone, weight: .semibold)
                 }
                 .buttonStyle(.plain)
                 .help(showDone ? "Hide completed" : "Show completed")
 
-                Menu {
-                    Button("All Files") { sourceFilter = "" }
-                    Divider()
-                    ForEach(sourceFiles, id: \.self) { src in
-                        Button(src) { sourceFilter = src }
-                    }
-                } label: {
-                    HStack(spacing: 2) {
-                        Image(systemName: "doc.text")
-                            .font(.system(size: 12))
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 8, weight: .semibold))
-                    }
-                    .foregroundStyle(!sourceFilter.isEmpty ? appState.settings.accent : Color.secondary.opacity(0.5))
-                }
-                .menuStyle(.borderlessButton)
-                .fixedSize()
-                .help("Filter by file")
-
                 Button(action: onToggleView) {
-                    Image(systemName: "list.bullet")
-                        .font(.system(size: 13))
-                        .padding(6)
-                        .background(
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(isShowingTodos ? appState.settings.accent : Color.primary.opacity(0.06))
-                        )
-                        .foregroundStyle(isShowingTodos ? .white : .secondary)
+                    toolbarIcon("list.bullet", isActive: isShowingTodos)
                 }
                 .buttonStyle(.plain)
             }
@@ -108,7 +98,7 @@ struct TimerTodosView: View {
         }
         .onAppear { loadTodos() }
         .onChange(of: appState.sidebar.noteFiles) { _, _ in loadTodos() }
-        .onChange(of: timerService.isRunning) { _, _ in loadTodos() }
+        .onChange(of: timerService.isRunning) { _, _ in refreshTimes() }
     }
 
     private func loadTodos() {
@@ -117,11 +107,18 @@ struct TimerTodosView: View {
             let extracted = MarkdownParser.extractTodos(from: file.url, noteFile: file)
             allTodos.append(contentsOf: extracted)
         }
-        totalTimes = timerService.allTotalTimes()
         todos = allTodos
+        refreshTimes()
+    }
+
+    private func refreshTimes() {
+        totalTimes = timerService.allTotalTimes()
     }
 
     private func toggleTodo(_ todo: TodoItem) {
+        if !todo.isDone && timerService.isTracking(todoText: todo.text, sourceFile: todo.sourceFile.id) {
+            timerService.stop()
+        }
         _ = MarkdownParser.toggleTodo(at: todo.lineIndex, in: todo.sourceFile.url)
         loadTodos()
     }
@@ -130,8 +127,23 @@ struct TimerTodosView: View {
         if timerService.isTracking(todoText: todo.text, sourceFile: todo.sourceFile.id) {
             timerService.togglePlayPause()
         } else {
+            if todo.isDone {
+                _ = MarkdownParser.toggleTodo(at: todo.lineIndex, in: todo.sourceFile.url)
+                loadTodos()
+            }
             timerService.start(todoText: todo.text, sourceFile: todo.sourceFile.id)
         }
+    }
+
+    private func toolbarIcon(_ systemName: String, isActive: Bool, weight: Font.Weight = .regular) -> some View {
+        Image(systemName: systemName)
+            .font(.system(size: 11, weight: weight))
+            .foregroundStyle(isActive ? .primary : .secondary)
+            .frame(width: 26, height: 26)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(isActive ? appState.settings.accent : Color.primary.opacity(0.06))
+            )
     }
 
     private func navigateToFile(_ todo: TodoItem) {
