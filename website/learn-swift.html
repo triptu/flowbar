@@ -925,7 +925,7 @@
                     <p>
                         Here's the thing &mdash; modern SwiftUI apps use
                         <code>@main struct MyApp: App</code> as their entry point. It's clean and
-                        simple. But menu bar apps need AppKit stuff (the status bar icon, popovers,
+                        simple. But menu bar apps need AppKit stuff (the status bar icon, floating panels,
                         global hotkeys) that SwiftUI just can't do yet.
                     </p>
                     <p>
@@ -1054,8 +1054,8 @@
                 >
                     <strong style="color: var(--text)">AppDelegate, not pure SwiftUI</strong>
                     &mdash; SwiftUI is great for UI, but it can't put an icon in your menu bar, show
-                    a popover from it, or listen for global hotkeys. For that you need AppKit, and
-                    AppKit talks through the AppDelegate.
+                    a floating overlay panel, or listen for global hotkeys. For that you need AppKit,
+                    and AppKit talks through the AppDelegate.
                 </p>
                 <p
                     style="
@@ -1179,7 +1179,7 @@
                         stroke="#8B9A6B44"
                     />
                     <text class="label-text" x="400" y="105">creates</text>
-                    <!-- AppDelegate -> PopoverManager -->
+                    <!-- AppDelegate -> WindowManager -->
                     <path
                         class="edge"
                         id="e-ad-pm"
@@ -1188,22 +1188,14 @@
                     />
                     <text class="label-text" x="530" y="88">creates</text>
 
-                    <!-- PopoverManager -> NSPopover -->
-                    <path
-                        class="edge"
-                        id="e-pm-pop"
-                        d="M870,210 C870,240 780,260 780,280"
-                        stroke="#b088d444"
-                    />
-                    <text class="label-text" x="808" y="252">manages</text>
-                    <!-- PopoverManager -> FloatingPanel -->
+                    <!-- WindowManager -> FloatingPanel -->
                     <path
                         class="edge"
                         id="e-pm-fp"
-                        d="M920,210 C950,250 1000,260 1000,280"
+                        d="M890,210 C890,250 890,260 890,280"
                         stroke="#b088d444"
                     />
-                    <text class="label-text" x="955" y="252">manages</text>
+                    <text class="label-text" x="898" y="252">manages</text>
 
                     <!-- AppState -> NoteFile[], FileWatcher -->
                     <path class="edge" id="e-as-nf" d="M340,210 L240,280" stroke="#d4a57444" />
@@ -1223,7 +1215,7 @@
                         stroke="#8B9A6B22"
                     />
                     <text class="label-text" x="260" y="340">reads</text>
-                    <!-- MainView -> PopoverManager -->
+                    <!-- MainView -> WindowManager -->
                     <path
                         class="edge"
                         id="e-mv-pm"
@@ -1337,10 +1329,10 @@
                             @Observable
                         </text>
                     </g>
-                    <!-- PopoverManager -->
+                    <!-- WindowManager -->
                     <g
                         class="node"
-                        data-node="PopoverManager"
+                        data-node="WindowManager"
                         onmouseenter="hoverNode(this)"
                         onmouseleave="unhoverNode(this)"
                         onclick="clickNode(this)"
@@ -1356,7 +1348,7 @@
                             stroke="#b088d4"
                         />
                         <text x="890" y="182" text-anchor="middle" font-size="12" font-weight="600">
-                            PopoverManager
+                            WindowManager
                         </text>
                         <text x="890" y="198" text-anchor="middle" font-size="9" fill="#a09d94">
                             NSObject, @Observable
@@ -1425,26 +1417,6 @@
                             DatabaseService
                         </text>
                     </g>
-                    <!-- NSPopover -->
-                    <g
-                        class="node"
-                        data-node="NSPopover"
-                        onmouseenter="hoverNode(this)"
-                        onmouseleave="unhoverNode(this)"
-                        onclick="clickNode(this)"
-                        style="cursor: default"
-                    >
-                        <rect
-                            class="node-rect"
-                            x="720"
-                            y="280"
-                            width="120"
-                            height="36"
-                            fill="#22261f"
-                            stroke="#b088d488"
-                        />
-                        <text x="780" y="303" text-anchor="middle" font-size="11">NSPopover</text>
-                    </g>
                     <!-- FloatingPanel -->
                     <g
                         class="node"
@@ -1456,14 +1428,14 @@
                     >
                         <rect
                             class="node-rect"
-                            x="920"
+                            x="820"
                             y="280"
                             width="140"
                             height="36"
                             fill="#22261f"
                             stroke="#b088d488"
                         />
-                        <text x="990" y="303" text-anchor="middle" font-size="11">
+                        <text x="890" y="303" text-anchor="middle" font-size="11">
                             FloatingPanel
                         </text>
                     </g>
@@ -1890,46 +1862,52 @@ struct FlowbarApp: App {
                 "App/AppDelegate.swift": `import AppKit
 import SwiftUI
 
+/// App entry point that wires together the core services and the menu bar item.
+///
+/// Creates AppState, TimerService, and WindowManager on launch, then sets up
+/// the double-Fn global keyboard shortcut to toggle the overlay from anywhere.
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
-    var popoverManager: PopoverManager!
+    var windowManager: WindowManager!
     var appState: AppState!
     var timerService: TimerService!
-    private var fnMonitor: Any?
+    private var globalFnMonitor: Any?
+    private var localFnMonitor: Any?
     private var lastFnPress: Date?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         appState = AppState()
         timerService = TimerService()
-        popoverManager = PopoverManager(appState: appState)
-
-        let mainView = MainView()
-            .environment(appState)
-            .environment(timerService)
-            .environment(popoverManager)
-
-        popoverManager.setContentView(mainView, timerService: timerService)
+        windowManager = WindowManager(appState: appState, timerService: timerService)
         setupDoubleFnShortcut()
     }
 
-    private func setupDoubleFnShortcut() {
-        fnMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
-            guard let self else { return }
-            let fnPressed = event.modifierFlags.contains(.function)
-            let otherMods: NSEvent.ModifierFlags = [.shift, .control, .option, .command]
-            guard event.modifierFlags.intersection(otherMods).isEmpty else { return }
+    private func handleFnEvent(_ event: NSEvent) {
+        let fnPressed = event.modifierFlags.contains(.function)
+        let otherMods: NSEvent.ModifierFlags = [.shift, .control, .option, .command]
+        guard event.modifierFlags.intersection(otherMods).isEmpty else { return }
 
-            if fnPressed {
-                let now = Date()
-                if let last = self.lastFnPress, now.timeIntervalSince(last) < 0.4 {
-                    self.lastFnPress = nil
-                    DispatchQueue.main.async {
-                        self.popoverManager.togglePopover(nil)
-                    }
-                } else {
-                    self.lastFnPress = now
-                }
+        if fnPressed {
+            let now = Date()
+            if let last = lastFnPress, now.timeIntervalSince(last) < 0.4 {
+                lastFnPress = nil
+                windowManager.togglePanel()
+            } else {
+                lastFnPress = now
             }
+        }
+    }
+
+    private func setupDoubleFnShortcut() {
+        // Global monitor fires when another app is focused
+        globalFnMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            guard let self else { return }
+            DispatchQueue.main.async { self.handleFnEvent(event) }
+        }
+        // Local monitor fires when Flowbar itself is focused
+        localFnMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            self?.handleFnEvent(event)
+            return event
         }
     }
 }`,
@@ -1948,9 +1926,16 @@ enum ActivePanel: Equatable {
     case empty
 }
 
+/// Central source of truth for the app's navigation, file list, and editor content.
+///
+/// Owns the folder path (persisted via UserDefaults), the list of markdown NoteFiles,
+/// and the currently selected file's editor text. Sets up directory and file watchers
+/// so the UI stays in sync when files change on disk (e.g. edits from Obsidian).
+/// An isWriting flag prevents the file watcher from reloading content we just saved.
 @Observable
 @MainActor
 final class AppState {
+    // MARK: - Settings (persisted to UserDefaults)
     var folderPath: String {
         didSet { UserDefaults.standard.set(folderPath, forKey: "folderPath") }
     }
@@ -1960,19 +1945,28 @@ final class AppState {
     var typography: TypographySize {
         didSet { UserDefaults.standard.set(typography.rawValue, forKey: "typography") }
     }
-    var popoverWidth: Double {
-        didSet { UserDefaults.standard.set(popoverWidth, forKey: "popoverWidth") }
+    var windowWidth: Double {
+        didSet { if windowWidth != oldValue { UserDefaults.standard.set(windowWidth, forKey: "windowWidth") } }
     }
-    var popoverHeight: Double {
-        didSet { UserDefaults.standard.set(popoverHeight, forKey: "popoverHeight") }
+    var windowHeight: Double {
+        didSet { if windowHeight != oldValue { UserDefaults.standard.set(windowHeight, forKey: "windowHeight") } }
+    }
+    /// Saved overlay X position (-1 means "center on screen")
+    var windowX: Double {
+        didSet { if windowX != oldValue { UserDefaults.standard.set(windowX, forKey: "windowX") } }
+    }
+    /// Saved overlay Y position (-1 means "center on screen")
+    var windowY: Double {
+        didSet { if windowY != oldValue { UserDefaults.standard.set(windowY, forKey: "windowY") } }
     }
     var sidebarVisible: Bool {
-        didSet { UserDefaults.standard.set(sidebarVisible, forKey: "sidebarVisible") }
+        didSet { if sidebarVisible != oldValue { UserDefaults.standard.set(sidebarVisible, forKey: "sidebarVisible") } }
     }
     var sidebarWidth: Double {
-        didSet { UserDefaults.standard.set(sidebarWidth, forKey: "sidebarWidth") }
+        didSet { if sidebarWidth != oldValue { UserDefaults.standard.set(sidebarWidth, forKey: "sidebarWidth") } }
     }
 
+    // MARK: - Navigation (single source of truth)
     var activePanel: ActivePanel = .empty
 
     var selectedFile: NoteFile? {
@@ -1980,11 +1974,14 @@ final class AppState {
         return nil
     }
 
+    // MARK: - Files
     var noteFiles: [NoteFile] = []
 
+    // File watching
     @ObservationIgnored private var dirWatcher: FileWatcher?
     @ObservationIgnored private var fileWatcher: FileWatcher?
 
+    // MARK: - Editor
     var editorContent: String = ""
     @ObservationIgnored private var saveTask: DispatchWorkItem?
     @ObservationIgnored private var isWriting = false
@@ -1994,32 +1991,48 @@ final class AppState {
         self.folderPath = defaults.string(forKey: "folderPath") ?? ""
         self.theme = AppTheme(rawValue: defaults.string(forKey: "theme") ?? "") ?? .dark
         self.typography = TypographySize(rawValue: defaults.string(forKey: "typography") ?? "") ?? .default
-        self.popoverWidth = defaults.object(forKey: "popoverWidth") as? Double ?? 700
-        self.popoverHeight = defaults.object(forKey: "popoverHeight") as? Double ?? 500
+        self.windowWidth = defaults.object(forKey: "windowWidth") as? Double ?? 700
+        self.windowHeight = defaults.object(forKey: "windowHeight") as? Double ?? 500
+        self.windowX = defaults.object(forKey: "windowX") as? Double ?? -1
+        self.windowY = defaults.object(forKey: "windowY") as? Double ?? -1
         self.sidebarVisible = defaults.object(forKey: "sidebarVisible") as? Bool ?? true
         self.sidebarWidth = defaults.object(forKey: "sidebarWidth") as? Double ?? 200
         loadFiles()
     }
 
     func loadFiles() {
-        guard !folderPath.isEmpty else { noteFiles = []; return }
+        guard !folderPath.isEmpty else {
+            noteFiles = []
+            return
+        }
+
         let url = URL(fileURLWithPath: folderPath)
         guard let contents = try? FileManager.default.contentsOfDirectory(
-            at: url, includingPropertiesForKeys: [.contentModificationDateKey],
+            at: url,
+            includingPropertiesForKeys: [.contentModificationDateKey],
             options: [.skipsHiddenFiles]
-        ) else { noteFiles = []; return }
+        ) else {
+            noteFiles = []
+            return
+        }
 
         noteFiles = contents
             .filter { $0.pathExtension == "md" }
             .sorted { $0.lastPathComponent.localizedCaseInsensitiveCompare($1.lastPathComponent) == .orderedAscending }
             .map { NoteFile(url: $0) }
 
+        // Only create dirWatcher if it doesn't already exist (avoid fd churn)
         if dirWatcher == nil {
             dirWatcher = FileWatcher(url: url) { [weak self] in
-                Task { @MainActor in self?.loadFiles() }
+                Task { @MainActor in
+                    self?.loadFiles()
+                }
             }
         }
-        if case .empty = activePanel, let first = noteFiles.first { selectFile(first) }
+
+        if case .empty = activePanel, let first = noteFiles.first {
+            selectFile(first)
+        }
     }
 
     func selectFile(_ file: NoteFile) {
@@ -2028,11 +2041,22 @@ final class AppState {
         watchFile(file)
     }
 
-    func showSettings() { activePanel = .settings }
-    func showTimer() { activePanel = .timer }
+    func showSettings() {
+        activePanel = .settings
+    }
+
+    func showTimer() {
+        activePanel = .timer
+    }
+
+    func returnToFiles() {
+        if let file = noteFiles.first { selectFile(file) }
+    }
 
     func loadFileContent(_ file: NoteFile) {
-        if let content = try? String(contentsOf: file.url, encoding: .utf8) { editorContent = content }
+        if let content = try? String(contentsOf: file.url, encoding: .utf8) {
+            editorContent = content
+        }
     }
 
     func saveFileContent() {
@@ -2065,13 +2089,16 @@ final class AppState {
         let relativePath = file.url.lastPathComponent
         let encoded = relativePath.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? relativePath
         let folderName = URL(fileURLWithPath: folderPath).lastPathComponent
+
         if let url = URL(string: "obsidian://open?vault=\\(vaultName)&file=\\(folderName)/\\(encoded)") {
             NSWorkspace.shared.open(url)
         }
     }
 
     func toggleSidebar() {
-        withAnimation(.easeInOut(duration: 0.2)) { sidebarVisible.toggle() }
+        withAnimation(.easeInOut(duration: 0.2)) {
+            sidebarVisible.toggle()
+        }
     }
 
     var preferredColorScheme: ColorScheme? {
@@ -2416,9 +2443,12 @@ enum TypographySize: String, CaseIterable {
 
                 "Views/MainView.swift": `import SwiftUI
 
+/// Root view that combines the sidebar and content area.
+///
+/// Reads activePanel from AppState to decide what to show: a note editor,
+/// settings, the timer, or an empty state. The sidebar is togglable with Cmd+B.
 struct MainView: View {
     @Environment(AppState.self) var appState
-    @Environment(PopoverManager.self) var popoverManager
 
     var body: some View {
         @Bindable var appState = appState
@@ -2427,20 +2457,31 @@ struct MainView: View {
                 SidebarView()
                     .frame(width: CGFloat(appState.sidebarWidth))
                     .transition(.move(edge: .leading).combined(with: .opacity))
+
                 SidebarDivider(width: $appState.sidebarWidth)
             }
+
             Group {
                 switch appState.activePanel {
-                case .settings: SettingsView()
-                case .timer: TimerContainerView()
-                case .file: NoteContentView()
-                case .empty: emptyState
+                case .settings:
+                    SettingsView()
+                case .timer:
+                    TimerContainerView()
+                case .file:
+                    NoteContentView()
+                case .empty:
+                    emptyState
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(.regularMaterial)
         .preferredColorScheme(appState.preferredColorScheme)
+        .background(
+            Button("") { appState.toggleSidebar() }
+                .keyboardShortcut("b", modifiers: .command)
+                .hidden()
+        )
     }
 
     private var emptyState: some View {
@@ -2454,113 +2495,148 @@ struct MainView: View {
     }
 }`,
 
-                "Window/PopoverManager.swift": `import AppKit
+                "Components/SidebarToggleButton.swift": `import SwiftUI
+
+struct SidebarToggleButton: View {
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "sidebar.left")
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+        }
+        .buttonStyle(.plain)
+    }
+}`,
+
+                "Window/WindowManager.swift": `import AppKit
 import SwiftUI
 import Observation
 
+/// Manages the menu bar status item and the floating overlay panel.
+///
+/// Owns the NSStatusItem (menu bar icon). Clicking the icon or pressing
+/// double-Fn toggles the overlay panel on/off. Injected via .environment()
+/// so views can access window state.
 @Observable
 @MainActor
-final class PopoverManager: NSObject {
+final class WindowManager: NSObject {
     let statusItem: NSStatusItem
-    let popover: NSPopover
-    var isFloating = false
 
-    @ObservationIgnored private var floatingPanel: FloatingPanel?
+    @ObservationIgnored private var panel: FloatingPanel?
     @ObservationIgnored private var appState: AppState
-    @ObservationIgnored private var timerService: TimerService?
+    @ObservationIgnored private var timerService: TimerService
     @ObservationIgnored private var statusMenu: NSMenu
+    @ObservationIgnored private var rightClickMonitor: Any?
+    @ObservationIgnored private var isHiding = false
 
-    init(appState: AppState) {
+    init(appState: AppState, timerService: TimerService) {
         self.appState = appState
+        self.timerService = timerService
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        popover = NSPopover()
         statusMenu = NSMenu()
         super.init()
 
-        popover.behavior = .transient
-        popover.animates = true
-
+        let openItem = NSMenuItem(title: "Open Flowbar", action: #selector(openFromMenu), keyEquivalent: "")
+        openItem.target = self
+        statusMenu.addItem(openItem)
+        statusMenu.addItem(.separator())
         let quitItem = NSMenuItem(title: "Quit Flowbar", action: #selector(quitApp), keyEquivalent: "q")
         quitItem.target = self
         statusMenu.addItem(quitItem)
 
         if let button = statusItem.button {
             button.image = Self.makeMenuBarIcon()
-            button.action = #selector(handleStatusItemClick(_:))
+            button.action = #selector(statusItemClicked(_:))
             button.target = self
-            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+        }
+
+        // Handle right-click separately via event monitor
+        rightClickMonitor = NSEvent.addLocalMonitorForEvents(matching: .rightMouseUp) { [weak self] event in
+            guard let self, let button = self.statusItem.button else { return event }
+            let pointInButton = button.convert(event.locationInWindow, from: nil)
+            if button.bounds.contains(pointInButton) {
+                self.statusItem.menu = self.statusMenu
+                button.performClick(nil)
+                self.statusItem.menu = nil
+                return nil
+            }
+            return event
         }
     }
 
-    @objc private func handleStatusItemClick(_ sender: Any?) {
-        guard let event = NSApp.currentEvent else {
-            togglePopover(sender)
+    @objc private func statusItemClicked(_ sender: Any?) {
+        togglePanel()
+    }
+
+    @objc private func openFromMenu() {
+        showPanel()
+    }
+
+    @objc private func quitApp() {
+        NSApp.terminate(nil)
+    }
+
+    func togglePanel() {
+        guard !isHiding else { return }
+        if let panel, panel.isVisible {
+            hidePanel()
+        } else {
+            showPanel()
+        }
+    }
+
+    func showPanel() {
+        if let panel {
+            panel.alphaValue = 1
+            panel.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
             return
         }
-        if event.type == .rightMouseUp {
-            statusItem.menu = statusMenu
-            statusItem.button?.performClick(nil)
-            statusItem.menu = nil
-        } else {
-            togglePopover(sender)
-        }
-    }
 
-    @objc private func quitApp() { NSApp.terminate(nil) }
-
-    func setContentView(_ view: some View, timerService: TimerService) {
-        self.timerService = timerService
-        popover.contentViewController = NSHostingController(rootView: view)
-        popover.contentSize = NSSize(width: appState.popoverWidth, height: appState.popoverHeight)
-    }
-
-    func showPopover() {
-        guard let button = statusItem.button else { return }
-        popover.contentSize = NSSize(width: appState.popoverWidth, height: appState.popoverHeight)
-        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-        NSApp.activate(ignoringOtherApps: true)
-        popover.contentViewController?.view.window?.makeKey()
-    }
-
-    func floatPanel() {
-        guard let timerService else { return }
-        let size = NSSize(width: appState.popoverWidth, height: appState.popoverHeight)
+        let size = NSSize(width: appState.windowWidth, height: appState.windowHeight)
         let screen = NSScreen.main ?? NSScreen.screens.first!
-        let origin = NSPoint(
-            x: screen.frame.midX - size.width / 2,
-            y: screen.frame.midY - size.height / 2
-        )
-        let frame = NSRect(origin: origin, size: size)
-        closePopover()
 
-        let panel = FloatingPanel(contentRect: frame, appState: appState)
+        // Use saved position if available, otherwise center on screen
+        let origin: NSPoint
+        if appState.windowX >= 0, appState.windowY >= 0 {
+            origin = NSPoint(x: appState.windowX, y: appState.windowY)
+        } else {
+            origin = NSPoint(
+                x: screen.frame.midX - size.width / 2,
+                y: screen.frame.midY - size.height / 2
+            )
+        }
+        let frame = NSRect(origin: origin, size: size)
+
+        let newPanel = FloatingPanel(contentRect: frame, appState: appState)
         let mainView = MainView()
             .environment(appState)
             .environment(timerService)
             .environment(self)
-        panel.setContent(mainView)
-        panel.makeKeyAndOrderFront(nil)
+        newPanel.setContent(mainView)
+        newPanel.delegate = self
+        newPanel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
 
-        floatingPanel = panel
-        isFloating = true
+        panel = newPanel
     }
 
-    func dockPanel() {
+    func hidePanel() {
+        guard let panelToClose = panel else { return }
+        isHiding = true
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.3
-            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-            self.floatingPanel?.animator().alphaValue = 0
+            panelToClose.animator().alphaValue = 0
         }) { [weak self] in
-            DispatchQueue.main.async {
-                self?.floatingPanel?.close()
-                self?.floatingPanel = nil
-                self?.isFloating = false
-                self?.showPopover()
-            }
+            panelToClose.close()
+            self?.isHiding = false
         }
     }
 
+    /// Draws the Flowbar logo (river stone with flow groove) as a menu bar template image.
+    /// macOS auto-colors template images to match the system appearance.
     private static func makeMenuBarIcon() -> NSImage {
         let size = NSSize(width: 18, height: 18)
         let image = NSImage(size: size, flipped: false) { rect in
@@ -2569,6 +2645,7 @@ final class PopoverManager: NSObject {
             transform.scale(by: scale)
 
             let path = NSBezierPath()
+            // Outer circle (stone shape)
             path.move(to: NSPoint(x: 12, y: 2.5))
             path.curve(to: NSPoint(x: 2.5, y: 12),
                        controlPoint1: NSPoint(x: 7, y: 2.5),
@@ -2584,11 +2661,15 @@ final class PopoverManager: NSObject {
                        controlPoint2: NSPoint(x: 17, y: 2.5))
             path.close()
 
+            // Flow groove (cutout) — winds through the center
             let groove = NSBezierPath()
             groove.move(to: NSPoint(x: 3.8, y: 11.2))
             groove.curve(to: NSPoint(x: 10.5, y: 10.8),
                          controlPoint1: NSPoint(x: 7, y: 8.8),
                          controlPoint2: NSPoint(x: 7, y: 8.8))
+            groove.curve(to: NSPoint(x: 13.5, y: 12.2),
+                         controlPoint1: NSPoint(x: 12, y: 11.8),
+                         controlPoint2: NSPoint(x: 12, y: 11.8))
             groove.curve(to: NSPoint(x: 20.2, y: 10.8),
                          controlPoint1: NSPoint(x: 17, y: 13),
                          controlPoint2: NSPoint(x: 17, y: 13))
@@ -2596,6 +2677,9 @@ final class PopoverManager: NSObject {
             groove.curve(to: NSPoint(x: 13.5, y: 14.2),
                          controlPoint1: NSPoint(x: 17, y: 15),
                          controlPoint2: NSPoint(x: 17, y: 15))
+            groove.curve(to: NSPoint(x: 10.5, y: 12.8),
+                         controlPoint1: NSPoint(x: 12, y: 13.8),
+                         controlPoint2: NSPoint(x: 12, y: 13.8))
             groove.curve(to: NSPoint(x: 3.8, y: 13.2),
                          controlPoint1: NSPoint(x: 7, y: 10.8),
                          controlPoint2: NSPoint(x: 7, y: 10.8))
@@ -2603,37 +2687,58 @@ final class PopoverManager: NSObject {
 
             path.transform(using: transform as AffineTransform)
             groove.transform(using: transform as AffineTransform)
+
             path.append(groove)
             path.windingRule = .evenOdd
             NSColor.black.setFill()
             path.fill()
+
             return true
         }
         image.isTemplate = true
         return image
     }
+}
 
-    @objc func togglePopover(_ sender: Any?) {
-        if isFloating { dockPanel(); return }
-        if popover.isShown { closePopover() } else { showPopover() }
+// MARK: - NSWindowDelegate
+/// Tracks panel close (e.g. via close button or Cmd+W) to clean up.
+extension WindowManager: NSWindowDelegate {
+    func windowWillClose(_ notification: Notification) {
+        guard notification.object as? FloatingPanel === panel else { return }
+        panel = nil
+        isHiding = false
     }
-
-    func closePopover() { popover.performClose(nil) }
 }`,
 
                 "Window/FloatingPanel.swift": `import AppKit
 import SwiftUI
 
+/// The overlay window shown when the user clicks the menu bar icon or presses double-Fn.
+///
+/// Configured as an always-on-top utility panel that joins all Spaces. Saves its
+/// size back to AppState on close so dimensions persist across sessions.
+/// The full title bar is the drag region. Traffic lights sit inside it over the sidebar.
 class FloatingPanel: NSPanel {
-    private var appState: AppState?
+    /// Width of the standard traffic light buttons area (close/minimize/zoom).
+    /// Used by SidebarView to inset its header past the buttons.
+    static let trafficLightWidth: CGFloat = 76
+
+    private let appState: AppState
+    private var initialSize: NSSize = .zero
 
     init(contentRect: NSRect, appState: AppState) {
         self.appState = appState
-        super.init(contentRect: contentRect,
+        super.init(
+            contentRect: contentRect,
             styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
-            backing: .buffered, defer: false)
+            backing: .buffered,
+            defer: false
+        )
+
+        initialSize = contentRect.size
         isFloatingPanel = true
         level = .floating
+        hidesOnDeactivate = false
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         isMovableByWindowBackground = false
         titlebarAppearsTransparent = true
@@ -2642,20 +2747,24 @@ class FloatingPanel: NSPanel {
         isOpaque = false
         hasShadow = true
         minSize = NSSize(width: 400, height: 300)
-
-        // Make the entire title bar area draggable
-        standardWindowButton(.closeButton)?.superview?.superview?.wantsLayer = true
     }
 
-    func setContent(_ view: some View) { contentView = NSHostingView(rootView: view) }
+    func setContent(_ view: some View) {
+        contentView = NSHostingView(rootView: view)
+    }
 
     override func close() {
-        if let state = appState {
-            state.popoverWidth = Double(frame.width)
-            state.popoverHeight = Double(frame.height)
+        // Persist size if user resized
+        if frame.size != initialSize {
+            appState.windowWidth = Double(frame.width)
+            appState.windowHeight = Double(frame.height)
         }
+        // Always persist position so it reopens where the user left it
+        appState.windowX = Double(frame.origin.x)
+        appState.windowY = Double(frame.origin.y)
         super.close()
     }
+
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
 }`,
@@ -2672,7 +2781,7 @@ class FloatingPanel: NSPanel {
                     },
                     5: {
                         title: "@NSApplicationDelegateAdaptor",
-                        body: "Bridges SwiftUI's <code>App</code> protocol with AppKit's <code>NSApplicationDelegate</code>. Since Flowbar needs AppKit features (menu bar icon, popover, global keyboard shortcuts), this adapter lets us use an old-school delegate alongside modern SwiftUI.",
+                        body: "Bridges SwiftUI's <code>App</code> protocol with AppKit's <code>NSApplicationDelegate</code>. Since Flowbar needs AppKit features (menu bar icon, floating overlay panel, global keyboard shortcuts), this adapter lets us use an old-school delegate alongside modern SwiftUI.",
                     },
                     7: {
                         title: "some Scene",
@@ -2680,63 +2789,71 @@ class FloatingPanel: NSPanel {
                     },
                 },
                 "App/AppDelegate.swift": {
-                    4: {
+                    8: {
                         title: "@MainActor",
                         body: "Ensures all code in this class runs on the main thread. In macOS/iOS, UI work must happen on the main thread. <code>@MainActor</code> is a Swift concurrency annotation that makes this guarantee at compile time, preventing subtle threading bugs.",
                     },
-                    5: {
+                    9: {
                         title: "class vs struct",
                         body: "AppDelegate is a <code>class</code> (reference type), not a <code>struct</code> (value type). Classes are used here because: (1) NSObject requires it, (2) we need a single shared instance, (3) we need identity (delegates are passed by reference). Structs are preferred for data; classes for objects with identity.",
                     },
-                    6: {
+                    10: {
                         title: "Implicitly Unwrapped Optional (!)",
                         body: "The <code>!</code> after the type means this is an implicitly unwrapped optional. It starts as <code>nil</code> but will be set in <code>applicationDidFinishLaunching</code> before anyone uses it. After that, you can use it without <code>if let</code> unwrapping. Dangerous if used before initialization!",
                     },
-                    18: {
-                        title: ".environment()",
-                        body: "Injects an <code>@Observable</code> object into the SwiftUI view hierarchy. Any descendant view can access it with <code>@Environment(Type.self)</code>.",
+                    40: {
+                        title: "Global + Local Event Monitors",
+                        body: "Two separate event monitors ensure double-Fn works everywhere. The <em>global</em> monitor (<code>addGlobalMonitorForEvents</code>) fires when another app is focused. The <em>local</em> monitor (<code>addLocalMonitorForEvents</code>) fires when Flowbar itself is focused. Global monitors can't return events, so the local one returns the event to avoid swallowing it.",
                     },
-                    27: {
+                    42: {
                         title: "[weak self]",
-                        body: "Prevents a <em>retain cycle</em> (memory leak). Closures capture variables by strong reference by default. Since this closure is stored in <code>fnMonitor</code>, which is owned by <code>self</code>, a strong capture would create a cycle: self &rarr; fnMonitor &rarr; closure &rarr; self. <code>[weak self]</code> breaks this cycle.",
+                        body: "Prevents a <em>retain cycle</em> (memory leak). Closures capture variables by strong reference by default. Since this closure is stored in <code>globalFnMonitor</code>, which is owned by <code>self</code>, a strong capture would create a cycle: self &rarr; monitor &rarr; closure &rarr; self. <code>[weak self]</code> breaks this cycle.",
                     },
-                    28: {
-                        title: "guard let",
-                        body: 'An early-return pattern. <code>guard let self else { return }</code> unwraps the weak self reference. If self has been deallocated (is nil), it exits early. This keeps the "happy path" code un-indented, unlike nested <code>if let</code> blocks.',
+                    43: {
+                        title: "DispatchQueue.main.async",
+                        body: "Global event monitors fire on a background thread. Since <code>handleFnEvent</code> accesses <code>@MainActor</code>-isolated state, the call is dispatched to the main thread. The local monitor already runs on the main thread, so it calls <code>handleFnEvent</code> directly.",
                     },
                 },
                 "App/AppState.swift": {
-                    15: {
+                    21: {
                         title: "@Observable macro",
                         body: "It automatically tracks which properties each view reads, so only views that actually use a changed property re-render. Any stored property is automatically observable.",
                     },
-                    18: {
+                    25: {
                         title: "UserDefaults with didSet",
                         body: "With <code>@Observable</code>, you can't use <code>@AppStorage</code> (it's a property wrapper, and <code>@Observable</code> already transforms properties). Instead, Flowbar reads defaults in <code>init()</code> and writes them back in <code>didSet</code>. Same persistence, just explicit &mdash; and the <code>@Observable</code> macro handles reactivity automatically.",
                     },
-                    49: {
+                    34: {
+                        title: "oldValue guard in didSet",
+                        body: "The <code>if windowWidth != oldValue</code> check prevents writing to UserDefaults when the value hasn't actually changed. <code>oldValue</code> is an implicit parameter available inside any <code>didSet</code> observer. This avoids unnecessary disk writes during initialization or when setting the same value.",
+                    },
+                    65: {
                         title: "@ObservationIgnored",
                         body: "Opts a property out of observation tracking. Private implementation details like <code>dirWatcher</code>, <code>fileWatcher</code>, and <code>saveTask</code> don't need to trigger view re-renders. Without this, any change to these internal fields would cause unnecessary UI updates.",
                     },
-                    42: {
+                    57: {
                         title: "Computed Property",
                         body: "A computed property has no stored value &mdash; it calculates the result each time it's accessed. <code>var selectedFile: NoteFile?</code> derives its value from <code>activePanel</code>. The <code>{ get }</code> body runs on every access. This is a common pattern for derived state.",
                     },
-                    43: {
+                    58: {
                         title: "if case pattern matching",
                         body: "Swift's pattern matching extracts the associated value from an enum. <code>if case .file(let f) = activePanel</code> checks if activePanel is the <code>.file</code> case, and if so, binds the associated <code>NoteFile</code> to <code>f</code>. This is how you work with enums that carry data.",
                     },
-                    69: {
+                    89: {
                         title: "guard ... else { return }",
                         body: "The <code>guard</code> statement ensures a condition is true before proceeding. If it fails, you must exit the scope (return, throw, break). This pattern keeps functions flat and readable &mdash; all the error handling is at the top, and the main logic is un-indented below.",
                     },
-                    79: {
+                    103: {
                         title: "Trailing Closure Syntax",
                         body: "When the last parameter of a function is a closure, Swift lets you write it outside the parentheses. <code>.map { NoteFile(url: $0) }</code> is short for <code>.map({ NoteFile(url: $0) })</code>. The <code>$0</code> is a shorthand for the first closure parameter.",
                     },
-                    83: {
+                    107: {
                         title: "[weak self] + Task { @MainActor }",
                         body: "A common Swift concurrency pattern. The <code>[weak self]</code> prevents retain cycles. <code>Task { @MainActor in ... }</code> creates an async task that runs on the main thread. The <code>self?</code> uses optional chaining &mdash; if self is nil, the whole expression evaluates to nil safely.",
+                    },
+                    137: {
+                        title: "returnToFiles()",
+                        body: "A navigation helper that returns from settings/timer back to the file list. Selects the first file if available. Used by <code>SidebarFooter</code> toggle buttons so tapping an active tab deselects it.",
                     },
                 },
                 "Models/NoteFile.swift": {
@@ -2856,77 +2973,99 @@ class FloatingPanel: NSPanel {
                     },
                 },
                 "Views/MainView.swift": {
-                    4: {
-                        title: "@Environment(Type.self)",
-                        body: "Reads an <code>@Observable</code> object injected via <code>.environment()</code>. Replaces the older <code>@EnvironmentObject</code>. The type is passed as a parameter: <code>@Environment(AppState.self)</code>. If no matching object exists, the app crashes &mdash; so inject early in AppDelegate.",
-                    },
                     7: {
+                        title: "@Environment(Type.self)",
+                        body: "Reads an <code>@Observable</code> object injected via <code>.environment()</code>. Replaces the older <code>@EnvironmentObject</code>. The type is passed as a parameter: <code>@Environment(AppState.self)</code>. If no matching object exists, the app crashes &mdash; so inject early in WindowManager's <code>showPanel()</code>.",
+                    },
+                    10: {
                         title: "var body: some View",
                         body: "Every SwiftUI view must have a <code>body</code> property that returns <code>some View</code>. This is a computed property that SwiftUI calls to get the view's content. The <code>some View</code> opaque return type lets you return any combination of views without specifying the complex nested generic type.",
                     },
-                    8: {
+                    11: {
                         title: "@Bindable",
                         body: "Creates bindings to an <code>@Observable</code> object's properties. With the old <code>@EnvironmentObject</code>, the <code>$</code> prefix worked directly. With <code>@Environment</code>, you first create a local <code>@Bindable</code> copy: <code>@Bindable var appState = appState</code>. Then <code>$appState.property</code> gives you a <code>Binding</code>.",
                     },
-                    14: {
+                    17: {
                         title: "$appState.sidebarWidth",
                         body: "The <code>$</code> prefix creates a <code>Binding</code> &mdash; a two-way connection to the property. <code>appState.sidebarWidth</code> just reads the value, but <code>$appState.sidebarWidth</code> can both read AND write. The <code>SidebarDivider</code> uses this binding to update the width when the user drags it.",
                     },
-                    17: {
+                    21: {
                         title: "switch in ViewBuilder",
                         body: "SwiftUI's <code>@ViewBuilder</code> (implicit in <code>body</code>) supports <code>switch</code> statements to conditionally show different views. Each case returns a different view type. This is how Flowbar switches between the note editor, settings, timer, and empty state based on <code>activePanel</code>.",
                     },
-                    30: {
+                    37: {
+                        title: "Hidden keyboard shortcut",
+                        body: "A hidden <code>Button</code> with <code>.keyboardShortcut(\"b\", modifiers: .command)</code> lets Cmd+B toggle the sidebar without a visible button. The <code>.hidden()</code> modifier makes the button invisible but still responsive to keyboard input. This is a common SwiftUI trick for app-wide shortcuts.",
+                    },
+                    42: {
                         title: "private var (computed view)",
                         body: "Extracting a view into a <code>private var</code> is a common SwiftUI pattern for readability. This computed property returns a <code>View</code>, keeping <code>body</code> clean. It's equivalent to extracting a component in React, but without creating a separate struct.",
                     },
                 },
-                "Window/PopoverManager.swift": {
-                    7: {
+                "Window/WindowManager.swift": {
+                    12: {
                         title: "NSObject + @Observable",
                         body: "Inherits from <code>NSObject</code> (required for Objective-C interop, like <code>@objc</code> methods and <code>NSStatusBar</code>) and uses the <code>@Observable</code> macro for SwiftUI reactivity.",
                     },
-                    10: {
-                        title: "var isFloating (auto-observed)",
-                        body: 'With <code>@Observable</code>, this plain <code>var</code> is automatically tracked. When the user "detaches" the popover into a floating window, any view reading <code>popoverManager.isFloating</code> will re-render. No <code>@Published</code> wrapper needed.',
+                    20: {
+                        title: "isHiding flag",
+                        body: "A guard flag that prevents <code>togglePanel()</code> from re-triggering during the fade-out animation. Without it, a rapid double-click could try to show the panel while it's still animating closed, causing visual glitches. Reset to <code>false</code> in both the animation completion and <code>windowWillClose</code>.",
                     },
-                    22: {
+                    27: {
                         title: "super.init()",
                         body: "Calls the parent class initializer. In Swift, you must initialize all your own properties BEFORE calling <code>super.init()</code>. This is stricter than most languages &mdash; it prevents accessing uninitialized state during parent initialization.",
                     },
-                    39: {
-                        title: "@objc func + right-click handling",
-                        body: "The <code>@objc</code> attribute exposes this method to Objective-C runtime. Required because <code>button.action = #selector(...)</code> uses Objective-C's selector mechanism. This handler checks <code>NSApp.currentEvent</code> to distinguish left-click (toggle popover) from right-click (show quit menu).",
+                    44: {
+                        title: "Right-click via local event monitor",
+                        body: "Instead of using <code>sendAction(on:)</code> to handle both left and right clicks on the status item, a local event monitor intercepts right-clicks. It checks whether the click landed inside the status bar button using <code>convert(_:from:)</code> and <code>bounds.contains()</code>, then temporarily attaches the menu for the click.",
                     },
-                    55: {
-                        title: "some View parameter",
-                        body: "<code>func setContentView(_ view: some View, ...)</code> uses an opaque parameter type. It accepts any SwiftUI view without making the function generic. This is syntactic sugar for <code>func setContentView&lt;V: View&gt;(_ view: V, ...)</code>.",
+                    69: {
+                        title: "guard !isHiding (toggle guard)",
+                        body: "If the panel is mid-fade (the 0.3s close animation), <code>isHiding</code> is true and <code>togglePanel()</code> returns immediately. This prevents race conditions where a second toggle call would try to show a panel that's about to close.",
                     },
-                    93: {
+                    119: {
                         title: "NSAnimationContext",
-                        body: "AppKit's animation API. <code>runAnimationGroup</code> takes a setup closure (duration, timing) and a completion closure. Here it fades the floating panel to zero opacity, then closes it and re-shows the popover. The <code>[weak self]</code> in the completion prevents a retain cycle.",
+                        body: "AppKit's animation API. <code>runAnimationGroup</code> takes a setup closure (duration, timing) and a completion closure. Here it fades the panel to zero opacity, then closes it. The <code>[weak self]</code> in the completion prevents a retain cycle.",
                     },
-                    108: {
+                    127: {
                         title: "Static factory method + NSImage",
                         body: "Draws a custom menu bar icon programmatically using <code>NSBezierPath</code>. The image is marked <code>isTemplate = true</code> so macOS auto-colors it to match the system appearance (light/dark). This avoids shipping image assets for a simple icon.",
                     },
+                    171: {
+                        title: "NSWindowDelegate",
+                        body: "By conforming to <code>NSWindowDelegate</code> and setting <code>newPanel.delegate = self</code>, WindowManager receives lifecycle callbacks. <code>windowWillClose</code> fires when the panel is closed (via close button or Cmd+W), letting us nil out the panel reference and reset the <code>isHiding</code> flag.",
+                    },
                 },
                 "Window/FloatingPanel.swift": {
-                    4: {
+                    9: {
                         title: "class inheritance",
                         body: "<code>FloatingPanel: NSPanel</code> inherits from <code>NSPanel</code>, which is itself a subclass of <code>NSWindow</code>. Class inheritance lets you override behavior (like <code>close()</code> below) while reusing the parent's functionality. Structs can't inherit &mdash; only classes can.",
                     },
-                    10: {
+                    11: {
+                        title: "static let (shared constant)",
+                        body: "<code>static let trafficLightWidth</code> is a type-level constant shared by all instances. SidebarView reads <code>FloatingPanel.trafficLightWidth</code> to inset its header past the traffic light buttons. Using a constant here keeps the magic number in one place.",
+                    },
+                    21: {
                         title: ".fullSizeContentView",
                         body: "This style mask option lets the content extend behind the title bar, creating a seamless look. Combined with <code>titlebarAppearsTransparent</code> and <code>titleVisibility = .hidden</code>, the window looks borderless but still has standard close/minimize/zoom buttons.",
                     },
                     29: {
-                        title: "override func close()",
-                        body: "Overrides the parent class's <code>close()</code> method to save the window size before closing. <code>super.close()</code> calls the original implementation. This is the template method pattern &mdash; hook into the lifecycle to add custom behavior.",
+                        title: "hidesOnDeactivate = false",
+                        body: "By default, floating panels hide when the app loses focus. Setting this to <code>false</code> means the overlay stays visible when you click behind it (e.g. to reference a webpage). The user must explicitly close or toggle the panel to dismiss it.",
                     },
-                    36: {
+                    44: {
+                        title: "override func close()",
+                        body: "Overrides the parent class's <code>close()</code> method to persist the window size and position before closing. <code>super.close()</code> calls the original implementation. The size is only saved if the user actually resized; the position is always saved so the panel reopens where they left it.",
+                    },
+                    55: {
                         title: "override var (computed)",
                         body: "Overrides a parent's computed property. <code>canBecomeKey</code> returns <code>true</code> to allow keyboard input. In the parent class, panels default to <code>false</code>. Overriding computed properties is how you customize behavior in class hierarchies.",
+                    },
+                },
+                "Components/SidebarToggleButton.swift": {
+                    3: {
+                        title: "Reusable View Component",
+                        body: "A small, focused SwiftUI view extracted into its own file. Both <code>SidebarView</code> and <code>NoteContentView</code> use this button. The <code>action</code> closure is passed in by the parent, keeping the component stateless and reusable &mdash; it doesn't know about AppState.",
                     },
                 },
             };
@@ -3181,7 +3320,7 @@ class FloatingPanel: NSPanel {
                     "NoteFile",
                     "AppState",
                     "TimerService",
-                    "PopoverManager",
+                    "WindowManager",
                     "FloatingPanel",
                     "FileWatcher",
                     "DatabaseService",
@@ -3197,8 +3336,9 @@ class FloatingPanel: NSPanel {
                     "SettingsView",
                     "TimerContainerView",
                     "SidebarDivider",
+                    "SidebarToggleButton",
                     "NSStatusItem",
-                    "NSPopover",
+
                     "NSPanel",
                     "NSWindow",
                     "NSSize",
@@ -3273,7 +3413,7 @@ class FloatingPanel: NSPanel {
                     folders[folder].push({ path, name: parts[1] });
                 });
 
-                const folderOrder = ["App", "Models", "Services", "Theme", "Views", "Window"];
+                const folderOrder = ["App", "Models", "Services", "Theme", "Views", "Components", "Window"];
                 folderOrder.forEach((folder) => {
                     if (!folders[folder]) return;
                     const div = document.createElement("div");
@@ -3432,11 +3572,10 @@ class FloatingPanel: NSPanel {
                 AppDelegate: ["e-ad-as", "e-ad-ts", "e-ad-pm"],
                 AppState: ["e-ad-as", "e-as-nf", "e-as-fw", "e-mv-as"],
                 TimerService: ["e-ad-ts", "e-ts-db"],
-                PopoverManager: ["e-ad-pm", "e-pm-pop", "e-pm-fp", "e-mv-pm"],
+                WindowManager: ["e-ad-pm", "e-pm-fp", "e-mv-pm"],
                 NoteFile: ["e-as-nf"],
                 FileWatcher: ["e-as-fw"],
                 DatabaseService: ["e-ts-db"],
-                NSPopover: ["e-pm-pop"],
                 FloatingPanel: ["e-pm-fp"],
                 MainView: ["e-mv-as", "e-mv-pm", "e-mv-sb", "e-mv-nc", "e-mv-sv", "e-mv-tc"],
                 SidebarView: ["e-mv-sb"],
@@ -3451,29 +3590,27 @@ class FloatingPanel: NSPanel {
 
             const NODE_TOOLTIPS = {
                 AppDelegate:
-                    "The app's entry point. Receives lifecycle callbacks from macOS (launch, quit). Creates AppState, TimerService, PopoverManager, and sets up the double-Fn keyboard shortcut.",
+                    "The app's entry point. Receives lifecycle callbacks from macOS (launch, quit). Creates AppState, TimerService, WindowManager, and sets up global + local double-Fn keyboard shortcuts.",
                 AppState:
                     "Central state container (@Observable). Holds the list of notes, active panel, editor content, and user settings. Views observe only the specific properties they read.",
                 TimerService:
                     "Manages the focus timer. Tracks elapsed time, start/pause/complete, and persists sessions to the SQLite database.",
-                PopoverManager:
-                    "Controls how the app appears on screen \u2014 as a menu bar popover or a floating window. Manages the status bar icon (custom drawn logo), left-click toggle, right-click quit menu, and animated dock/float transitions.",
+                WindowManager:
+                    "Controls the menu bar icon and the floating overlay panel. Manages the status bar icon (custom drawn logo), left-click toggle, right-click context menu, and animated show/hide transitions. Conforms to NSWindowDelegate to track panel close events.",
                 NoteFile:
                     "A simple data model (struct) representing a single markdown file. Holds the URL, display name, and a unique ID.",
                 FileWatcher:
                     "Monitors files/directories for changes using GCD's DispatchSource. Triggers a callback when a file is written, renamed, or deleted.",
                 DatabaseService:
                     "SQLite wrapper (singleton) that stores timer sessions. Handles opening the DB, creating tables, and querying total times.",
-                NSPopover:
-                    "macOS AppKit class that shows a small popup attached to the menu bar icon. PopoverManager wraps this.",
                 FloatingPanel:
-                    "A custom NSPanel subclass for the detached floating window mode. Uses fullSizeContentView for a seamless title bar, saves window size on close, and enables keyboard input.",
+                    "A custom NSPanel subclass for the overlay window. Uses fullSizeContentView for a seamless title bar, persists window size and position on close, stays visible when clicking behind it (hidesOnDeactivate = false), and enables keyboard input.",
                 MainView:
-                    "The root SwiftUI view. Contains the sidebar, content area, and switches between notes, settings, and timer views.",
+                    "The root SwiftUI view. Contains the sidebar, content area, and switches between notes, settings, and timer views. Registers a hidden Cmd+B shortcut for sidebar toggle.",
                 SidebarView:
-                    "Displays the list of markdown files as a navigable sidebar. Adapts layout for floating mode by leaving room for traffic light buttons.",
+                    "Displays the list of markdown files as a navigable sidebar. Insets its header past the traffic light buttons using FloatingPanel.trafficLightWidth.",
                 NoteContentView:
-                    "The markdown editor view. Shows file content in a TextEditor bound to AppState.editorContent.",
+                    "The markdown editor view. Shows file content in a TextEditor bound to AppState.editorContent. Shows a SidebarToggleButton when the sidebar is hidden.",
                 SettingsView:
                     "User preferences UI \u2014 theme, typography, vault folder picker, window size controls.",
                 TimerContainerView:
@@ -3492,7 +3629,7 @@ class FloatingPanel: NSPanel {
                 AppDelegate: "App/AppDelegate.swift",
                 AppState: "App/AppState.swift",
                 TimerService: "Services/TimerService.swift",
-                PopoverManager: "Window/PopoverManager.swift",
+                WindowManager: "Window/WindowManager.swift",
                 FloatingPanel: "Window/FloatingPanel.swift",
                 MainView: "Views/MainView.swift",
                 NoteFile: "Models/NoteFile.swift",
