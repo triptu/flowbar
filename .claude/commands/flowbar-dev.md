@@ -12,7 +12,7 @@ You're working on Flowbar, a native macOS menu bar app (Swift/SwiftUI/AppKit) fo
 
 - Doesn't know Swift deeply — keep code readable with clear module-level comments
 - Obsessed with minimalism and consistency — every pixel, every color, every state matters
-- Wants ONE accent color (sage green #8B9A6B) everywhere, no system blue, no multiple shades
+- Accent color is configurable (Settings → Appearance) with 7 earthy presets, each with light/dark variants. Default is sage green. No system blue.
 - Treats this as a self-improving product — always think about what's reusable and extensible
 
 ## Build & Test Workflow
@@ -77,6 +77,7 @@ Or use `cliclick` for coordinate-based clicks (install via `brew install cliclic
 ```bash
 defaults write com.flowbar.app folderPath "/path/to/folder"
 defaults write com.flowbar.app theme dark  # or light, system
+defaults write com.flowbar.app accentColor ocean  # sage, forest, ocean, lavender, clay, slate, rose
 ```
 
 ## Architecture Rules
@@ -101,13 +102,13 @@ defaults write com.flowbar.app theme dark  # or light, system
 
 ### Views
 - Every view reads state from `@Environment(AppState.self)` etc.
-- One accent color: `FlowbarColors.accent` — sage green everywhere
+- Accent color via `FlowbarColors.accent` — configurable from 7 presets (sage, forest, ocean, lavender, clay, slate, rose). Each preset has adaptive light/dark variants defined in `AccentColor` enum. `FlowbarColors.update(accent:)` is called from AppState's `didSet` to keep the global in sync.
 - Custom `FlowbarSegmentedControl` instead of system Picker (which uses blue)
 - `.regularMaterial` for backgrounds (not `.ultraThinMaterial` which is too translucent)
 
 ## Design Preferences (non-negotiable)
 
-1. **ONE green.** `#8B9A6B` for all selection, active, checkmark, toggle states. No bright green, no different shades.
+1. **One accent, user's choice.** `FlowbarColors.accent` for all selection, active, checkmark, toggle states. The user picks from 7 earthy presets in Settings → Appearance. Each preset has light/dark adaptive variants. Default is sage. Never hardcode a specific color for accent purposes — always use `FlowbarColors.accent`.
 2. **No system blue.** Custom controls everywhere. If a system control sneaks in blue, replace it.
 3. **Earthy, calm, minimal.** Glassmorphic but not washed out. `.regularMaterial` not `.ultraThinMaterial`.
 4. **Light AND dark must both look good.** `preferredColorScheme` from settings. Test both.
@@ -128,7 +129,8 @@ defaults write com.flowbar.app theme dark  # or light, system
 8. **Double `loadFiles()`** — if an `onChange` handler calls `loadFiles()`, don't also call it explicitly after setting a value.
 9. **Always use modern Swift** — prefer `@Observable` over `ObservableObject`, `@Environment` over `@EnvironmentObject`, `some View` over `AnyView`. Check the Swift and macOS versions in project.yml and use the latest available patterns.
 10. **AppState in tests must use isolated UserDefaults** — use `AppState(defaults: UserDefaults(suiteName: "com.flowbar.tests-\(UUID().uuidString)")!)` so tests don't read or pollute the app's real settings. Never use `AppState()` (bare) in tests.
-11. **Swift Testing `#expect(try ...)` needs `throws`** — if a `#expect` contains a `try` expression, the test function must be marked `throws`. Otherwise extract the `try` to a `let` before the `#expect`.
+11. **`FlowbarColors.accent` is a mutable static, not observable** — views re-render because they depend on `appState.accentColor` (which IS observable), and the static is updated synchronously in its `didSet`. This works, but any view that reads `FlowbarColors.accent` without also depending on `appState.accentColor` will show stale values. When adding accent color to new views, always use `FlowbarColors.accent` (the static updates are driven by AppState).
+12. **Swift Testing `#expect(try ...)` needs `throws`** — if a `#expect` contains a `try` expression, the test function must be marked `throws`. Otherwise extract the `try` to a `let` before the `#expect`.
 
 ## After Making Changes
 
@@ -158,8 +160,8 @@ This skill should evolve as the project evolves. Update it when:
 
 To update: edit `.claude/commands/flowbar-dev.md`
 
-When making a significant change to the codebase, always end with:
-"Consider updating /flowbar-dev if this introduces new patterns or pitfalls."
+When making a significant change to the codebase which warrants updates, always end with:
+"Consider updating /flowbar-dev if this introduces new patterns or pitfalls.", Followed by your suggestions for what to add or change in this guide. Explain why the update is needed and how it helps future development. And propose to do it.
 
 ---
 
