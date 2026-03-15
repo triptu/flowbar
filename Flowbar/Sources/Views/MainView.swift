@@ -6,17 +6,15 @@ import SwiftUI
 /// settings, the timer, or an empty state. The sidebar is togglable with Cmd+B.
 struct MainView: View {
     @Environment(AppState.self) var appState
-    @Environment(TimerService.self) var timerService
 
     var body: some View {
-        @Bindable var appState = appState
         HStack(spacing: 0) {
             if appState.sidebarVisible {
                 SidebarView()
                     .frame(width: CGFloat(appState.sidebarWidth))
                     .transition(.move(edge: .leading).combined(with: .opacity))
 
-                SidebarDivider(width: $appState.sidebarWidth)
+                SidebarDivider()
             }
 
             Group {
@@ -46,13 +44,13 @@ struct MainView: View {
             Button("") { appState.toggleSidebar() }
                 .keyboardShortcut("b", modifiers: .command)
 
-            // Navigate to previous file (Go Back)
+            // Navigate to previous file
             Button("") { appState.selectPreviousFile() }
-                .keyboardShortcut("-", modifiers: .control)
+                .keyboardShortcut(.leftArrow, modifiers: [.option, .command])
 
-            // Navigate to next file (Go Forward)
+            // Navigate to next file
             Button("") { appState.selectNextFile() }
-                .keyboardShortcut("-", modifiers: [.control, .shift])
+                .keyboardShortcut(.rightArrow, modifiers: [.option, .command])
 
             // Open settings
             Button("") { appState.showSettings() }
@@ -60,21 +58,9 @@ struct MainView: View {
 
             // Open timer
             Button("") { appState.showTimer() }
-                .keyboardShortcut("t", modifiers: [.command, .shift])
-
-            // Timer start/stop (pause/resume)
-            Button("") { toggleTimerPlayback() }
-                .keyboardShortcut(" ", modifiers: [.command, .shift])
+                .keyboardShortcut("t", modifiers: [.option, .command])
         }
         .hidden()
-    }
-
-    private func toggleTimerPlayback() {
-        if timerService.isRunning {
-            timerService.pause()
-        } else if timerService.isPaused {
-            timerService.resume()
-        }
     }
 
     private var emptyState: some View {
@@ -88,9 +74,19 @@ struct MainView: View {
     }
 }
 
+/// Draggable divider between sidebar and content.
+/// Uses local @GestureState to avoid jitter from binding writes during drag.
+/// Snaps the sidebar closed when dragged below the collapse threshold.
 struct SidebarDivider: View {
-    @Binding var width: Double
-    @State private var startWidth: Double = 0
+    @Environment(AppState.self) var appState
+
+    private let minWidth: Double = 140
+    private let maxWidth: Double = 350
+    /// Drag below this width triggers a full collapse
+    private let collapseThreshold: Double = 100
+
+    @GestureState private var dragOffset: Double = 0
+    @State private var dragStartWidth: Double?
 
     var body: some View {
         Rectangle()
@@ -99,21 +95,40 @@ struct SidebarDivider: View {
             .contentShape(Rectangle())
             .onHover { hovering in
                 if hovering {
-                    NSCursor.resizeLeftRight.push()
+                    NSCursor.resizeLeftRight.set()
                 } else {
-                    NSCursor.pop()
+                    NSCursor.arrow.set()
                 }
             }
             .gesture(
-                DragGesture(minimumDistance: 1)
-                    .onChanged { value in
-                        if startWidth == 0 { startWidth = width }
-                        let newWidth = startWidth + value.translation.width
-                        width = max(140, min(350, newWidth))
+                DragGesture(minimumDistance: 1, coordinateSpace: .global)
+                    .updating($dragOffset) { value, state, _ in
+                        state = value.translation.width
                     }
-                    .onEnded { _ in
-                        startWidth = 0
+                    .onChanged { _ in
+                        if dragStartWidth == nil {
+                            dragStartWidth = appState.sidebarWidth
+                        }
+                    }
+                    .onEnded { value in
+                        let start = dragStartWidth ?? appState.sidebarWidth
+                        let raw = start + value.translation.width
+                        dragStartWidth = nil
+                        if raw < collapseThreshold {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                appState.sidebarVisible = false
+                            }
+                        } else {
+                            appState.sidebarWidth = max(minWidth, min(maxWidth, raw))
+                        }
                     }
             )
+            .onChange(of: dragOffset) {
+                guard let start = dragStartWidth else { return }
+                let raw = start + dragOffset
+                if raw >= collapseThreshold {
+                    appState.sidebarWidth = max(minWidth, min(maxWidth, raw))
+                }
+            }
     }
 }
