@@ -44,6 +44,14 @@ final class DatabaseService {
         );
         """
         sqlite3_exec(db, sql, nil, nil, nil)
+        migrate()
+    }
+
+    private func migrate() {
+        // paused_elapsed: NULL = running, non-NULL = paused with this many seconds elapsed
+        sqlite3_exec(db, "ALTER TABLE timer_sessions ADD COLUMN paused_elapsed REAL", nil, nil, nil)
+        // accumulated: total elapsed from previous run segments (before the current started_at)
+        sqlite3_exec(db, "ALTER TABLE timer_sessions ADD COLUMN accumulated REAL DEFAULT 0", nil, nil, nil)
     }
 
     // MARK: - Timer Sessions
@@ -74,7 +82,7 @@ final class DatabaseService {
     }
 
     func totalTime(forTodo text: String, sourceFile: String) -> TimeInterval {
-        let sql = "SELECT SUM(ended_at - started_at) FROM timer_sessions WHERE todo_text = ? AND source_file = ? AND ended_at IS NOT NULL"
+        let sql = "SELECT SUM(COALESCE(accumulated, 0) + ended_at - started_at) FROM timer_sessions WHERE todo_text = ? AND source_file = ? AND ended_at IS NOT NULL"
         var stmt: OpaquePointer?
         sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
         sqlite3_bind_text(stmt, 1, (text as NSString).utf8String, -1, nil)
@@ -89,7 +97,7 @@ final class DatabaseService {
 
     /// Batch query: returns total time per todo (key = "todoText|sourceFile")
     func allTotalTimes() -> [String: TimeInterval] {
-        let sql = "SELECT todo_text, source_file, SUM(ended_at - started_at) as total FROM timer_sessions WHERE ended_at IS NOT NULL GROUP BY todo_text, source_file"
+        let sql = "SELECT todo_text, source_file, SUM(COALESCE(accumulated, 0) + ended_at - started_at) as total FROM timer_sessions WHERE ended_at IS NOT NULL GROUP BY todo_text, source_file"
         var stmt: OpaquePointer?
         sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
         defer { sqlite3_finalize(stmt) }
@@ -103,8 +111,28 @@ final class DatabaseService {
         return result
     }
 
-    func activeSession() -> (id: Int64, todoText: String, sourceFile: String, startedAt: Date)? {
-        let sql = "SELECT id, todo_text, source_file, started_at FROM timer_sessions WHERE ended_at IS NULL LIMIT 1"
+    func pauseSession(id: Int64, elapsed: TimeInterval) {
+        let sql = "UPDATE timer_sessions SET paused_elapsed = ? WHERE id = ?"
+        var stmt: OpaquePointer?
+        sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
+        sqlite3_bind_double(stmt, 1, elapsed)
+        sqlite3_bind_int64(stmt, 2, id)
+        sqlite3_step(stmt)
+        sqlite3_finalize(stmt)
+    }
+
+    func resumeSession(id: Int64) {
+        let sql = "UPDATE timer_sessions SET accumulated = COALESCE(accumulated, 0) + COALESCE(paused_elapsed, 0), paused_elapsed = NULL, started_at = ? WHERE id = ?"
+        var stmt: OpaquePointer?
+        sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
+        sqlite3_bind_double(stmt, 1, Date().timeIntervalSince1970)
+        sqlite3_bind_int64(stmt, 2, id)
+        sqlite3_step(stmt)
+        sqlite3_finalize(stmt)
+    }
+
+    func activeSession() -> (id: Int64, todoText: String, sourceFile: String, startedAt: Date, pausedElapsed: TimeInterval?, accumulated: TimeInterval)? {
+        let sql = "SELECT id, todo_text, source_file, started_at, paused_elapsed, COALESCE(accumulated, 0) FROM timer_sessions WHERE ended_at IS NULL LIMIT 1"
         var stmt: OpaquePointer?
         sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
         defer { sqlite3_finalize(stmt) }
@@ -113,9 +141,34 @@ final class DatabaseService {
             let text = String(cString: sqlite3_column_text(stmt, 1))
             let source = String(cString: sqlite3_column_text(stmt, 2))
             let started = Date(timeIntervalSince1970: sqlite3_column_double(stmt, 3))
-            return (id, text, source, started)
+            let paused: TimeInterval? = sqlite3_column_type(stmt, 4) != SQLITE_NULL ? sqlite3_column_double(stmt, 4) : nil
+            let accumulated = sqlite3_column_double(stmt, 5)
+            return (id, text, source, started, paused, accumulated)
         }
         return nil
+    }
+
+    /// Returns today's sessions grouped by todo text, with total duration per todo, ordered by most recent.
+    func todaySessions() -> [(todoText: String, totalDuration: TimeInterval)] {
+        let startOfDay = Calendar.current.startOfDay(for: Date()).timeIntervalSince1970
+        let sql = """
+        SELECT todo_text, SUM(COALESCE(accumulated, 0) + ended_at - started_at) as total
+        FROM timer_sessions
+        WHERE started_at >= ? AND ended_at IS NOT NULL AND ended_at > started_at
+        GROUP BY todo_text
+        ORDER BY MAX(ended_at) DESC
+        """
+        var stmt: OpaquePointer?
+        sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
+        sqlite3_bind_double(stmt, 1, startOfDay)
+        defer { sqlite3_finalize(stmt) }
+        var results: [(String, TimeInterval)] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            let text = String(cString: sqlite3_column_text(stmt, 0))
+            let total = sqlite3_column_double(stmt, 1)
+            results.append((text, total))
+        }
+        return results
     }
 
     // MARK: - App State

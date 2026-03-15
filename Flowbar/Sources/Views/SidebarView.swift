@@ -5,15 +5,6 @@ struct SidebarView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 8) {
-                SidebarToggleButton { appState.toggleSidebar() }
-                Spacer()
-            }
-            .padding(.leading, FloatingPanel.trafficLightWidth)
-            .padding(.trailing, 20)
-            .padding(.top, 10)
-            .padding(.bottom, 10)
-
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 2) {
                     ForEach(appState.sidebar.noteFiles) { file in
@@ -22,16 +13,8 @@ struct SidebarView: View {
                             isSelected: appState.sidebar.selectedFile?.id == file.id,
                             isRenaming: appState.sidebar.renamingFileID == file.id
                         )
-                        .onTapGesture(count: 2) {
-                            appState.startRename(file)
-                        }
                         .onTapGesture {
-                            // Double-click fires both gestures in the same run loop.
-                            // Skip the single-tap for the file being renamed so it
-                            // doesn't race with startRename.
                             guard appState.sidebar.renamingFileID != file.id else { return }
-                            // The click-outside monitor commits the rename with the
-                            // actual typed text before this gesture fires. Just select.
                             appState.selectFile(file)
                         }
                         .accessibilityElement(children: .contain)
@@ -59,7 +42,6 @@ struct SidebarView: View {
             SidebarFooter()
         }
         .frame(maxHeight: .infinity)
-        .ignoresSafeArea(.all, edges: .top)
         .background(FlowbarColors.sidebarBg)
     }
 }

@@ -4,13 +4,18 @@ struct TimerHomeView: View {
     @Environment(AppState.self) var appState
     @Environment(TimerService.self) var timerService
     @State private var previousTotal: TimeInterval = 0
+    @State private var todaySessions: [(todoText: String, totalDuration: TimeInterval)] = []
 
     var body: some View {
-        Group {
+        VStack(spacing: 0) {
             if timerService.hasActiveSession {
                 runningView
             } else {
                 idleView
+            }
+
+            if !todaySessions.isEmpty {
+                sessionsListView
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -21,8 +26,21 @@ struct TimerHomeView: View {
             timerService.togglePlayPause()
             return .handled
         }
-        .onAppear { refreshPreviousTotal() }
+        .onAppear {
+            refreshPreviousTotal()
+            refreshTodaySessions()
+        }
         .onChange(of: timerService.currentTodoText) { _, _ in refreshPreviousTotal() }
+        .onChange(of: timerService.hasActiveSession) { _, active in
+            if !active {
+                refreshTodaySessions()
+                previousTotal = 0
+            }
+        }
+    }
+
+    private func refreshTodaySessions() {
+        todaySessions = timerService.todaySessions().filter { $0.totalDuration >= 1 }
     }
 
     private func refreshPreviousTotal() {
@@ -108,5 +126,30 @@ struct TimerHomeView: View {
                 .foregroundStyle(.tertiary)
             Spacer()
         }
+    }
+
+    private var sessionsListView: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("TODAY'S SESSIONS")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.tertiary)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 10)
+
+            ForEach(todaySessions, id: \.todoText) { session in
+                HStack {
+                    Text(session.todoText)
+                        .font(.system(size: 13))
+                        .lineLimit(1)
+                    Spacer()
+                    Text(TimerService.formatTime(session.totalDuration))
+                        .font(.system(size: 13, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 6)
+            }
+        }
+        .padding(.bottom, 16)
     }
 }

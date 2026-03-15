@@ -1,23 +1,29 @@
 import SwiftUI
 
-/// Root view that combines the sidebar and content area.
+/// Root view that combines the title bar, sidebar, and content area.
 ///
-/// Reads activePanel from AppState to decide what to show: a note editor,
-/// settings, the timer, or an empty state. The sidebar is togglable with Cmd+B.
+/// Layout: VStack with title bar on top (rendered in the native title bar region)
+/// and sidebar+content below. The whole view ignores the top safe area so the
+/// title bar content sits behind the transparent native title bar, alongside
+/// the traffic lights. A single .regularMaterial background covers everything.
 struct MainView: View {
     @Environment(AppState.self) var appState
 
     var body: some View {
-        HStack(spacing: 0) {
-            if appState.sidebar.sidebarVisible {
-                SidebarView()
-                    .frame(width: CGFloat(appState.sidebar.sidebarWidth))
-                    .transition(.move(edge: .leading).combined(with: .opacity))
+        VStack(spacing: 0) {
+            TitleBarView()
 
-                SidebarDivider()
-            }
+            Divider()
 
-            ZStack(alignment: .topLeading) {
+            HStack(spacing: 0) {
+                if appState.sidebar.sidebarVisible {
+                    SidebarView()
+                        .frame(width: CGFloat(appState.sidebar.sidebarWidth))
+                        .transition(.move(edge: .leading).combined(with: .opacity))
+
+                    SidebarDivider()
+                }
+
                 Group {
                     switch appState.sidebar.activePanel {
                     case .settings:
@@ -32,15 +38,9 @@ struct MainView: View {
                 }
                 .accessibilityIdentifier("content-area")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                if !appState.sidebar.sidebarVisible {
-                    SidebarToggleButton { appState.toggleSidebar() }
-                        .padding(.leading, FloatingPanel.trafficLightWidth)
-                        .padding(.top, 12)
-                }
             }
-            .ignoresSafeArea(.all, edges: .top)
         }
+        .ignoresSafeArea(.all, edges: .top)
         .background(.regularMaterial)
         .preferredColorScheme(appState.settings.preferredColorScheme)
         .background(keyboardShortcuts)

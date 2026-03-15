@@ -43,21 +43,25 @@ struct TimerTodosView: View {
                 .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.06)))
 
                 Menu {
-                    Picker(selection: $sourceFilter) {
-                        Text("All Files").tag("")
-                        Divider()
-                        ForEach(sourceFiles, id: \.self) { src in
-                            Text(src).tag(src)
+                    Button("All Files") { sourceFilter = "" }
+                    Divider()
+                    ForEach(sourceFiles, id: \.self) { src in
+                        Button {
+                            sourceFilter = src
+                        } label: {
+                            if sourceFilter == src {
+                                Label(src, systemImage: "checkmark")
+                            } else {
+                                Text(src)
+                            }
                         }
-                    } label: {}
+                    }
                 } label: {
                     toolbarIcon("doc.text", isActive: !sourceFilter.isEmpty)
                 }
                 .menuIndicator(.hidden)
                 .menuStyle(.borderlessButton)
                 .fixedSize()
-                // Force Menu label re-render when filter changes (SwiftUI borderlessButton caching bug)
-                .id(sourceFilter)
                 .help("Filter by file")
 
                 Button(action: { showDone.toggle() }) {

@@ -34,9 +34,18 @@ final class TimerService {
             sessionId = session.id
             currentTodoText = session.todoText
             currentSourceFile = session.sourceFile
-            startedAt = session.startedAt
-            isRunning = true
-            startTicking()
+            if let paused = session.pausedElapsed {
+                // Was paused — restore as paused with saved elapsed
+                pausedElapsed = paused
+                elapsed = paused
+                isPaused = true
+            } else {
+                // Was running — resume ticking with accumulated base
+                pausedElapsed = session.accumulated
+                startedAt = session.startedAt
+                isRunning = true
+                startTicking()
+            }
         }
     }
 
@@ -54,19 +63,21 @@ final class TimerService {
     }
 
     func pause() {
-        guard isRunning else { return }
+        guard isRunning, let id = sessionId else { return }
         timer?.invalidate()
         timer = nil
         pausedElapsed = elapsed
         isRunning = false
         isPaused = true
+        db.pauseSession(id: id, elapsed: elapsed)
     }
 
     func resume() {
-        guard isPaused else { return }
+        guard isPaused, let id = sessionId else { return }
         startedAt = Date()
         isRunning = true
         isPaused = false
+        db.resumeSession(id: id)
         startTicking()
     }
 
@@ -137,6 +148,11 @@ final class TimerService {
     /// Batch query: get total time for all todos at once (avoids N+1)
     func allTotalTimes() -> [String: TimeInterval] {
         db.allTotalTimes()
+    }
+
+    /// Today's completed sessions grouped by todo, most recent first
+    func todaySessions() -> [(todoText: String, totalDuration: TimeInterval)] {
+        db.todaySessions()
     }
 
     nonisolated static func formatTime(_ seconds: TimeInterval) -> String {
