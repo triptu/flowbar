@@ -2,11 +2,20 @@ import AppKit
 import SwiftUI
 import Observation
 
+// MARK: - Active Space (private CGS API)
+// Safe to use in non-App Store apps. Returns a unique ID for the current macOS Space.
+@_silgen_name("_CGSDefaultConnection") private func CGSDefaultConnection() -> Int
+@_silgen_name("CGSGetActiveSpace") private func CGSGetActiveSpace(_ cid: Int) -> Int
+
+fileprivate func activeSpaceID() -> Int {
+    CGSGetActiveSpace(CGSDefaultConnection())
+}
+
 /// Manages the menu bar status item and the floating overlay panel.
 ///
 /// Owns the NSStatusItem (menu bar icon). Clicking the icon or pressing
-/// double-Fn toggles the overlay panel on/off. Injected via .environment()
-/// so views can access window state.
+/// double-Fn toggles the overlay panel on/off. Remembers window position
+/// and size per desktop Space. Injected via .environment().
 @Observable
 @MainActor
 final class WindowManager: NSObject {
@@ -76,29 +85,37 @@ final class WindowManager: NSObject {
     }
 
     func showPanel() {
-        if let panel {
+        let spaceID = activeSpaceID()
+
+        // If panel exists on the same Space, just bring it forward
+        if let panel, panel.spaceID == spaceID {
             panel.alphaValue = 1
             panel.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
         }
 
-        let size = NSSize(width: appState.windowWidth, height: appState.windowHeight)
-        let screen = NSScreen.main ?? NSScreen.screens.first!
+        // Close panel from a different Space (saves its frame via close())
+        if let panel {
+            panel.close()
+            self.panel = nil
+        }
 
-        // Use saved position if available, otherwise center on screen
-        let origin: NSPoint
-        if appState.windowX >= 0, appState.windowY >= 0 {
-            origin = NSPoint(x: appState.windowX, y: appState.windowY)
+        // Load saved frame for this Space, or center with default size
+        let frame: NSRect
+        if let saved = appState.windowFrame(forSpace: spaceID) {
+            frame = saved
         } else {
-            origin = NSPoint(
+            let size = AppState.defaultWindowSize
+            let screen = NSScreen.main ?? NSScreen.screens.first!
+            frame = NSRect(
                 x: screen.frame.midX - size.width / 2,
-                y: screen.frame.midY - size.height / 2
+                y: screen.frame.midY - size.height / 2,
+                width: size.width, height: size.height
             )
         }
-        let frame = NSRect(origin: origin, size: size)
 
-        let newPanel = FloatingPanel(contentRect: frame, appState: appState)
+        let newPanel = FloatingPanel(contentRect: frame, appState: appState, spaceID: spaceID)
         let mainView = MainView()
             .environment(appState)
             .environment(timerService)

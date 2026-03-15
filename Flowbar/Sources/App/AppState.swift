@@ -31,19 +31,9 @@ final class AppState {
     var typography: TypographySize {
         didSet { UserDefaults.standard.set(typography.rawValue, forKey: "typography") }
     }
-    var windowWidth: Double {
-        didSet { if windowWidth != oldValue { UserDefaults.standard.set(windowWidth, forKey: "popoverWidth") } }
-    }
-    var windowHeight: Double {
-        didSet { if windowHeight != oldValue { UserDefaults.standard.set(windowHeight, forKey: "popoverHeight") } }
-    }
-    /// Saved overlay X position (-1 means "center on screen")
-    var windowX: Double {
-        didSet { if windowX != oldValue { UserDefaults.standard.set(windowX, forKey: "windowX") } }
-    }
-    /// Saved overlay Y position (-1 means "center on screen")
-    var windowY: Double {
-        didSet { if windowY != oldValue { UserDefaults.standard.set(windowY, forKey: "windowY") } }
+    /// Per-Space window frames: [SpaceID: [x, y, width, height]]
+    @ObservationIgnored var windowFrames: [String: [Double]] {
+        didSet { UserDefaults.standard.set(windowFrames, forKey: "windowFrames") }
     }
     var sidebarVisible: Bool {
         didSet { if sidebarVisible != oldValue { UserDefaults.standard.set(sidebarVisible, forKey: "sidebarVisible") } }
@@ -77,10 +67,7 @@ final class AppState {
         self.folderPath = defaults.string(forKey: "folderPath") ?? ""
         self.theme = AppTheme(rawValue: defaults.string(forKey: "theme") ?? "") ?? .dark
         self.typography = TypographySize(rawValue: defaults.string(forKey: "typography") ?? "") ?? .default
-        self.windowWidth = defaults.object(forKey: "popoverWidth") as? Double ?? 700
-        self.windowHeight = defaults.object(forKey: "popoverHeight") as? Double ?? 500
-        self.windowX = defaults.object(forKey: "windowX") as? Double ?? -1
-        self.windowY = defaults.object(forKey: "windowY") as? Double ?? -1
+        self.windowFrames = defaults.object(forKey: "windowFrames") as? [String: [Double]] ?? [:]
         self.sidebarVisible = defaults.object(forKey: "sidebarVisible") as? Bool ?? true
         self.sidebarWidth = defaults.object(forKey: "sidebarWidth") as? Double ?? 200
         loadFiles()
@@ -135,8 +122,32 @@ final class AppState {
         activePanel = .timer
     }
 
+    // MARK: - Per-Space window frame
+
+    /// Default window size for new Spaces
+    static let defaultWindowSize = NSSize(width: 700, height: 500)
+
+    func windowFrame(forSpace spaceID: Int) -> NSRect? {
+        guard let vals = windowFrames[String(spaceID)], vals.count == 4 else { return nil }
+        return NSRect(x: vals[0], y: vals[1], width: vals[2], height: vals[3])
+    }
+
+    func saveWindowFrame(_ frame: NSRect, forSpace spaceID: Int) {
+        let newVal = [
+            Double(frame.origin.x), Double(frame.origin.y),
+            Double(frame.width), Double(frame.height)
+        ]
+        let key = String(spaceID)
+        guard windowFrames[key] != newVal else { return }
+        windowFrames[key] = newVal
+    }
+
     func returnToFiles() {
-        if let file = noteFiles.first { selectFile(file) }
+        if let file = noteFiles.first {
+            selectFile(file)
+        } else {
+            activePanel = .empty
+        }
     }
 
     func loadFileContent(_ file: NoteFile) {

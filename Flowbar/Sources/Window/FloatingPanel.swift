@@ -14,9 +14,12 @@ class FloatingPanel: NSPanel {
 
     private let appState: AppState
     private var initialSize: NSSize = .zero
+    /// The Space ID this panel was created on, used to save per-Space frame
+    let spaceID: Int
 
-    init(contentRect: NSRect, appState: AppState) {
+    init(contentRect: NSRect, appState: AppState, spaceID: Int) {
         self.appState = appState
+        self.spaceID = spaceID
         super.init(
             contentRect: contentRect,
             styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
@@ -28,7 +31,7 @@ class FloatingPanel: NSPanel {
         isFloatingPanel = true
         level = .floating
         hidesOnDeactivate = false
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
         isMovableByWindowBackground = false
         titlebarAppearsTransparent = true
         titleVisibility = .hidden
@@ -55,14 +58,7 @@ class FloatingPanel: NSPanel {
     }
 
     override func close() {
-        // Persist size if user resized
-        if frame.size != initialSize {
-            appState.windowWidth = Double(frame.width)
-            appState.windowHeight = Double(frame.height)
-        }
-        // Always persist position so it reopens where the user left it
-        appState.windowX = Double(frame.origin.x)
-        appState.windowY = Double(frame.origin.y)
+        appState.saveWindowFrame(frame, forSpace: spaceID)
         super.close()
     }
 
