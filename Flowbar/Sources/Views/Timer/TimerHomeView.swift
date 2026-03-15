@@ -13,6 +13,12 @@ struct TimerHomeView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .focusable()
+        .onKeyPress(.space) {
+            guard timerService.hasActiveSession else { return .ignored }
+            timerService.togglePlayPause()
+            return .handled
+        }
     }
 
     private var runningView: some View {
@@ -29,13 +35,7 @@ struct TimerHomeView: View {
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 16) {
-                Button(action: {
-                    if timerService.isRunning {
-                        timerService.pause()
-                    } else {
-                        timerService.resume()
-                    }
-                }) {
+                Button(action: { timerService.togglePlayPause() }) {
                     HStack(spacing: 8) {
                         Image(systemName: timerService.isRunning ? "pause.fill" : "play.fill")
                             .font(.system(size: 11))

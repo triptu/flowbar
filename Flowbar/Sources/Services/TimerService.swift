@@ -70,6 +70,11 @@ final class TimerService {
         startTicking()
     }
 
+    /// Toggle between running and paused states. No-op if no active session.
+    func togglePlayPause() {
+        if isRunning { pause() } else if isPaused { resume() }
+    }
+
     /// Ends the session without marking the todo done. Clears all state.
     func stop() {
         guard hasActiveSession, let id = sessionId else { return }

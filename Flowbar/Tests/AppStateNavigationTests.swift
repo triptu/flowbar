@@ -36,8 +36,6 @@ final class AppStateNavigationTests: XCTestCase {
 
         state.selectNextFile()
 
-        // At last file, no wrap — stays or selects first
-        // Implementation: else branch selects first
         XCTAssertEqual(state.selectedFile?.id, "a")
     }
 
@@ -83,16 +81,15 @@ final class AppStateNavigationTests: XCTestCase {
 
         state.selectPreviousFile()
 
-        // At first file, no wrap — else branch selects last
         XCTAssertEqual(state.selectedFile?.id, "c")
     }
 
-    func testSelectPreviousFileWithNoSelection() {
+    func testSelectPreviousFileWithNoSelectionSelectsFirst() {
         let state = makeAppState(fileNames: ["a", "b", "c"])
 
         state.selectPreviousFile()
 
-        XCTAssertEqual(state.selectedFile?.id, "c")
+        XCTAssertEqual(state.selectedFile?.id, "a")
     }
 
     func testSelectPreviousFileEmptyList() {
@@ -111,7 +108,6 @@ final class AppStateNavigationTests: XCTestCase {
 
         state.selectNextFile()
 
-        // At last (and only), wraps to first which is same file
         XCTAssertEqual(state.selectedFile?.id, "only")
     }
 

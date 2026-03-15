@@ -200,24 +200,24 @@ final class AppState {
 
     func selectNextFile() {
         guard !noteFiles.isEmpty else { return }
-        if let current = selectedFile,
-           let idx = noteFiles.firstIndex(where: { $0.id == current.id }),
-           idx + 1 < noteFiles.count {
-            selectFile(noteFiles[idx + 1])
-        } else {
+        guard let current = selectedFile,
+              let idx = noteFiles.firstIndex(where: { $0.id == current.id }) else {
             selectFile(noteFiles[0])
+            return
         }
+        let next = (idx + 1) % noteFiles.count
+        selectFile(noteFiles[next])
     }
 
     func selectPreviousFile() {
         guard !noteFiles.isEmpty else { return }
-        if let current = selectedFile,
-           let idx = noteFiles.firstIndex(where: { $0.id == current.id }),
-           idx > 0 {
-            selectFile(noteFiles[idx - 1])
-        } else {
-            selectFile(noteFiles[noteFiles.count - 1])
+        guard let current = selectedFile,
+              let idx = noteFiles.firstIndex(where: { $0.id == current.id }) else {
+            selectFile(noteFiles[0])
+            return
         }
+        let prev = (idx - 1 + noteFiles.count) % noteFiles.count
+        selectFile(noteFiles[prev])
     }
 
     var preferredColorScheme: ColorScheme? {
