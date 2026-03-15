@@ -33,6 +33,7 @@ struct TodoRow: View {
                             : nil
                     )
                     .frame(width: 18, height: 18)
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
             .padding(.top, 2)
