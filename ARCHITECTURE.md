@@ -24,15 +24,16 @@ Sources/
 │   ├── NoteContentView.swift   # Note header + markdown editor
 │   ├── SettingsView.swift      # All settings with custom segmented controls
 │   ├── Components/
-│   │   ├── SidebarFooter.swift # Settings/Timer tab buttons
-│   │   └── TodoRow.swift       # Single todo in the timer list
+│   │   ├── SidebarFooter.swift       # Settings/Timer tab buttons
+│   │   ├── SidebarToggleButton.swift # Reusable sidebar toggle (used in sidebar + note header)
+│   │   └── TodoRow.swift             # Single todo in the timer list
 │   └── Timer/
 │       ├── TimerContainerView.swift  # Switches between home and todos list
 │       ├── TimerHomeView.swift       # Running timer display or idle state
 │       └── TimerTodosView.swift      # All todos across files with filters
 └── Window/
-    ├── PopoverManager.swift    # Menu bar icon, popover, float/dock lifecycle
-    └── FloatingPanel.swift     # NSPanel for the detached overlay window
+    ├── WindowManager.swift     # Menu bar icon, overlay panel show/hide lifecycle
+    └── FloatingPanel.swift     # NSPanel for the always-on-top overlay window
 ```
 
 ## Database Schema (SQLite)
@@ -58,9 +59,9 @@ CREATE TABLE app_state (
 **AppDelegate** creates three singletons on launch:
 1. `AppState` — owns the folder path, file list, editor text, navigation state
 2. `TimerService` — owns the stopwatch, talks to SQLite for persistence
-3. `PopoverManager` — owns the menu bar icon and popover/panel windows
+3. `WindowManager` — owns the menu bar icon and the floating overlay panel
 
-These get injected as `@EnvironmentObject` into the SwiftUI view tree. Views read from them, call methods on them, and SwiftUI handles the reactivity.
+These get injected via `.environment()` into the SwiftUI view tree. Views read from them, call methods on them, and SwiftUI handles the reactivity.
 
 **Data flow for notes:** AppState reads the folder → creates NoteFile list → sidebar shows them → user clicks one → AppState loads its content into `editorContent` → TextEditor binds to it → edits auto-save with 500ms debounce → FileWatcher detects external changes and reloads.
 

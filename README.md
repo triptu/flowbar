@@ -2,13 +2,13 @@
 
 A native macOS menu bar app for quick access to a folder of markdown notes. Built for people who use Obsidian but want something lighter always within reach — no need to open the full app just to check a todo or jot something down.
 
-Click the Flowbar icon in your menu bar, your notes are right there. Edit them, check off todos, track time on tasks. Close the popover, it's gone. Double-tap Fn to bring it back from anywhere.
+Click the Flowbar icon in your menu bar and a floating overlay appears with your notes right there. Edit them, check off todos, track time on tasks. Click the icon again or double-tap Fn to toggle it from anywhere.
 
 You can also use this repo as a reference to learn Swift, checkout [learn-swift](docs/learn-swift.html) for an interactive guide to the Swift concepts and patterns used in Flowbar.
 
 ## What it does
 
-- **Menu bar popover** — opens right under the menu bar icon
+- **Floating overlay panel** — toggle from the menu bar icon or double-tap Fn
 - **Sidebar + editor** — all your .md files listed on the left, raw markdown editor on the right
 - **Timer** — stopwatch to track time on todos, extracted from all your markdown files
 - **Settings** — folder path, dark/light/system theme, font size, keyboard shortcut
@@ -35,7 +35,7 @@ First launch: click the Flowbar icon in your menu bar, go to Settings, and point
 
 ## Keyboard shortcuts
 
-- **Double-tap Fn** — toggle the popover from anywhere
+- **Double-tap Fn** — toggle the overlay from anywhere (works whether Flowbar is focused or not)
 - **⌘B** — toggle sidebar
 
 ## Contributing
