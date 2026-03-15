@@ -147,7 +147,6 @@ When adding new features:
 2. Add new views under the appropriate `Views/` subdirectory
 3. If adding new state, prefer extending `AppState` or creating a focused `@Observable` service
 4. If adding persistence, extend `DatabaseService` with new tables/queries
-5. Update the learning guide at `docs/learn-swift.html` if adding significant new patterns, check the ".claude/commands/update-learn-page.md" command for instructions
 
 ## Meta: Updating This Skill
 
