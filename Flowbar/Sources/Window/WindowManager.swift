@@ -120,6 +120,9 @@ final class WindowManager: NSObject {
         newPanel.addSidebarToggle { [weak self] in
             self?.appState.toggleSidebar()
         }
+        let taskLabel = TitleBarLabel()
+            .environment(timerService)
+        newPanel.addActiveTaskLabel(taskLabel)
         newPanel.delegate = self
         newPanel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)

@@ -5,7 +5,8 @@ import SwiftUI
 ///
 /// Configured as an always-on-top utility panel that joins all Spaces. Saves its
 /// size back via an onClose callback so dimensions persist across sessions.
-/// The full title bar is the drag region. Traffic lights sit inside it over the sidebar.
+/// Traffic lights, sidebar toggle, and active task label all live in the native
+/// title bar view hierarchy so they receive clicks and align naturally.
 class FloatingPanel: NSPanel {
     /// Horizontal offset where traffic lights start (aligned with sidebar item text).
     static let trafficLightX: CGFloat = 20
@@ -19,6 +20,8 @@ class FloatingPanel: NSPanel {
     private var initialSize: NSSize = .zero
     /// The Space ID this panel was created on, used to save per-Space frame
     let spaceID: Int
+    /// Hosting view for the active task label, kept for cleanup
+    private var activeTaskHost: NSView?
 
     init(contentRect: NSRect, spaceID: Int, onClose: @escaping (NSRect, Int) -> Void) {
         self.onClose = onClose
@@ -68,11 +71,32 @@ class FloatingPanel: NSPanel {
 
         let size: CGFloat = 20
         let x = Self.trafficLightWidth + 10
-        let y = (closeButton.superview!.bounds.height - size) / 2
+        let y = (titlebarView.bounds.height - size) / 2
         button.frame = NSRect(x: x, y: y, width: size, height: size)
         button.autoresizingMask = [.minYMargin]
 
         titlebarView.addSubview(button)
+    }
+
+    /// Add a SwiftUI active task label centered in the title bar.
+    func addActiveTaskLabel(_ view: some View) {
+        guard let closeButton = standardWindowButton(.closeButton),
+              let titlebarView = closeButton.superview else { return }
+
+        let host = NSHostingView(rootView: view)
+        host.translatesAutoresizingMaskIntoConstraints = false
+        host.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        // Transparent background so the title bar shows through
+        host.layer?.backgroundColor = .clear
+        titlebarView.addSubview(host)
+
+        NSLayoutConstraint.activate([
+            host.centerXAnchor.constraint(equalTo: titlebarView.centerXAnchor),
+            host.centerYAnchor.constraint(equalTo: titlebarView.centerYAnchor),
+            host.heightAnchor.constraint(equalTo: titlebarView.heightAnchor),
+        ])
+
+        activeTaskHost = host
     }
 
     /// Move traffic lights so they align horizontally with sidebar item text.
