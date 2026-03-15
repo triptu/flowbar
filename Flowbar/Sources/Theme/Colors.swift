@@ -51,19 +51,19 @@ enum FlowbarColors {
     }
 }
 
-// MARK: - Hex color initializers
+// MARK: - Hex color initializers (Display P3 gamut for richer colors on supported displays)
 
 extension Color {
     init(hex: String) {
         let (r, g, b) = hexToRGB(hex)
-        self.init(red: r, green: g, blue: b)
+        self.init(.displayP3, red: r, green: g, blue: b)
     }
 }
 
 extension NSColor {
     convenience init(hex: String) {
         let (r, g, b) = hexToRGB(hex)
-        self.init(red: r, green: g, blue: b, alpha: 1)
+        self.init(colorSpace: .displayP3, components: [CGFloat(r), CGFloat(g), CGFloat(b), 1], count: 4)
     }
 }
 
