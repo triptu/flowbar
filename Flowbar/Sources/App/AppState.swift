@@ -187,6 +187,28 @@ final class AppState {
         }
     }
 
+    func selectNextFile() {
+        guard !noteFiles.isEmpty else { return }
+        if let current = selectedFile,
+           let idx = noteFiles.firstIndex(where: { $0.id == current.id }),
+           idx + 1 < noteFiles.count {
+            selectFile(noteFiles[idx + 1])
+        } else {
+            selectFile(noteFiles[0])
+        }
+    }
+
+    func selectPreviousFile() {
+        guard !noteFiles.isEmpty else { return }
+        if let current = selectedFile,
+           let idx = noteFiles.firstIndex(where: { $0.id == current.id }),
+           idx > 0 {
+            selectFile(noteFiles[idx - 1])
+        } else {
+            selectFile(noteFiles[noteFiles.count - 1])
+        }
+    }
+
     var preferredColorScheme: ColorScheme? {
         switch theme {
         case .light: return .light

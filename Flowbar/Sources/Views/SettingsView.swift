@@ -41,16 +41,16 @@ struct SettingsView: View {
                     .frame(maxWidth: 300)
                 }
 
-                settingsSection("Sidebar") {
-                    Text("Toggle with **\u{2318}B**")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
-                }
-
-                settingsSection("Global Keyboard Shortcut") {
-                    Text("Double-tap **Fn** key to toggle Flowbar")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
+                settingsSection("Keyboard Shortcuts") {
+                    VStack(alignment: .leading, spacing: 6) {
+                        shortcutRow("Toggle Flowbar", "Double-tap Fn")
+                        shortcutRow("Toggle Sidebar", "⌘B")
+                        shortcutRow("Previous File", "⌃-")
+                        shortcutRow("Next File", "⌃⇧-")
+                        shortcutRow("Open Settings", "⌘,")
+                        shortcutRow("Open Timer", "⌘⇧T")
+                        shortcutRow("Pause / Resume Timer", "⌘⇧Space")
+                    }
                 }
             }
             .padding(24)
@@ -63,6 +63,24 @@ struct SettingsView: View {
                 .font(.system(size: 14, weight: .medium))
             content()
             Divider().opacity(0.2)
+        }
+    }
+
+    private func shortcutRow(_ action: String, _ keys: String) -> some View {
+        HStack {
+            Text(action)
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(keys)
+                .font(.system(size: 12, design: .monospaced))
+                .foregroundStyle(.tertiary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(Color.primary.opacity(0.06))
+                )
         }
     }
 

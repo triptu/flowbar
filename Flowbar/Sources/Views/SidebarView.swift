@@ -12,8 +12,8 @@ struct SidebarView: View {
             }
             .padding(.leading, FloatingPanel.trafficLightWidth)
             .padding(.trailing, 20)
-            .padding(.top, 6)
-            .padding(.bottom, 4)
+            .padding(.top, 10)
+            .padding(.bottom, 10)
 
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 2) {
@@ -30,6 +30,7 @@ struct SidebarView: View {
             SidebarFooter()
         }
         .frame(maxHeight: .infinity)
+        .ignoresSafeArea(.all, edges: .top)
         .background(FlowbarColors.sidebarBg)
     }
 }

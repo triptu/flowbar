@@ -6,6 +6,7 @@ import SwiftUI
 /// settings, the timer, or an empty state. The sidebar is togglable with Cmd+B.
 struct MainView: View {
     @Environment(AppState.self) var appState
+    @Environment(TimerService.self) var timerService
 
     var body: some View {
         @Bindable var appState = appState
@@ -31,14 +32,49 @@ struct MainView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .ignoresSafeArea(.all, edges: .top)
         }
         .background(.regularMaterial)
         .preferredColorScheme(appState.preferredColorScheme)
-        .background(
+        .background(keyboardShortcuts)
+    }
+
+    @ViewBuilder
+    private var keyboardShortcuts: some View {
+        Group {
+            // Toggle sidebar
             Button("") { appState.toggleSidebar() }
                 .keyboardShortcut("b", modifiers: .command)
-                .hidden()
-        )
+
+            // Navigate to previous file (Go Back)
+            Button("") { appState.selectPreviousFile() }
+                .keyboardShortcut("-", modifiers: .control)
+
+            // Navigate to next file (Go Forward)
+            Button("") { appState.selectNextFile() }
+                .keyboardShortcut("-", modifiers: [.control, .shift])
+
+            // Open settings
+            Button("") { appState.showSettings() }
+                .keyboardShortcut(",", modifiers: .command)
+
+            // Open timer
+            Button("") { appState.showTimer() }
+                .keyboardShortcut("t", modifiers: [.command, .shift])
+
+            // Timer start/stop (pause/resume)
+            Button("") { toggleTimerPlayback() }
+                .keyboardShortcut(" ", modifiers: [.command, .shift])
+        }
+        .hidden()
+    }
+
+    private func toggleTimerPlayback() {
+        if timerService.isRunning {
+            timerService.pause()
+        } else if timerService.isPaused {
+            timerService.resume()
+        }
     }
 
     private var emptyState: some View {
