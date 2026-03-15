@@ -69,7 +69,7 @@ struct TimerHomeView: View {
                     .padding(.vertical, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(FlowbarColors.accent.opacity(0.3))
+                            .fill(appState.accent.opacity(0.3))
                     )
                 }
                 .buttonStyle(.plain)

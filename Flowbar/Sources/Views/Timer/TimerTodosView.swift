@@ -45,7 +45,7 @@ struct TimerTodosView: View {
                 Button(action: { showDone.toggle() }) {
                     Image(systemName: showDone ? "checkmark.circle.fill" : "checkmark.circle")
                         .font(.system(size: 13))
-                        .foregroundStyle(showDone ? FlowbarColors.accent : Color.secondary.opacity(0.5))
+                        .foregroundStyle(showDone ? appState.accent : Color.secondary.opacity(0.5))
                 }
                 .buttonStyle(.plain)
                 .help(showDone ? "Hide completed" : "Show completed")
@@ -63,7 +63,7 @@ struct TimerTodosView: View {
                         Image(systemName: "chevron.down")
                             .font(.system(size: 8, weight: .semibold))
                     }
-                    .foregroundStyle(sourceFilter != nil ? FlowbarColors.accent : Color.secondary.opacity(0.5))
+                    .foregroundStyle(sourceFilter != nil ? appState.accent : Color.secondary.opacity(0.5))
                 }
                 .menuStyle(.borderlessButton)
                 .fixedSize()
@@ -75,7 +75,7 @@ struct TimerTodosView: View {
                         .padding(6)
                         .background(
                             RoundedRectangle(cornerRadius: 6)
-                                .fill(isShowingTodos ? FlowbarColors.accent : Color.primary.opacity(0.06))
+                                .fill(isShowingTodos ? appState.accent : Color.primary.opacity(0.06))
                         )
                         .foregroundStyle(isShowingTodos ? .white : .secondary)
                 }

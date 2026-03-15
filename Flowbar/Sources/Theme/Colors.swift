@@ -38,18 +38,14 @@ enum AccentColor: String, CaseIterable {
             return NSColor(hex: isDark ? self.darkHex : self.lightHex)
         }
     }
+
+    /// Adaptive SwiftUI Color (wraps nsColor)
+    var color: Color {
+        Color(nsColor: nsColor)
+    }
 }
 
-@MainActor
 enum FlowbarColors {
-    /// Current accent — call `update(accent:)` when the user changes their preference.
-    /// Starts as sage (the original default) and gets overridden by AppState on launch.
-    private(set) static var accent = Color(nsColor: AccentColor.sage.nsColor)
-
-    static func update(accent: AccentColor) {
-        self.accent = Color(nsColor: accent.nsColor)
-    }
-
     static var sidebarBg: Color {
         Color.primary.opacity(0.04)
     }

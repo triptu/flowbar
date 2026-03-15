@@ -30,7 +30,7 @@ struct SidebarFooter: View {
             .padding(.vertical, 8)
             .background(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(isActive ? FlowbarColors.accent.opacity(0.3) : Color.clear)
+                    .fill(isActive ? appState.accent.opacity(0.3) : Color.clear)
             )
             .contentShape(Rectangle())
         }

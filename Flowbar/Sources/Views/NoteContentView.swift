@@ -4,7 +4,6 @@ struct NoteContentView: View {
     @Environment(AppState.self) var appState
 
     var body: some View {
-        @Bindable var appState = appState
         VStack(alignment: .leading, spacing: 0) {
             noteHeader
             Divider().opacity(0.2)

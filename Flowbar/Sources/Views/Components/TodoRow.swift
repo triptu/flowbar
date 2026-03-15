@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct TodoRow: View {
+    @Environment(AppState.self) var appState
     let todo: TodoItem
     let totalSeconds: TimeInterval
     let timerService: TimerService
@@ -17,10 +18,10 @@ struct TodoRow: View {
             // State circle
             Button(action: onToggle) {
                 Circle()
-                    .fill(todo.isDone ? FlowbarColors.accent : Color.clear)
+                    .fill(todo.isDone ? appState.accent : Color.clear)
                     .overlay(
                         Circle().strokeBorder(
-                            todo.isDone ? FlowbarColors.accent : Color.primary.opacity(0.2),
+                            todo.isDone ? appState.accent : Color.primary.opacity(0.2),
                             lineWidth: 1.5
                         )
                     )
@@ -57,7 +58,7 @@ struct TodoRow: View {
                     if isActive {
                         Text(TimerService.formatTime(timerService.elapsed))
                             .font(.system(size: 11, design: .monospaced))
-                            .foregroundStyle(FlowbarColors.accent)
+                            .foregroundStyle(appState.accent)
                     } else if totalSeconds > 0 {
                         Text(TimerService.formatTime(totalSeconds))
                             .font(.system(size: 11, design: .monospaced))
@@ -73,7 +74,7 @@ struct TodoRow: View {
                 Button(action: onStart) {
                     Image(systemName: isActive ? "pause.fill" : "play.fill")
                         .font(.system(size: 11))
-                        .foregroundStyle(isActive ? FlowbarColors.accent : Color.secondary.opacity(0.5))
+                        .foregroundStyle(isActive ? appState.accent : Color.secondary.opacity(0.5))
                 }
                 .buttonStyle(.plain)
                 .padding(.top, 2)
@@ -83,7 +84,7 @@ struct TodoRow: View {
         .padding(.vertical, 7)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill(isActive ? FlowbarColors.accent.opacity(0.08) : Color.clear)
+                .fill(isActive ? appState.accent.opacity(0.08) : Color.clear)
         )
     }
 }

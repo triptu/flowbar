@@ -102,13 +102,13 @@ defaults write com.flowbar.app accentColor ocean  # sage, forest, ocean, lavende
 
 ### Views
 - Every view reads state from `@Environment(AppState.self)` etc.
-- Accent color via `FlowbarColors.accent` — configurable from 7 presets (sage, forest, ocean, lavender, clay, slate, rose). Each preset has adaptive light/dark variants defined in `AccentColor` enum. `FlowbarColors.update(accent:)` is called from AppState's `didSet` to keep the global in sync.
+- Accent color via `appState.accent` (computed from `appState.accentColor.color`) — reactive, updates all views immediately when changed. 7 presets (sage, forest, ocean, lavender, clay, slate, rose) with adaptive light/dark variants in `AccentColor` enum. Always use `appState.accent` in views, never a static.
 - Custom `FlowbarSegmentedControl` instead of system Picker (which uses blue)
 - `.regularMaterial` for backgrounds (not `.ultraThinMaterial` which is too translucent)
 
 ## Design Preferences (non-negotiable)
 
-1. **One accent, user's choice.** `FlowbarColors.accent` for all selection, active, checkmark, toggle states. The user picks from 7 earthy presets in Settings → Appearance. Each preset has light/dark adaptive variants. Default is sage. Never hardcode a specific color for accent purposes — always use `FlowbarColors.accent`.
+1. **One accent, user's choice.** `appState.accent` for all selection, active, checkmark, toggle states. The user picks from 7 earthy presets in Settings → Appearance. Each preset has light/dark adaptive variants. Default is sage. Never hardcode a specific color for accent purposes — always use `appState.accent` (reactive) or `appState.accentColor.nsColor` for AppKit contexts.
 2. **No system blue.** Custom controls everywhere. If a system control sneaks in blue, replace it.
 3. **Earthy, calm, minimal.** Glassmorphic but not washed out. `.regularMaterial` not `.ultraThinMaterial`.
 4. **Light AND dark must both look good.** `preferredColorScheme` from settings. Test both.
@@ -129,7 +129,7 @@ defaults write com.flowbar.app accentColor ocean  # sage, forest, ocean, lavende
 8. **Double `loadFiles()`** — if an `onChange` handler calls `loadFiles()`, don't also call it explicitly after setting a value.
 9. **Always use modern Swift** — prefer `@Observable` over `ObservableObject`, `@Environment` over `@EnvironmentObject`, `some View` over `AnyView`. Check the Swift and macOS versions in project.yml and use the latest available patterns.
 10. **AppState in tests must use isolated UserDefaults** — use `AppState(defaults: UserDefaults(suiteName: "com.flowbar.tests-\(UUID().uuidString)")!)` so tests don't read or pollute the app's real settings. Never use `AppState()` (bare) in tests.
-11. **`FlowbarColors.accent` is a mutable static, not observable** — views re-render because they depend on `appState.accentColor` (which IS observable), and the static is updated synchronously in its `didSet`. This works, but any view that reads `FlowbarColors.accent` without also depending on `appState.accentColor` will show stale values. When adding accent color to new views, always use `FlowbarColors.accent` (the static updates are driven by AppState).
+11. **Accent color must go through `appState.accent`** — never use a static for accent color. `appState.accent` is a computed property (`accentColor.color`) on `@Observable AppState`, so all views reactively update when the user changes their color. For AppKit contexts (e.g. `NSViewRepresentable`), use `appState.accentColor.nsColor` and pass it as a parameter.
 12. **Swift Testing `#expect(try ...)` needs `throws`** — if a `#expect` contains a `try` expression, the test function must be marked `throws`. Otherwise extract the `try` to a `let` before the `#expect`.
 
 ## After Making Changes

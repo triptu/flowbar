@@ -36,11 +36,12 @@ final class AppState {
         didSet { defaults.set(typography.rawValue, forKey: "typography") }
     }
     var accentColor: AccentColor {
-        didSet {
-            defaults.set(accentColor.rawValue, forKey: "accentColor")
-            FlowbarColors.update(accent: accentColor)
-        }
+        didSet { defaults.set(accentColor.rawValue, forKey: "accentColor") }
     }
+
+    /// Reactive accent color — views should use this instead of reading from a static.
+    /// Since AppState is @Observable, any view reading this will re-render on change.
+    var accent: Color { accentColor.color }
     /// Per-Space window frames: [SpaceID: [x, y, width, height]]
     @ObservationIgnored var windowFrames: [String: [Double]] {
         didSet { defaults.set(windowFrames, forKey: "windowFrames") }
@@ -81,7 +82,6 @@ final class AppState {
         self.windowFrames = defaults.object(forKey: "windowFrames") as? [String: [Double]] ?? [:]
         self.sidebarVisible = defaults.object(forKey: "sidebarVisible") as? Bool ?? true
         self.sidebarWidth = defaults.object(forKey: "sidebarWidth") as? Double ?? 200
-        FlowbarColors.update(accent: self.accentColor)
         loadFiles()
     }
 
@@ -178,14 +178,16 @@ final class AppState {
         saveTask?.cancel()
         // Mark writing immediately so the file watcher ignores events during debounce
         isWriting = true
+        // Capture content now so a file-switch during debounce doesn't write wrong content
+        let contentToSave = editorContent
         let task = DispatchWorkItem { [weak self] in
             guard let self else { return }
-            try? self.editorContent.write(to: file.url, atomically: true, encoding: .utf8)
+            try? contentToSave.write(to: file.url, atomically: true, encoding: .utf8)
             // Atomic write creates a new inode — re-establish watcher on the new file
             self.watchFile(file)
             // Brief delay before clearing flag so FSEvents from our write are ignored
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                self.isWriting = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                self?.isWriting = false
             }
         }
         saveTask = task
@@ -238,18 +240,33 @@ final class AppState {
         loadFiles()
         if let newFile = noteFiles.first(where: { $0.id == name }) {
             selectFile(newFile)
-            renamingFileID = newFile.id
+            startRename(newFile)
         }
     }
 
     // MARK: - Rename
 
-    /// Set to a file's id to trigger inline rename in the sidebar
+    /// Non-nil when a sidebar row is in inline-rename mode
     var renamingFileID: String?
+    /// The live text in the rename field — stored here so any caller can commit
+    var renameText = ""
 
-    func renameFile(_ file: NoteFile, to newName: String) {
-        let trimmed = newName.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return }
+    func startRename(_ file: NoteFile) {
+        renameText = file.name
+        renamingFileID = file.id
+    }
+
+    func commitRename() {
+        guard let fileID = renamingFileID,
+              let file = noteFiles.first(where: { $0.id == fileID }) else {
+            renamingFileID = nil
+            return
+        }
+        let trimmed = renameText.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            renamingFileID = nil
+            return
+        }
         let kebab = NoteFile.toKebabCase(trimmed)
         guard !kebab.isEmpty, kebab != file.id else {
             renamingFileID = nil
@@ -263,14 +280,25 @@ final class AppState {
         do {
             try FileManager.default.moveItem(at: file.url, to: newURL)
             let wasSelected = selectedFile?.id == file.id
+            renamingFileID = nil
             loadFiles()
             if wasSelected, let renamed = noteFiles.first(where: { $0.id == kebab }) {
                 selectFile(renamed)
             }
         } catch {
-            // Silently fail — file watcher will sync state
+            renamingFileID = nil
         }
+    }
+
+    func cancelRename() {
         renamingFileID = nil
+    }
+
+    /// Convenience for callers (and tests) that already know the file and new name
+    func renameFile(_ file: NoteFile, to newName: String) {
+        renamingFileID = file.id
+        renameText = newName
+        commitRename()
     }
 
     func trashFile(_ file: NoteFile) {

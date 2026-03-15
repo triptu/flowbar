@@ -19,7 +19,7 @@ struct SettingsView: View {
                             }
                         Button("Browse...") { browseFolder() }
                             .buttonStyle(.bordered)
-                            .tint(FlowbarColors.accent)
+                            .tint(appState.accent)
                     }
                 }
 
