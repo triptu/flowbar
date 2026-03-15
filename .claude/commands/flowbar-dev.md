@@ -92,6 +92,7 @@ defaults write com.flowbar.app theme dark  # or light, system
 ### Models are pure
 - `NoteFile` and `TodoItem` are immutable value types
 - No mutable runtime state on models — compute it at the view level from services
+- `NoteFile` owns bidirectional naming: `formatName("daily-journal")` → `"Daily Journal"`, `toKebabCase("Daily Journal")` → `"daily-journal"`. Use these instead of inline string transforms.
 
 ### Services don't cross boundaries
 - `TimerService` does NOT touch markdown files — `complete()` returns `(todoText, sourceFile)` and the caller handles file ops via `MarkdownParser`
