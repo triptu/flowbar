@@ -54,8 +54,12 @@ struct TimerContainerView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: effectiveShowingTodos)
         .onChange(of: timerService.isRunning) { old, new in
-            // When timer completes (was running, now stopped and not paused), show todos
+            if !old && new && (showingTodos == nil || showingTodos == true) {
+                // Timer started from todos list — stay on todos
+                showingTodos = true
+            }
             if old && !new && !timerService.isPaused {
+                // Timer completed — switch back to todos
                 showingTodos = true
             }
         }

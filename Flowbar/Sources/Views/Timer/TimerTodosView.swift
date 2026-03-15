@@ -128,7 +128,7 @@ struct TimerTodosView: View {
 
     private func startTimer(for todo: TodoItem) {
         if timerService.isTracking(todoText: todo.text, sourceFile: todo.sourceFile.id) {
-            timerService.pause()
+            timerService.togglePlayPause()
         } else {
             timerService.start(todoText: todo.text, sourceFile: todo.sourceFile.id)
         }

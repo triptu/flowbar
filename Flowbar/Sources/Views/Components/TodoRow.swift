@@ -9,13 +9,16 @@ struct TodoRow: View {
     let onStart: () -> Void
     let onNavigate: () -> Void
 
-    private var isActive: Bool {
+    private var isTracked: Bool {
         timerService.isTracking(todoText: todo.text, sourceFile: todo.sourceFile.id)
+    }
+
+    private var isRunning: Bool {
+        isTracked && timerService.isRunning
     }
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            // State circle
             Button(action: onToggle) {
                 Circle()
                     .fill(todo.isDone ? appState.settings.accent : Color.clear)
@@ -36,15 +39,28 @@ struct TodoRow: View {
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
-            .padding(.top, 2)
 
-            // Title + source stacked
-            VStack(alignment: .leading, spacing: 3) {
-                Text(todo.text)
-                    .font(.system(size: 13, weight: isActive ? .semibold : .regular))
-                    .strikethrough(todo.isDone)
-                    .opacity(todo.isDone ? 0.4 : 1)
-                    .lineLimit(2)
+            VStack(spacing: 3) {
+                HStack(spacing: 0) {
+                    Text(todo.text)
+                        .font(.system(size: 13, weight: isTracked ? .semibold : .regular))
+                        .strikethrough(todo.isDone)
+                        .opacity(todo.isDone ? 0.4 : 1)
+                        .lineLimit(2)
+
+                    Spacer(minLength: 4)
+
+                    if !todo.isDone {
+                        Button(action: onStart) {
+                            Image(systemName: isRunning ? "pause.fill" : "play.fill")
+                                .font(.system(size: 11))
+                                .foregroundStyle(isTracked ? appState.settings.accent : Color.secondary.opacity(0.5))
+                                .frame(width: 24, height: 24)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
 
                 HStack(spacing: 0) {
                     Button(action: onNavigate) {
@@ -56,7 +72,7 @@ struct TodoRow: View {
 
                     Spacer()
 
-                    if isActive {
+                    if isTracked {
                         Text(TimerService.formatTime(timerService.elapsed))
                             .font(.system(size: 11, design: .monospaced))
                             .foregroundStyle(appState.settings.accent)
@@ -67,25 +83,12 @@ struct TodoRow: View {
                     }
                 }
             }
-
-            Spacer(minLength: 0)
-
-            // Play/Pause
-            if !todo.isDone {
-                Button(action: onStart) {
-                    Image(systemName: isActive ? "pause.fill" : "play.fill")
-                        .font(.system(size: 11))
-                        .foregroundStyle(isActive ? appState.settings.accent : Color.secondary.opacity(0.5))
-                }
-                .buttonStyle(.plain)
-                .padding(.top, 2)
-            }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 7)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill(isActive ? appState.settings.accent.opacity(0.08) : Color.clear)
+                .fill(isTracked ? appState.settings.accent.opacity(0.08) : Color.clear)
         )
     }
 }
