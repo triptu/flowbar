@@ -32,11 +32,11 @@ struct SettingsView: View {
                 settingsSection("Keyboard Shortcuts") {
                     VStack(alignment: .leading, spacing: 6) {
                         shortcutRow("Toggle Flowbar", "Double-tap Fn")
-                        shortcutRow("Toggle Sidebar", "⌘B")
-                        shortcutRow("Previous File", "⌥⌘←")
-                        shortcutRow("Next File", "⌥⌘→")
-                        shortcutRow("Open Settings", "⌘,")
-                        shortcutRow("Open Timer", "⌥⌘T")
+                        shortcutRow("Toggle Sidebar", "⌘ B")
+                        shortcutRow("Previous File", "⌥ ⌘ ←")
+                        shortcutRow("Next File", "⌥ ⌘ →")
+                        shortcutRow("Open Settings", "⌘ ,")
+                        shortcutRow("Open Timer", "⌥ ⌘ T")
                         shortcutRow("Pause / Resume Timer", "Space")
                     }
                 }
