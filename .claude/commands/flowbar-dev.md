@@ -35,7 +35,10 @@ cd Flowbar
 xcodebuild test -scheme Flowbar -destination 'platform=macOS' 2>&1 | grep -E '(error:|Test run with|SUCCEEDED|FAILED|Suite.*failed)'
 ```
 
-**Framework:** Swift Testing (`import Testing`, `@Test`, `@Suite`, `#expect`) — NOT XCTest.
+**Framework:** 
+
+- Unit and integration tests - Swift Testing (`import Testing`, `@Test`, `@Suite`, `#expect`) for, as it's more lightweight and flexible than XCTest and is a modern replacement for it.
+- UI Tests - XCTest with XCUIAutomation, as Swift Testing doesn't support UI testing and XCTest is the standard for that.
 
 **Test directory mirrors source:**
 ```
