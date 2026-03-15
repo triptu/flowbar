@@ -42,11 +42,14 @@ class FloatingPanel: NSPanel {
     }
 
     override func close() {
-        // Only persist if user actually resized
+        // Persist size if user resized
         if frame.size != initialSize {
             appState.windowWidth = Double(frame.width)
             appState.windowHeight = Double(frame.height)
         }
+        // Always persist position so it reopens where the user left it
+        appState.windowX = Double(frame.origin.x)
+        appState.windowY = Double(frame.origin.y)
         super.close()
     }
 

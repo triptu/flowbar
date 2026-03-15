@@ -37,6 +37,14 @@ final class AppState {
     var windowHeight: Double {
         didSet { if windowHeight != oldValue { UserDefaults.standard.set(windowHeight, forKey: "popoverHeight") } }
     }
+    /// Saved overlay X position (-1 means "center on screen")
+    var windowX: Double {
+        didSet { if windowX != oldValue { UserDefaults.standard.set(windowX, forKey: "windowX") } }
+    }
+    /// Saved overlay Y position (-1 means "center on screen")
+    var windowY: Double {
+        didSet { if windowY != oldValue { UserDefaults.standard.set(windowY, forKey: "windowY") } }
+    }
     var sidebarVisible: Bool {
         didSet { if sidebarVisible != oldValue { UserDefaults.standard.set(sidebarVisible, forKey: "sidebarVisible") } }
     }
@@ -71,6 +79,8 @@ final class AppState {
         self.typography = TypographySize(rawValue: defaults.string(forKey: "typography") ?? "") ?? .default
         self.windowWidth = defaults.object(forKey: "popoverWidth") as? Double ?? 700
         self.windowHeight = defaults.object(forKey: "popoverHeight") as? Double ?? 500
+        self.windowX = defaults.object(forKey: "windowX") as? Double ?? -1
+        self.windowY = defaults.object(forKey: "windowY") as? Double ?? -1
         self.sidebarVisible = defaults.object(forKey: "sidebarVisible") as? Bool ?? true
         self.sidebarWidth = defaults.object(forKey: "sidebarWidth") as? Double ?? 200
         loadFiles()

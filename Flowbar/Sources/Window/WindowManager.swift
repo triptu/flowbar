@@ -85,10 +85,17 @@ final class WindowManager: NSObject {
 
         let size = NSSize(width: appState.windowWidth, height: appState.windowHeight)
         let screen = NSScreen.main ?? NSScreen.screens.first!
-        let origin = NSPoint(
-            x: screen.frame.midX - size.width / 2,
-            y: screen.frame.midY - size.height / 2
-        )
+
+        // Use saved position if available, otherwise center on screen
+        let origin: NSPoint
+        if appState.windowX >= 0, appState.windowY >= 0 {
+            origin = NSPoint(x: appState.windowX, y: appState.windowY)
+        } else {
+            origin = NSPoint(
+                x: screen.frame.midX - size.width / 2,
+                y: screen.frame.midY - size.height / 2
+            )
+        }
         let frame = NSRect(origin: origin, size: size)
 
         let newPanel = FloatingPanel(contentRect: frame, appState: appState)
