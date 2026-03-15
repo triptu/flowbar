@@ -32,7 +32,7 @@ class FloatingPanel: NSPanel {
         isFloatingPanel = true
         level = .floating
         hidesOnDeactivate = false
-        collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         isMovableByWindowBackground = false
         titlebarAppearsTransparent = true
         titleVisibility = .hidden

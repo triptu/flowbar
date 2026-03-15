@@ -87,18 +87,12 @@ final class WindowManager: NSObject {
     func showPanel() {
         let spaceID = activeSpaceID()
 
-        // If panel exists on the same Space, just bring it forward
-        if let panel, panel.spaceID == spaceID {
+        // If panel already exists, just bring it forward (it's on all Spaces)
+        if let panel {
             panel.alphaValue = 1
             panel.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
-        }
-
-        // Close panel from a different Space (saves its frame via close())
-        if let panel {
-            panel.close()
-            self.panel = nil
         }
 
         // Load saved frame for this Space, or center with default size
