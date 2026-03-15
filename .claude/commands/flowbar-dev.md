@@ -35,7 +35,7 @@ cd Flowbar
 xcodebuild test -scheme Flowbar -destination 'platform=macOS' 2>&1 | grep -E '(error:|Test run with|SUCCEEDED|FAILED|Suite.*failed)'
 ```
 
-**Framework:** Swift Testing (`import Testing`, `@Test`, `@Suite`, `#expect`) — NOT XCTest. Migrated March 2025.
+**Framework:** Swift Testing (`import Testing`, `@Test`, `@Suite`, `#expect`) — NOT XCTest.
 
 **Test directory mirrors source:**
 ```
@@ -89,7 +89,6 @@ defaults write com.flowbar.app accentColor ocean  # sage, forest, ocean, lavende
 - AppState uses `@Observable` with manual `UserDefaults` persistence via `didSet` (not `@AppStorage` which requires `ObservableObject`). The `defaults` instance is injectable — `init(defaults:)` defaults to `.standard` but tests pass a throwaway suite.
 - Use `@ObservationIgnored` for private implementation details (watchers, tasks, flags)
 - Use `@Bindable var appState = appState` inside `body` when you need `$appState.someBinding`
-- TimerService should also use `@Observable` — if it still uses `ObservableObject`, migrate it
 
 ### Models are pure
 - `NoteFile` and `TodoItem` are immutable value types
