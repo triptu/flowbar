@@ -28,6 +28,30 @@ If `project.yml` was modified, regenerate first:
 xcodegen generate && xcodebuild ...
 ```
 
+### Testing
+```bash
+cd Flowbar
+xcodebuild test -scheme Flowbar -destination 'platform=macOS' 2>&1 | grep -E '(error:|Test run with|SUCCEEDED|FAILED|Suite.*failed)'
+```
+
+**Framework:** Swift Testing (`import Testing`, `@Test`, `@Suite`, `#expect`) — NOT XCTest. Migrated March 2025.
+
+**Test directory mirrors source:**
+```
+Tests/
+  App/        AppStateNavigationTests, AppStateTests, FileOperationsTests
+  Models/     ModelTests
+  Services/   MarkdownParserTests, TimerServiceTests, TimerServiceLifecycleTests
+```
+
+**Adding new test files:** Must be added to both the filesystem AND the pbxproj (PBXFileReference, PBXGroup children, PBXBuildFile, and the FlowbarTests Sources build phase).
+
+**Style rules:**
+- No mocks, stubs, or fakes. Tests hit real code e2e.
+- Use `@Test(arguments:)` with case arrays for truth-table tests — never one method per input/output pair.
+- Use `struct` (not `class`), `init() throws` for setup (no setUp/tearDown).
+- Test real behavior, not implementation details. Don't test for the sake of testing.
+
 ### Running
 ```bash
 open ~/Library/Developer/Xcode/DerivedData/Flowbar-*/Build/Products/Debug/Flowbar.app
@@ -102,6 +126,8 @@ defaults write com.flowbar.app theme dark  # or light, system
 7. **N+1 database queries** — use `allTotalTimes()` batch query, not per-item `totalTime()`.
 8. **Double `loadFiles()`** — if an `onChange` handler calls `loadFiles()`, don't also call it explicitly after setting a value.
 9. **Always use modern Swift** — prefer `@Observable` over `ObservableObject`, `@Environment` over `@EnvironmentObject`, `some View` over `AnyView`. Check the Swift and macOS versions in project.yml and use the latest available patterns.
+10. **AppState() in tests loads from UserDefaults** — the init calls `loadFiles()` using the persisted `folderPath`. In tests, always set `state.folderPath = ""` (or point to a temp dir) and `state.activePanel = .empty` before setting up test state, or you'll get interference from the user's real files.
+11. **Swift Testing `#expect(try ...)` needs `throws`** — if a `#expect` contains a `try` expression, the test function must be marked `throws`. Otherwise extract the `try` to a `let` before the `#expect`.
 
 ## After Making Changes
 
