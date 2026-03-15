@@ -149,24 +149,25 @@ final class DatabaseService {
     }
 
     /// Returns today's sessions grouped by todo text, with total duration per todo, ordered by most recent.
-    func todaySessions() -> [(todoText: String, totalDuration: TimeInterval)] {
+    func todaySessions() -> [(todoText: String, sourceFile: String, totalDuration: TimeInterval)] {
         let startOfDay = Calendar.current.startOfDay(for: Date()).timeIntervalSince1970
         let sql = """
-        SELECT todo_text, SUM(COALESCE(accumulated, 0) + ended_at - started_at) as total
+        SELECT todo_text, source_file, SUM(COALESCE(accumulated, 0) + ended_at - started_at) as total
         FROM timer_sessions
         WHERE started_at >= ? AND ended_at IS NOT NULL AND ended_at > started_at
-        GROUP BY todo_text
+        GROUP BY todo_text, source_file
         ORDER BY MAX(ended_at) DESC
         """
         var stmt: OpaquePointer?
         sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
         sqlite3_bind_double(stmt, 1, startOfDay)
         defer { sqlite3_finalize(stmt) }
-        var results: [(String, TimeInterval)] = []
+        var results: [(String, String, TimeInterval)] = []
         while sqlite3_step(stmt) == SQLITE_ROW {
             let text = String(cString: sqlite3_column_text(stmt, 0))
-            let total = sqlite3_column_double(stmt, 1)
-            results.append((text, total))
+            let file = String(cString: sqlite3_column_text(stmt, 1))
+            let total = sqlite3_column_double(stmt, 2)
+            results.append((text, file, total))
         }
         return results
     }

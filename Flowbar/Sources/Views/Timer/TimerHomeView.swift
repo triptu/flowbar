@@ -4,7 +4,7 @@ struct TimerHomeView: View {
     @Environment(AppState.self) var appState
     @Environment(TimerService.self) var timerService
     @State private var previousTotal: TimeInterval = 0
-    @State private var todaySessions: [(todoText: String, totalDuration: TimeInterval)] = []
+    @State private var todaySessions: [(todoText: String, sourceFile: String, totalDuration: TimeInterval)] = []
 
     var body: some View {
         VStack(spacing: 0) {
@@ -67,7 +67,7 @@ struct TimerHomeView: View {
                     .foregroundStyle(.tertiary)
             }
 
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
                 Button(action: { timerService.togglePlayPause() }) {
                     HStack(spacing: 8) {
                         Image(systemName: timerService.isRunning ? "pause.fill" : "play.fill")
@@ -84,9 +84,24 @@ struct TimerHomeView: View {
                 }
                 .buttonStyle(.plain)
 
+                Button(action: { timerService.stop() }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 11))
+                        Text("CLEAR")
+                            .font(.system(size: 13, weight: .semibold))
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.primary.opacity(0.08))
+                    )
+                }
+                .buttonStyle(.plain)
+
                 Button(action: {
                     if let completed = timerService.complete() {
-                        // Mark the todo done in the markdown file
                         let fileURL = URL(fileURLWithPath: appState.settings.folderPath)
                             .appendingPathComponent(completed.sourceFile + ".md")
                         MarkdownParser.markTodoDone(text: completed.todoText, in: fileURL)
@@ -137,7 +152,21 @@ struct TimerHomeView: View {
                 .padding(.bottom, 10)
 
             ForEach(todaySessions, id: \.todoText) { session in
-                HStack {
+                HStack(spacing: 8) {
+                    Button(action: {
+                        timerService.start(todoText: session.todoText, sourceFile: session.sourceFile)
+                    }) {
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 9))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 20, height: 20)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color.primary.opacity(0.06))
+                            )
+                    }
+                    .buttonStyle(.plain)
+
                     Text(session.todoText)
                         .font(.system(size: 13))
                         .lineLimit(1)

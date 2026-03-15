@@ -15,6 +15,8 @@ final class TimerService {
     var currentTodoText = ""
     var currentSourceFile = ""
     var elapsed: TimeInterval = 0
+    /// True briefly after a fresh start (not resume). Reset after observation.
+    var didFreshStart = false
 
     /// True when a timer session exists (running or paused)
     var hasActiveSession: Bool { isRunning || isPaused }
@@ -57,6 +59,7 @@ final class TimerService {
         startedAt = Date()
         elapsed = 0
         pausedElapsed = 0
+        didFreshStart = true
         isRunning = true
         isPaused = false
         startTicking()
@@ -151,7 +154,7 @@ final class TimerService {
     }
 
     /// Today's completed sessions grouped by todo, most recent first
-    func todaySessions() -> [(todoText: String, totalDuration: TimeInterval)] {
+    func todaySessions() -> [(todoText: String, sourceFile: String, totalDuration: TimeInterval)] {
         db.todaySessions()
     }
 
