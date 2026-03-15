@@ -6,7 +6,7 @@ model: opus
 
 # Flowbar Development Guide
 
-You're working on Flowbar, a native macOS menu bar app (Swift/SwiftUI/AppKit) for quick access to Obsidian vault markdown files. The codebase is at `Flowbar/` in the current workspace.
+You're working on Flowbar, a native macOS menu bar app (Swift/SwiftUI/AppKit) for quick access to a folder with markdown files on root level. The codebase is at `Flowbar/` in the current workspace.
 
 ## The User
 
