@@ -81,7 +81,7 @@ Or use `cliclick` for coordinate-based clicks (install via `brew install cliclic
 ```bash
 defaults write com.flowbar.app folderPath "/path/to/folder"
 defaults write com.flowbar.app theme dark  # or light, system
-defaults write com.flowbar.app accentColor ocean  # sage, forest, ocean, lavender, clay, slate, rose
+defaults write com.flowbar.app accentColor ocean  # sage, ocean, lavender, amber, clay, slate, rose
 ```
 
 ## Architecture Rules
@@ -105,7 +105,7 @@ defaults write com.flowbar.app accentColor ocean  # sage, forest, ocean, lavende
 
 ### Views
 - Every view reads state from `@Environment(AppState.self)` etc.
-- Accent color via `appState.accent` (computed from `appState.accentColor.color`) — reactive, updates all views immediately when changed. 7 presets (sage, forest, ocean, lavender, clay, slate, rose) with adaptive light/dark variants in `AccentColor` enum. Always use `appState.accent` in views, never a static.
+- Accent color via `appState.accent` (computed from `appState.accentColor.color`) — reactive, updates all views immediately when changed. 7 presets (sage, ocean, lavender, amber, clay, slate, rose) with adaptive light/dark variants in `AccentColor` enum. Always use `appState.accent` in views, never a static.
 - Custom `FlowbarSegmentedControl` instead of system Picker (which uses blue)
 - `.regularMaterial` for backgrounds (not `.ultraThinMaterial` which is too translucent)
 

@@ -4,7 +4,7 @@ import AppKit
 /// Preset accent colors — each has a light variant (richer, darker for light backgrounds)
 /// and a dark variant (softer, brighter for dark backgrounds), following the app's earthy/calm aesthetic.
 enum AccentColor: String, CaseIterable {
-    case sage, forest, ocean, lavender, clay, slate, rose
+    case sage, ocean, lavender, amber, clay, slate, rose
 
     var displayName: String {
         rawValue.capitalized
@@ -18,13 +18,13 @@ enum AccentColor: String, CaseIterable {
     /// (light hex, dark hex) — single source of truth for both variants
     private var hexPair: (light: String, dark: String) {
         switch self {
-        case .sage:     return ("4A6332", "8CB86B")  // forest green / leaf green
-        case .forest:   return ("2D5016", "5A9A3E")  // deep evergreen / bright moss
-        case .ocean:    return ("2B5F6B", "5BB8C9")  // deep teal / soft cyan
-        case .lavender: return ("5B4A8A", "9B8EC4")  // muted indigo / soft periwinkle
-        case .clay:     return ("8B5E3C", "C9956B")  // warm terracotta / warm sand
-        case .slate:    return ("4A5568", "8B9BB0")  // charcoal blue-gray / cool steel
-        case .rose:     return ("8B4A5E", "C48B9F")  // dusty wine / soft blush
+        case .sage:     return ("5C7A5A", "94C78A")  // muted herb green / soft leaf
+        case .ocean:    return ("3B6D8C", "6ABED2")  // calm deep water / sky blue
+        case .lavender: return ("6B5B99", "A894D4")  // soft purple / wisteria
+        case .amber:    return ("9B7234", "D4A95A")  // warm honey / golden hour
+        case .clay:     return ("8C5A4A", "D49882")  // terracotta / warm peach
+        case .slate:    return ("505B6E", "8E9DB5")  // cool ink / blue steel
+        case .rose:     return ("945A6E", "D4929F")  // dusty mauve / soft pink
         }
     }
 
