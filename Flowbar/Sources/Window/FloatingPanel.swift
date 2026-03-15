@@ -91,7 +91,8 @@ class FloatingPanel: NSPanel {
         titlebarView.addSubview(host)
 
         NSLayoutConstraint.activate([
-            host.centerXAnchor.constraint(equalTo: titlebarView.centerXAnchor),
+            host.leadingAnchor.constraint(equalTo: titlebarView.leadingAnchor),
+            host.trailingAnchor.constraint(equalTo: titlebarView.trailingAnchor),
             host.centerYAnchor.constraint(equalTo: titlebarView.centerYAnchor),
             host.heightAnchor.constraint(equalTo: titlebarView.heightAnchor),
         ])

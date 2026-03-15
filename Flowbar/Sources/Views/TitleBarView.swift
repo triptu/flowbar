@@ -4,6 +4,7 @@ import SwiftUI
 /// Hosted as an NSHostingView added to the title bar view hierarchy by FloatingPanel.
 struct TitleBarLabel: View {
     @Environment(TimerService.self) var timerService
+    @Environment(AppState.self) var appState
 
     var body: some View {
         Group {
@@ -22,6 +23,8 @@ struct TitleBarLabel: View {
             }
         }
         .font(.system(size: 13))
+        .frame(maxWidth: .infinity)
+        .padding(.leading, appState.sidebar.sidebarVisible ? CGFloat(appState.sidebar.sidebarWidth) + 5 : 0)
     }
 
     private func truncated(_ text: String, limit: Int) -> String {

@@ -18,8 +18,10 @@ struct MainView: View {
             }
 
             VStack(spacing: 0) {
-                Divider()
-                    .padding(.leading, -1) // close gap with sidebar divider
+                Rectangle()
+                    .fill(Color(nsColor: .separatorColor))
+                    .frame(height: 1)
+                    .frame(maxWidth: .infinity)
 
                 Group {
                     switch appState.sidebar.activePanel {

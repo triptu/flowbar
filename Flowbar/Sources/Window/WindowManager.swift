@@ -122,6 +122,7 @@ final class WindowManager: NSObject {
         }
         let taskLabel = TitleBarLabel()
             .environment(timerService)
+            .environment(appState)
         newPanel.addActiveTaskLabel(taskLabel)
         newPanel.delegate = self
         newPanel.makeKeyAndOrderFront(nil)
