@@ -54,7 +54,7 @@ struct TimerTodosView: View {
                     Button("All Files") { sourceFilter = nil }
                     Divider()
                     ForEach(sourceFiles, id: \.self) { src in
-                        Button(NoteFile.formatName(src)) { sourceFilter = src }
+                        Button(src) { sourceFilter = src }
                     }
                 } label: {
                     HStack(spacing: 2) {

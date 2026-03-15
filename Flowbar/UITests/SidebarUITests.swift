@@ -94,7 +94,7 @@ final class SidebarUITests: XCTestCase {
         XCTAssertTrue(renameField.exists, "Rename field should persist")
 
         // Enter commits the rename
-        typeInRename("New Alpha")
+        typeInRename("new-alpha")
         renameField.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(renameField.waitForNonExistence(timeout: 2))
         XCTAssertTrue(row("new-alpha").waitForExistence(timeout: 2), "File should be renamed")
@@ -112,7 +112,7 @@ final class SidebarUITests: XCTestCase {
         // Re-entering rename after cancel shows the CURRENT name, not the cancelled text
         enterRename("beta")
         let fieldValue = renameField.value as? String ?? ""
-        XCTAssertEqual(fieldValue, "Beta", "Should show current name, not previously cancelled text")
+        XCTAssertEqual(fieldValue, "beta", "Should show current name, not previously cancelled text")
         renameField.typeKey(.escape, modifierFlags: [])
     }
 
@@ -121,14 +121,14 @@ final class SidebarUITests: XCTestCase {
     func testRenameClickOutsideFlow() {
         // Click content area commits rename
         enterRename("alpha")
-        typeInRename("Renamed Alpha")
+        typeInRename("renamed-alpha")
         contentTextView.click()
         XCTAssertTrue(renameField.waitForNonExistence(timeout: 2))
         XCTAssertTrue(row("renamed-alpha").waitForExistence(timeout: 2))
 
         // Click different sidebar row commits with the ACTUAL typed text
         enterRename("beta")
-        typeInRename("Edited Beta")
+        typeInRename("edited-beta")
         row("gamma").click()
         XCTAssertTrue(renameField.waitForNonExistence(timeout: 2))
         XCTAssertTrue(row("edited-beta").waitForExistence(timeout: 2))
@@ -138,18 +138,18 @@ final class SidebarUITests: XCTestCase {
         contentTextView.click()
         XCTAssertTrue(renameField.waitForNonExistence(timeout: 2))
         enterRename("gamma")
-        typeInRename("Gamma V2")
+        typeInRename("gamma-v2")
         renameField.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(row("gamma-v2").waitForExistence(timeout: 2))
 
         // Multiple sequential renames all work (renameSessionID resets coordinator)
         enterRename("renamed-alpha")
-        typeInRename("File One")
+        typeInRename("file-one")
         renameField.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(renameField.waitForNonExistence(timeout: 2))
 
         enterRename("edited-beta")
-        typeInRename("File Two")
+        typeInRename("file-two")
         renameField.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(row("file-one").waitForExistence(timeout: 2))
         XCTAssertTrue(row("file-two").exists)
@@ -194,7 +194,7 @@ final class SidebarUITests: XCTestCase {
 
         // Duplicate name (beta.md already exists) is a no-op
         enterRename("alpha")
-        typeInRename("Beta")
+        typeInRename("beta")
         renameField.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(row("alpha").waitForExistence(timeout: 2), "Duplicate rename should be no-op")
         XCTAssertTrue(row("beta").exists, "Existing file should be untouched")

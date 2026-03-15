@@ -165,17 +165,15 @@ final class AppState {
     /// Shared rename logic: validates the new name, moves the file on disk, reloads, and re-selects.
     private func moveFile(_ file: NoteFile, toDisplayName displayName: String) {
         let trimmed = displayName.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return }
-        let kebab = NoteFile.toKebabCase(trimmed)
-        guard !kebab.isEmpty, kebab != file.id else { return }
-        let newURL = file.url.deletingLastPathComponent().appendingPathComponent("\(kebab).md")
+        guard !trimmed.isEmpty, trimmed != file.id else { return }
+        let newURL = file.url.deletingLastPathComponent().appendingPathComponent("\(trimmed).md")
         guard !FileManager.default.fileExists(atPath: newURL.path) else { return }
         do {
             try FileManager.default.moveItem(at: file.url, to: newURL)
             let wasSelected = sidebar.selectedFile?.id == file.id
             editor.suppressNextDirectoryEvent()
             loadFiles()
-            if wasSelected, let renamed = sidebar.noteFiles.first(where: { $0.id == kebab }) {
+            if wasSelected, let renamed = sidebar.noteFiles.first(where: { $0.id == trimmed }) {
                 selectFile(renamed)
             }
         } catch {}

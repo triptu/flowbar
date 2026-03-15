@@ -5,25 +5,10 @@ import Foundation
 struct NoteFile: Identifiable, Hashable {
     let id: String       // filename without .md extension
     let url: URL         // full file path
-    let name: String     // display name ("daily-journal" → "Daily Journal")
+    var name: String { id }
 
     init(url: URL) {
         self.url = url
         self.id = url.deletingPathExtension().lastPathComponent
-        self.name = Self.formatName(self.id)
-    }
-
-    /// Converts kebab-case id to display name: "daily-journal" → "Daily Journal"
-    static func formatName(_ id: String) -> String {
-        id.split(separator: "-")
-            .map { $0.prefix(1).uppercased() + $0.dropFirst() }
-            .joined(separator: " ")
-    }
-
-    /// Converts display name to kebab-case filename: "Daily Journal" → "daily-journal"
-    static func toKebabCase(_ displayName: String) -> String {
-        displayName.lowercased()
-            .replacingOccurrences(of: " ", with: "-")
-            .filter { $0.isLetter || $0.isNumber || $0 == "-" }
     }
 }

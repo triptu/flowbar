@@ -5,21 +5,11 @@ import Foundation
 @Suite("NoteFile")
 struct NoteFileTests {
 
-    @Test("formatName", arguments: [
-        ("notes", "Notes"),
-        ("daily-journal", "Daily Journal"),
-        ("My-Notes", "My Notes"),
-        ("", ""),
-    ] as [(String, String)])
-    func formatName(input: String, expected: String) {
-        #expect(NoteFile.formatName(input) == expected)
-    }
-
     @Test("init derives id and name from URL")
     func initFromURL() {
         let file = NoteFile(url: URL(fileURLWithPath: "/tmp/test-file.md"))
         #expect(file.id == "test-file")
-        #expect(file.name == "Test File")
+        #expect(file.name == "test-file")
     }
 
     @Test("equality by URL")

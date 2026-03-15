@@ -57,14 +57,14 @@ struct FileOperationsTests {
         state.selectFile(file)
         state.renameFile(file, to: "New Name")
 
-        #expect(state.sidebar.selectedFile?.id == "new-name")
-        #expect(FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("new-name.md").path))
+        #expect(state.sidebar.selectedFile?.id == "New Name")
+        #expect(FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("New Name.md").path))
         #expect(!FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("alpha.md").path))
     }
 
     @Test("renameFile is no-op for same name, existing name, or blank", arguments: [
-        ("alpha", "Alpha"),
-        ("alpha", "Beta"),
+        ("alpha", "alpha"),
+        ("alpha", "beta"),
         ("alpha", "   "),
     ] as [(String, String)])
     func renameNoOp(fileId: String, newName: String) {
