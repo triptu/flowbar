@@ -2,9 +2,7 @@
 
 A native macOS menu bar app for quick access to a folder of markdown notes and todos with integrated time tracking to help you focus. I use Obsidian but want something lighter so I can check/edit todos and notes without opening the full app.
 
-Click the Flowbar icon in your menu bar and a floating overlay appears with your notes right there. Edit them, check off todos, track time on tasks. Click the icon again or double-tap Fn to toggle it from anywhere.
-
-You can also use this repo as a reference to learn Swift, checkout [learn-swift](https://flowbar.tushar.ai/learn-swift) for a guide to the Swift concepts and patterns used in Flowbar.
+Click the Flowbar icon in your menu bar or double press `Fn` key and a floating overlay appears with your notes right there. Edit them, check off todos, track time on tasks. Click the icon again or double-tap Fn to toggle it from anywhere.
 
 ## What it does
 
@@ -14,7 +12,18 @@ You can also use this repo as a reference to learn Swift, checkout [learn-swift]
 - **Timer** — stopwatch to track time on todos, extracted from all your markdown files
 - **Settings** — folder path, dark/light/system theme, font size, keyboard shortcut
 
+## Download & Install
+
+1. Grab the latest **Flowbar.dmg** from the [Releases page](https://github.com/triptu/flowbar/releases/latest).
+2. Open the DMG and drag **Flowbar** into your **Applications** folder.
+3. Launch Flowbar — macOS will show a security warning because the app isn't notarized (Apple charges $$ for a certificate, and this is a free side project).
+4. Open **System Settings → Privacy & Security**, scroll down, and click **"Open Anyway"**. You only need to do this once.
+
+> The DMG is built automatically by [GitHub Actions](https://github.com/triptu/flowbar/actions) from the public source code — you can verify the build or build from source yourself (see below).
+
 ## How to build & run
+
+Checkout [learn-swift](https://flowbar.tushar.ai/learn-swift) for a guide to the Swift concepts and patterns used in Flowbar.
 
 You need Xcode installed (tested on Xcode 16+, macOS 14+).
 
@@ -32,7 +41,7 @@ open ~/Library/Developer/Xcode/DerivedData/Flowbar-*/Build/Products/Debug/Flowba
 
 Or just open `Flowbar.xcodeproj` in Xcode and hit Run.
 
-First launch: click the Flowbar icon in your menu bar, go to Settings, and point it at your Obsidian vault folder (or any folder with .md files).
+First launch: click the Flowbar icon in your menu bar, go to Settings, and point it at a folder with md files(you can create one inside your Obsidian vault if using Obsidian).
 
 ## Contributing
 

@@ -2,10 +2,17 @@ name: Build DMG
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 0.1.0)'
+        required: true
+        type: string
 
 jobs:
   build:
     runs-on: macos-15
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -54,3 +61,22 @@ jobs:
           name: Flowbar-${{ github.sha }}
           path: build/Flowbar.dmg
           retention-days: 30
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: Flowbar v${{ inputs.version }}
+          body: |
+            ## Flowbar v${{ inputs.version }}
+
+            ### Installation
+            1. Download `Flowbar.dmg` below
+            2. Open the DMG and drag Flowbar to your Applications folder
+            3. Launch Flowbar — macOS will show a security warning since the app isn't notarized
+            4. Go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**
+
+            Built from commit ${{ github.sha }}.
+          files: build/Flowbar.dmg
+          draft: false
+          prerelease: false
