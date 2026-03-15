@@ -1,10 +1,10 @@
 # Flowbar
 
-A native macOS menu bar app for quick access to a folder of markdown notes and todos with integrated time tracking to help you focus. I use Obsidian but want something lighter always within reach — without opening the full app just to check a todo or jot something down.
+A native macOS menu bar app for quick access to a folder of markdown notes and todos with integrated time tracking to help you focus. I use Obsidian but want something lighter so I can check/edit todos and notes without opening the full app.
 
 Click the Flowbar icon in your menu bar and a floating overlay appears with your notes right there. Edit them, check off todos, track time on tasks. Click the icon again or double-tap Fn to toggle it from anywhere.
 
-You can also use this repo as a reference to learn Swift, checkout [learn-swift]([docs/learn-swift.html](https://flowbar.tushar.ai/learn-swift) for a guide to the Swift concepts and patterns used in Flowbar.
+You can also use this repo as a reference to learn Swift, checkout [learn-swift](https://flowbar.tushar.ai/learn-swift) for a guide to the Swift concepts and patterns used in Flowbar.
 
 ## What it does
 

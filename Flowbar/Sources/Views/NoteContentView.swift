@@ -23,10 +23,6 @@ struct NoteContentView: View {
 
     private var noteHeader: some View {
         HStack(spacing: 10) {
-            if !appState.sidebar.sidebarVisible {
-                SidebarToggleButton { appState.toggleSidebar() }
-            }
-
             Text(appState.sidebar.selectedFile?.name ?? "")
                 .font(.system(size: appState.settings.typography.titleSize, weight: .bold))
 

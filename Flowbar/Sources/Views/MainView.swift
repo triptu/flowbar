@@ -17,20 +17,28 @@ struct MainView: View {
                 SidebarDivider()
             }
 
-            Group {
-                switch appState.sidebar.activePanel {
-                case .settings:
-                    SettingsView()
-                case .timer:
-                    TimerContainerView()
-                case .file:
-                    NoteContentView()
-                case .empty:
-                    emptyState
+            ZStack(alignment: .topLeading) {
+                Group {
+                    switch appState.sidebar.activePanel {
+                    case .settings:
+                        SettingsView()
+                    case .timer:
+                        TimerContainerView()
+                    case .file:
+                        NoteContentView()
+                    case .empty:
+                        emptyState
+                    }
+                }
+                .accessibilityIdentifier("content-area")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                if !appState.sidebar.sidebarVisible {
+                    SidebarToggleButton { appState.toggleSidebar() }
+                        .padding(.leading, FloatingPanel.trafficLightWidth)
+                        .padding(.top, 12)
                 }
             }
-            .accessibilityIdentifier("content-area")
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .ignoresSafeArea(.all, edges: .top)
         }
         .background(.regularMaterial)
