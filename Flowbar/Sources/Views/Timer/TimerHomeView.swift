@@ -14,6 +14,7 @@ struct TimerHomeView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .focusable()
+        .focusEffectDisabled()
         .onKeyPress(.space) {
             guard timerService.hasActiveSession else { return .ignored }
             timerService.togglePlayPause()
