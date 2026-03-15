@@ -30,6 +30,10 @@
 		B09973A5834843B57F506206 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 679770A71B494E81BD99BB16 /* SettingsView.swift */; };
 		BC6659874A56FF8D6E7F4268 /* SidebarToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F835D11B53685F85D8EF57A /* SidebarToggleButton.swift */; };
 		BE8CACC0DB336F9249758FD2 /* FlowbarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2D31A2E469ADB3AE12A356 /* FlowbarApp.swift */; };
+		D2FA9F6AAE840C86C7D390D6 /* FileOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C127F2E05427F54840E69532 /* FileOperationsTests.swift */; };
+		D3C1BEA3653DC37C385DD1DC /* AppStateNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A86F421CF7B0B257E7F7E2 /* AppStateNavigationTests.swift */; };
+		E1A2B3C4D5E6F7A8B9C0D1E2 /* AppStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* AppStateTests.swift */; };
+		F2B3C4D5E6F7A8B9C0D1E2F3 /* TimerServiceLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* TimerServiceLifecycleTests.swift */; };
 		D8D82F66CEBB7C7A976E244E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DAC8FE70A4CC25EFC1101BE /* AppDelegate.swift */; };
 		E037448B11CE5D13C85FF32F /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F0362096FD8D2B22AA6247 /* FileWatcher.swift */; };
 		F6A2FCC540B165487531BA6C /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA28AD0B52FFBD4002D7108F /* MainView.swift */; };
@@ -46,8 +50,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		00A86F421CF7B0B257E7F7E2 /* AppStateNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateNavigationTests.swift; sourceTree = "<group>"; };
 		06DABC3A9E8EB88A3D9F59F2 /* TimerHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerHomeView.swift; sourceTree = "<group>"; };
 		08A4E9B5708812F7012B4B7F /* MarkdownParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownParserTests.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* AppStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateTests.swift; sourceTree = "<group>"; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* TimerServiceLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerServiceLifecycleTests.swift; sourceTree = "<group>"; };
 		0FE4FC5C82B7F98DA55EA658 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 		169227FE96874503D7ED8D2D /* FlowbarTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlowbarTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		19927FCA0D6E052D93303A86 /* FloatingPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingPanel.swift; sourceTree = "<group>"; };
@@ -70,6 +77,7 @@
 		AA28AD0B52FFBD4002D7108F /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		B7F0362096FD8D2B22AA6247 /* FileWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileWatcher.swift; sourceTree = "<group>"; };
 		BAF1CAFB6CFD0E5A2A75702D /* TimerTodosView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerTodosView.swift; sourceTree = "<group>"; };
+		C127F2E05427F54840E69532 /* FileOperationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileOperationsTests.swift; sourceTree = "<group>"; };
 		C4709745944EB39D269992BF /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
 		CB2D31A2E469ADB3AE12A356 /* FlowbarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowbarApp.swift; sourceTree = "<group>"; };
 		ED1B419B41DBE32FBEC53E7E /* MarkdownParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownParser.swift; sourceTree = "<group>"; };
@@ -168,11 +176,39 @@
 		F671781C531CA2B8B3993F1D /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				08A4E9B5708812F7012B4B7F /* MarkdownParserTests.swift */,
-				3A7B4D68F1D94AEB1C9D1953 /* ModelTests.swift */,
-				2705123F4FA326A6DFC877D8 /* TimerServiceTests.swift */,
+				AA11BB22CC33DD44EE55FF66 /* App */,
+				BB22CC33DD44EE55FF667788 /* Models */,
+				CC33DD44EE55FF66778899AA /* Services */,
 			);
 			path = Tests;
+			sourceTree = "<group>";
+		};
+		AA11BB22CC33DD44EE55FF66 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				00A86F421CF7B0B257E7F7E2 /* AppStateNavigationTests.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* AppStateTests.swift */,
+				C127F2E05427F54840E69532 /* FileOperationsTests.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		BB22CC33DD44EE55FF667788 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				3A7B4D68F1D94AEB1C9D1953 /* ModelTests.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		CC33DD44EE55FF66778899AA /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				08A4E9B5708812F7012B4B7F /* MarkdownParserTests.swift */,
+				2705123F4FA326A6DFC877D8 /* TimerServiceTests.swift */,
+				B2C3D4E5F6A7B8C9D0E1F2A3 /* TimerServiceLifecycleTests.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		F6B4520FD05F27728B9DA495 /* Services */ = {
@@ -276,9 +312,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D3C1BEA3653DC37C385DD1DC /* AppStateNavigationTests.swift in Sources */,
+				E1A2B3C4D5E6F7A8B9C0D1E2 /* AppStateTests.swift in Sources */,
+				D2FA9F6AAE840C86C7D390D6 /* FileOperationsTests.swift in Sources */,
 				7576910985CDCB6BADF17639 /* MarkdownParserTests.swift in Sources */,
 				76AD7711155357239987CD1F /* ModelTests.swift in Sources */,
 				1E5052E9569AE84B38C2C0F3 /* TimerServiceTests.swift in Sources */,
+				F2B3C4D5E6F7A8B9C0D1E2F3 /* TimerServiceLifecycleTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
