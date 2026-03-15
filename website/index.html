@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flowbar — Your notes, always within reach</title>
+<title>Flowbar — Your notes and todos, always within reach</title>
 <link rel="icon" type="image/svg+xml" href="../assets/logo.svg">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -25,7 +25,7 @@ a:hover{text-decoration:underline}
 .hero h1{font-family:'Instrument Serif',serif;font-size:clamp(28px,5vw,42px);line-height:1.2;margin-bottom:20px;color:var(--text);font-weight:400}
 .hero h1 em{font-style:italic;color:var(--accent2)}
 .hero p{color:var(--muted);font-size:17px;line-height:1.7;max-width:480px;margin:0 auto 12px}
-.hero .shortcut{color:var(--accent2);font-size:15px;margin-bottom:36px}
+.hero .shortcut{color:var(--accent2);background:rgba(139,154,107,.15);padding:2px 8px;border-radius:4px;font-size:15px;font-weight:500}
 .hero .ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 .hero .ctas a{padding:10px 24px;border-radius:8px;font-size:14px;font-weight:500;transition:all .2s}
 .hero .ctas .primary{background:var(--accent);color:#111}
@@ -65,9 +65,8 @@ footer .links{display:flex;gap:16px;justify-content:center;margin-top:8px}
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2.5C7 2.5 2.5 7 2.5 12C2.5 17 7 21.5 12 21.5C17 21.5 21.5 17 21.5 12C21.5 7 17 2.5 12 2.5ZM3.8 11.2Q7 8.8 10.5 10.8Q12 11.8 13.5 12.2Q17 13 20.2 10.8L20.2 12.8Q17 15 13.5 14.2Q12 13.8 10.5 12.8Q7 10.8 3.8 13.2Z"/></svg>
     Flowbar
   </div>
-  <h1>Notes and todos, <em>one tap away</em></h1>
-  <p>A little app that lives in your Mac's menu bar. Jot something down, track your tasks, get back to what you were doing.</p>
-  <p class="shortcut">Double-tap Fn to bring it up from anywhere.</p>
+  <h1>Notes, todos, timer - <em>one tap away</em></h1>
+  <p>Double-tap <span class="shortcut">Fn</span> from anywhere, jot notes, check todos, track your tasks, without breaking flow.</p>
   <div class="ctas">
     <a href="https://github.com/triptu/flowbar" class="secondary" target="_blank" rel="noopener noreferrer">GitHub</a>
     <a href="https://github.com/triptu/flowbar" class="primary" target="_blank" rel="noopener noreferrer">Download</a>
