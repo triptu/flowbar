@@ -23,7 +23,7 @@ Flowbar/Sources/
 │                   Timer/ (TimerContainerView, TimerHomeView, TimerTodosView),
 │                   Components/ (TodoRow, SidebarFooter, SidebarToggleButton)
 │
-└── Theme/          Colors, Typography — design tokens
+└── Theme/          Colors (AccentColor presets + FlowbarColors), Typography — design tokens
 ```
 
 ## How things connect
