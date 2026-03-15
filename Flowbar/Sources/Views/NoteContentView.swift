@@ -9,13 +9,16 @@ struct NoteContentView: View {
             noteHeader
             Divider().opacity(0.2)
 
-            TextEditor(text: $appState.editorContent)
+            TextEditor(text: Binding(
+                get: { appState.editorContent },
+                set: { newValue in
+                    appState.editorContent = newValue
+                    appState.saveFileContent()
+                }
+            ))
                 .font(.system(size: appState.typography.bodySize))
                 .scrollContentBackground(.hidden)
                 .padding(16)
-                .onChange(of: appState.editorContent) { _, _ in
-                    appState.saveFileContent()
-                }
         }
     }
 

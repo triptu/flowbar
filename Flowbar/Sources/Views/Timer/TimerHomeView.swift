@@ -31,7 +31,7 @@ struct TimerHomeView: View {
                 .padding(.horizontal, 32)
 
             Text(TimerService.formatTime(timerService.elapsed))
-                .font(.system(size: 48, weight: .light, design: .monospaced))
+                .font(.system(size: appState.typography.timerSize, weight: .light, design: .monospaced))
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 16) {

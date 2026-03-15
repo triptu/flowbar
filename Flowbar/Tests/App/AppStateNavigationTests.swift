@@ -7,9 +7,7 @@ import Foundation
 struct AppStateNavigationTests {
 
     private func makeAppState(fileNames: [String]) -> AppState {
-        let state = AppState()
-        // Reset state so init's loadFiles() from UserDefaults doesn't interfere
-        state.folderPath = ""
+        let state = AppState(defaults: UserDefaults(suiteName: "com.flowbar.tests-\(UUID().uuidString)")!)
         state.activePanel = .empty
         state.noteFiles = fileNames.map { NoteFile(url: URL(fileURLWithPath: "/tmp/\($0).md")) }
         return state

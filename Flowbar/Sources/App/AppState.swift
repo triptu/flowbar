@@ -21,25 +21,35 @@ enum ActivePanel: Equatable {
 @Observable
 @MainActor
 final class AppState {
+    // MARK: - Persistence
+    /// Injectable UserDefaults — tests pass a throwaway suite to avoid polluting the app's real settings.
+    @ObservationIgnored let defaults: UserDefaults
+
     // MARK: - Settings (persisted to UserDefaults)
     var folderPath: String {
-        didSet { UserDefaults.standard.set(folderPath, forKey: "folderPath") }
+        didSet { defaults.set(folderPath, forKey: "folderPath") }
     }
     var theme: AppTheme {
-        didSet { UserDefaults.standard.set(theme.rawValue, forKey: "theme") }
+        didSet { defaults.set(theme.rawValue, forKey: "theme") }
     }
     var typography: TypographySize {
-        didSet { UserDefaults.standard.set(typography.rawValue, forKey: "typography") }
+        didSet { defaults.set(typography.rawValue, forKey: "typography") }
+    }
+    var accentColor: AccentColor {
+        didSet {
+            defaults.set(accentColor.rawValue, forKey: "accentColor")
+            FlowbarColors.update(accent: accentColor)
+        }
     }
     /// Per-Space window frames: [SpaceID: [x, y, width, height]]
     @ObservationIgnored var windowFrames: [String: [Double]] {
-        didSet { UserDefaults.standard.set(windowFrames, forKey: "windowFrames") }
+        didSet { defaults.set(windowFrames, forKey: "windowFrames") }
     }
     var sidebarVisible: Bool {
-        didSet { if sidebarVisible != oldValue { UserDefaults.standard.set(sidebarVisible, forKey: "sidebarVisible") } }
+        didSet { if sidebarVisible != oldValue { defaults.set(sidebarVisible, forKey: "sidebarVisible") } }
     }
     var sidebarWidth: Double {
-        didSet { if sidebarWidth != oldValue { UserDefaults.standard.set(sidebarWidth, forKey: "sidebarWidth") } }
+        didSet { if sidebarWidth != oldValue { defaults.set(sidebarWidth, forKey: "sidebarWidth") } }
     }
 
     // MARK: - Navigation (single source of truth)
@@ -62,14 +72,16 @@ final class AppState {
     @ObservationIgnored private var saveTask: DispatchWorkItem?
     @ObservationIgnored private var isWriting = false
 
-    init() {
-        let defaults = UserDefaults.standard
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         self.folderPath = defaults.string(forKey: "folderPath") ?? ""
         self.theme = AppTheme(rawValue: defaults.string(forKey: "theme") ?? "") ?? .dark
         self.typography = TypographySize(rawValue: defaults.string(forKey: "typography") ?? "") ?? .default
+        self.accentColor = AccentColor(rawValue: defaults.string(forKey: "accentColor") ?? "") ?? .sage
         self.windowFrames = defaults.object(forKey: "windowFrames") as? [String: [Double]] ?? [:]
         self.sidebarVisible = defaults.object(forKey: "sidebarVisible") as? Bool ?? true
         self.sidebarWidth = defaults.object(forKey: "sidebarWidth") as? Double ?? 200
+        FlowbarColors.update(accent: self.accentColor)
         loadFiles()
     }
 
@@ -151,6 +163,11 @@ final class AppState {
     }
 
     func loadFileContent(_ file: NoteFile) {
+        // Cancel any pending save so we don't overwrite external changes
+        saveTask?.cancel()
+        saveTask = nil
+        isWriting = false
+
         if let content = try? String(contentsOf: file.url, encoding: .utf8) {
             editorContent = content
         }
@@ -159,11 +176,17 @@ final class AppState {
     func saveFileContent() {
         guard let file = selectedFile else { return }
         saveTask?.cancel()
+        // Mark writing immediately so the file watcher ignores events during debounce
+        isWriting = true
         let task = DispatchWorkItem { [weak self] in
             guard let self else { return }
-            self.isWriting = true
             try? self.editorContent.write(to: file.url, atomically: true, encoding: .utf8)
-            self.isWriting = false
+            // Atomic write creates a new inode — re-establish watcher on the new file
+            self.watchFile(file)
+            // Brief delay before clearing flag so FSEvents from our write are ignored
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.isWriting = false
+            }
         }
         saveTask = task
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: task)

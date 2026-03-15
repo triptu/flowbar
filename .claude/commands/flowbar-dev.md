@@ -84,7 +84,7 @@ defaults write com.flowbar.app theme dark  # or light, system
 ### State Management
 - **Single `ActivePanel` enum** for navigation — never use separate booleans for "which view is showing"
 - **`@Observable` + `@Environment`** (Swift 6 / macOS 15+ pattern, NOT the older `ObservableObject` + `@EnvironmentObject`)
-- AppState uses `@Observable` with manual `UserDefaults` persistence via `didSet` (not `@AppStorage` which requires `ObservableObject`)
+- AppState uses `@Observable` with manual `UserDefaults` persistence via `didSet` (not `@AppStorage` which requires `ObservableObject`). The `defaults` instance is injectable — `init(defaults:)` defaults to `.standard` but tests pass a throwaway suite.
 - Use `@ObservationIgnored` for private implementation details (watchers, tasks, flags)
 - Use `@Bindable var appState = appState` inside `body` when you need `$appState.someBinding`
 - TimerService should also use `@Observable` — if it still uses `ObservableObject`, migrate it
@@ -127,7 +127,7 @@ defaults write com.flowbar.app theme dark  # or light, system
 7. **N+1 database queries** — use `allTotalTimes()` batch query, not per-item `totalTime()`.
 8. **Double `loadFiles()`** — if an `onChange` handler calls `loadFiles()`, don't also call it explicitly after setting a value.
 9. **Always use modern Swift** — prefer `@Observable` over `ObservableObject`, `@Environment` over `@EnvironmentObject`, `some View` over `AnyView`. Check the Swift and macOS versions in project.yml and use the latest available patterns.
-10. **AppState() in tests loads from UserDefaults** — the init calls `loadFiles()` using the persisted `folderPath`. In tests, always set `state.folderPath = ""` (or point to a temp dir) and `state.activePanel = .empty` before setting up test state, or you'll get interference from the user's real files.
+10. **AppState in tests must use isolated UserDefaults** — use `AppState(defaults: UserDefaults(suiteName: "com.flowbar.tests-\(UUID().uuidString)")!)` so tests don't read or pollute the app's real settings. Never use `AppState()` (bare) in tests.
 11. **Swift Testing `#expect(try ...)` needs `throws`** — if a `#expect` contains a `try` expression, the test function must be marked `throws`. Otherwise extract the `try` to a `let` before the `#expect`.
 
 ## After Making Changes

@@ -75,12 +75,13 @@ struct SidebarFileRow: View {
             if isRenaming {
                 RenameTextField(
                     text: file.name,
+                    fontSize: appState.typography.sidebarSize,
                     onCommit: { newName in appState.renameFile(file, to: newName) },
                     onCancel: { appState.renamingFileID = nil }
                 )
             } else {
                 Text(file.name)
-                    .font(.system(size: 15))
+                    .font(.system(size: appState.typography.sidebarSize))
                     .foregroundStyle(isSelected ? .white : .secondary)
             }
         }
@@ -100,12 +101,13 @@ struct SidebarFileRow: View {
 /// An NSTextField wrapper that auto-focuses, selects all text, and commits on Enter or click-outside.
 struct RenameTextField: NSViewRepresentable {
     let text: String
+    let fontSize: CGFloat
     let onCommit: (String) -> Void
     let onCancel: () -> Void
 
     func makeNSView(context: Context) -> NSTextField {
         let field = NSTextField()
-        field.font = .systemFont(ofSize: 15)
+        field.font = .systemFont(ofSize: fontSize)
         field.isBordered = false
         field.focusRingType = .none
         field.drawsBackground = true

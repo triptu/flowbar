@@ -10,9 +10,9 @@ struct SettingsView: View {
                 Text("Settings")
                     .font(.system(size: appState.typography.titleSize, weight: .bold))
 
-                settingsSection("Obsidian Folder Path") {
+                settingsSection("Markdown Folder Path") {
                     HStack {
-                        TextField("/path/to/obsidian/vault/folder", text: $appState.folderPath)
+                        TextField("/path/to/markdown/folder", text: $appState.folderPath)
                             .textFieldStyle(.roundedBorder)
                             .onChange(of: appState.folderPath) { _, _ in
                                 appState.loadFiles()
@@ -26,6 +26,7 @@ struct SettingsView: View {
                 settingsSection("Appearance") {
                     settingsPickerRow("Theme", selection: $appState.theme, options: AppTheme.allCases) { $0.rawValue.capitalized }
                     settingsPickerRow("Text Size", selection: $appState.typography, options: TypographySize.allCases) { $0.rawValue.capitalized }
+                    accentColorRow
                 }
 
                 settingsSection("Keyboard Shortcuts") {
@@ -45,7 +46,7 @@ struct SettingsView: View {
     }
 
     private func settingsSection(_ title: String, @ViewBuilder content: () -> some View) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.system(size: 14, weight: .medium))
             content()
@@ -69,7 +70,30 @@ struct SettingsView: View {
                 }
             }
             .labelsHidden()
-            .frame(width: 120)
+        }
+    }
+
+    private var accentColorRow: some View {
+        HStack {
+            Text("Accent Color")
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+            Spacer()
+            HStack(spacing: 6) {
+                ForEach(AccentColor.allCases, id: \.self) { color in
+                    Circle()
+                        .fill(color.preview)
+                        .frame(width: 18, height: 18)
+                        .overlay(
+                            Circle()
+                                .strokeBorder(Color.primary.opacity(appState.accentColor == color ? 0.6 : 0), lineWidth: 1.5)
+                        )
+                        .scaleEffect(appState.accentColor == color ? 1.15 : 1.0)
+                        .animation(.easeInOut(duration: 0.15), value: appState.accentColor)
+                        .onTapGesture { appState.accentColor = color }
+                        .help(color.displayName)
+                }
+            }
         }
     }
 
@@ -96,7 +120,7 @@ struct SettingsView: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
-        panel.message = "Select your Obsidian notes folder"
+        panel.message = "Select your markdown notes folder"
         if panel.runModal() == .OK, let url = panel.url {
             appState.folderPath = url.path
         }

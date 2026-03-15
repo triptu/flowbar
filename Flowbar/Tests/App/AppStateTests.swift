@@ -21,7 +21,7 @@ struct AppStateFileLifecycleTests {
             )
         }
 
-        state = AppState()
+        state = AppState(defaults: UserDefaults(suiteName: "com.flowbar.tests-\(UUID().uuidString)")!)
         state.folderPath = tempDir.path
         state.loadFiles()
     }
@@ -115,7 +115,7 @@ struct AppStatePanelTests {
             atomically: true, encoding: .utf8
         )
 
-        state = AppState()
+        state = AppState(defaults: UserDefaults(suiteName: "com.flowbar.tests-\(UUID().uuidString)")!)
         state.folderPath = tempDir.path
         state.loadFiles()
     }
@@ -157,7 +157,7 @@ struct AppStateWindowFrameTests {
     private var state: AppState
 
     init() {
-        state = AppState()
+        state = AppState(defaults: UserDefaults(suiteName: "com.flowbar.tests-\(UUID().uuidString)")!)
         state.folderPath = ""
     }
 

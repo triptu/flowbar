@@ -21,7 +21,7 @@ struct FileOperationsTests {
             )
         }
 
-        state = AppState()
+        state = AppState(defaults: UserDefaults(suiteName: "com.flowbar.tests-\(UUID().uuidString)")!)
         state.folderPath = tempDir.path
         state.loadFiles()
     }
