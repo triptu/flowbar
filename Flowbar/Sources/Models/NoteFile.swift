@@ -13,9 +13,17 @@ struct NoteFile: Identifiable, Hashable {
         self.name = Self.formatName(self.id)
     }
 
+    /// Converts kebab-case id to display name: "daily-journal" → "Daily Journal"
     static func formatName(_ id: String) -> String {
         id.split(separator: "-")
             .map { $0.prefix(1).uppercased() + $0.dropFirst() }
             .joined(separator: " ")
+    }
+
+    /// Converts display name to kebab-case filename: "Daily Journal" → "daily-journal"
+    static func toKebabCase(_ displayName: String) -> String {
+        displayName.lowercased()
+            .replacingOccurrences(of: " ", with: "-")
+            .filter { $0.isLetter || $0.isNumber || $0 == "-" }
     }
 }

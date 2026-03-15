@@ -181,6 +181,10 @@ final class AppState {
 
     func openInObsidian() {
         guard let file = selectedFile else { return }
+        openInObsidian(file)
+    }
+
+    func openInObsidian(_ file: NoteFile) {
         let vaultPath = URL(fileURLWithPath: folderPath).deletingLastPathComponent()
         let vaultName = vaultPath.lastPathComponent
         let relativePath = file.url.lastPathComponent
@@ -189,6 +193,77 @@ final class AppState {
 
         if let url = URL(string: "obsidian://open?vault=\(vaultName)&file=\(folderName)/\(encoded)") {
             NSWorkspace.shared.open(url)
+        }
+    }
+
+    func revealInFinder(_ file: NoteFile) {
+        NSWorkspace.shared.activateFileViewerSelecting([file.url])
+    }
+
+    func createNewFile() {
+        guard !folderPath.isEmpty else { return }
+        let folderURL = URL(fileURLWithPath: folderPath)
+        var name = "untitled"
+        var counter = 1
+        // Find unique filename
+        while FileManager.default.fileExists(atPath: folderURL.appendingPathComponent("\(name).md").path) {
+            name = "untitled-\(counter)"
+            counter += 1
+        }
+        let fileURL = folderURL.appendingPathComponent("\(name).md")
+        FileManager.default.createFile(atPath: fileURL.path, contents: Data())
+        loadFiles()
+        if let newFile = noteFiles.first(where: { $0.id == name }) {
+            selectFile(newFile)
+            renamingFileID = newFile.id
+        }
+    }
+
+    // MARK: - Rename
+
+    /// Set to a file's id to trigger inline rename in the sidebar
+    var renamingFileID: String?
+
+    func renameFile(_ file: NoteFile, to newName: String) {
+        let trimmed = newName.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        let kebab = NoteFile.toKebabCase(trimmed)
+        guard !kebab.isEmpty, kebab != file.id else {
+            renamingFileID = nil
+            return
+        }
+        let newURL = file.url.deletingLastPathComponent().appendingPathComponent("\(kebab).md")
+        guard !FileManager.default.fileExists(atPath: newURL.path) else {
+            renamingFileID = nil
+            return
+        }
+        do {
+            try FileManager.default.moveItem(at: file.url, to: newURL)
+            let wasSelected = selectedFile?.id == file.id
+            loadFiles()
+            if wasSelected, let renamed = noteFiles.first(where: { $0.id == kebab }) {
+                selectFile(renamed)
+            }
+        } catch {
+            // Silently fail — file watcher will sync state
+        }
+        renamingFileID = nil
+    }
+
+    func trashFile(_ file: NoteFile) {
+        let wasSelected = selectedFile?.id == file.id
+        do {
+            try FileManager.default.trashItem(at: file.url, resultingItemURL: nil)
+        } catch {
+            return
+        }
+        loadFiles()
+        if wasSelected {
+            if let first = noteFiles.first {
+                selectFile(first)
+            } else {
+                activePanel = .empty
+            }
         }
     }
 
