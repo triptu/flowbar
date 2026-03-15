@@ -1079,8 +1079,22 @@
                         margin-bottom: 8px;
                     "
                 >
-                    <strong style="color: var(--text)">@Observable singletons</strong> &mdash;
-                    AppState and TimerService use Swift's
+                    <strong style="color: var(--text)">@Observable + split state</strong> &mdash;
+                    AppState is a thin coordinator holding three sub-states:
+                    SettingsState, SidebarState, and EditorState. Each owns a focused slice
+                    of the app's data. Cross-cutting methods like
+                    <code
+                        style="
+                            font-family: var(--font-mono);
+                            font-size: 11.5px;
+                            background: var(--bg-code);
+                            padding: 1px 5px;
+                            border-radius: 3px;
+                            color: var(--sage);
+                        "
+                        >selectFile</code
+                    >
+                    live on AppState. All use the
                     <code
                         style="
                             font-family: var(--font-mono);
@@ -1103,31 +1117,8 @@
                             color: var(--sage);
                         "
                         >.environment()</code
-                    >. Any view that needs them just asks with
-                    <code
-                        style="
-                            font-family: var(--font-mono);
-                            font-size: 11.5px;
-                            background: var(--bg-code);
-                            padding: 1px 5px;
-                            border-radius: 3px;
-                            color: var(--sage);
-                        "
-                        >@Environment</code
-                    >. SwiftUI tracks property access at the call site — only views that actually
-                    read a property re-render when it changes. No
-                    <code
-                        style="
-                            font-family: var(--font-mono);
-                            font-size: 11.5px;
-                            background: var(--bg-code);
-                            padding: 1px 5px;
-                            border-radius: 3px;
-                            color: var(--sage);
-                        "
-                        >@Published</code
-                    >
-                    needed.
+                    >. SwiftUI tracks property access at the call site &mdash; only views that
+                    actually read a property re-render when it changes.
                 </p>
                 <p style="font-size: 13px; color: var(--text-dim); line-height: 1.7; margin: 0">
                     <strong style="color: var(--text)">GCD file watchers, not polling</strong>
@@ -1655,8 +1646,9 @@
         <section id="explorer">
             <h2><span class="accent">File</span> Explorer</h2>
             <p class="subtitle" style="margin-bottom: 0">
-                Browse every file in the codebase with syntax highlighting and inline annotations.
+                Browse the key files in the codebase with syntax highlighting and inline annotations.
                 Click the numbered markers to learn Swift concepts.
+                <span style="color: var(--text-muted); font-size: 13px">(This is a curated selection &mdash; the full app has additional views, components, and helpers not shown here. Enough to feel comfortable roaming around.)</span>
             </p>
             <div class="explorer-wrap">
                 <div class="file-tree" id="fileTree"></div>
@@ -1706,7 +1698,7 @@
                         <div class="step-content">
                             <div class="step-label">User clicks a file in SidebarView</div>
                             <div class="step-desc">
-                                The tap triggers a call to <code>appState.selectFile(file)</code>.
+                                Calls <code>appState.selectFile(file)</code> on the coordinator.
                             </div>
                         </div>
                     </div>
@@ -1716,8 +1708,8 @@
                         <div class="step-content">
                             <div class="step-label">AppState.selectFile()</div>
                             <div class="step-desc">
-                                Sets <code>activePanel = .file(file)</code>, then calls
-                                <code>loadFileContent(file)</code>.
+                                Sets <code>sidebar.activePanel = .file(file)</code>, then tells
+                                <code>editor.loadFileContent(file)</code> to read the file.
                             </div>
                         </div>
                     </div>
@@ -1725,7 +1717,7 @@
                         <div class="dot"></div>
                         <div class="line-segment"></div>
                         <div class="step-content">
-                            <div class="step-label">loadFileContent()</div>
+                            <div class="step-label">EditorState.loadFileContent()</div>
                             <div class="step-desc">
                                 Reads the <code>.md</code> file from disk via
                                 <code>String(contentsOf:)</code>.
@@ -1843,7 +1835,7 @@
 
         <script>
             // ============================================================
-            // DATA: Source Files
+            // DATA: Source Files (curated — not every file in the codebase)
             // ============================================================
             const FILES = {
                 "App/FlowbarApp.swift": `import SwiftUI
@@ -1926,47 +1918,281 @@ enum ActivePanel: Equatable {
     case empty
 }
 
-/// Central source of truth for the app's navigation, file list, and editor content.
+/// Thin coordinator that holds the three sub-states and provides cross-cutting methods.
 ///
-/// Owns the folder path (persisted via UserDefaults), the list of markdown NoteFiles,
-/// and the currently selected file's editor text. Sets up directory and file watchers
-/// so the UI stays in sync when files change on disk (e.g. edits from Obsidian).
-/// An isWriting flag prevents the file watcher from reloading content we just saved.
+/// Views access sub-state via appState.settings, appState.sidebar, appState.editor.
+/// Methods that touch multiple sub-states (selectFile, createNewFile, etc.) live here.
 @Observable
 @MainActor
 final class AppState {
-    // MARK: - Settings (persisted to UserDefaults)
+    let settings: SettingsState
+    let sidebar: SidebarState
+    let editor: EditorState
+
+    init(defaults: UserDefaults = .standard) {
+        self.settings = SettingsState(defaults: defaults)
+        self.sidebar = SidebarState(defaults: defaults)
+        self.editor = EditorState()
+        loadFiles()
+    }
+
+    func setFolderPath(_ path: String) {
+        settings.folderPath = path
+        loadFiles()
+    }
+
+    func loadFiles() {
+        guard !settings.folderPath.isEmpty else {
+            sidebar.noteFiles = []
+            return
+        }
+
+        let url = URL(fileURLWithPath: settings.folderPath)
+        guard let contents = try? FileManager.default.contentsOfDirectory(
+            at: url,
+            includingPropertiesForKeys: [.contentModificationDateKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            sidebar.noteFiles = []
+            return
+        }
+
+        sidebar.noteFiles = contents
+            .filter { $0.pathExtension == "md" }
+            .sorted { $0.lastPathComponent.localizedCaseInsensitiveCompare($1.lastPathComponent) == .orderedAscending }
+            .map { NoteFile(url: $0) }
+
+        editor.watchDirectory(at: url) { [weak self] in
+            Task { @MainActor in
+                self?.loadFiles()
+            }
+        }
+
+        if case .empty = sidebar.activePanel, let first = sidebar.noteFiles.first {
+            selectFile(first)
+        }
+    }
+
+    func selectFile(_ file: NoteFile) {
+        sidebar.activePanel = .file(file)
+        editor.loadFileContent(file)
+        editor.watchFile(file) { [weak self] in
+            guard let self else { return }
+            guard let current = self.sidebar.selectedFile, current.id == file.id else { return }
+            self.editor.loadFileContent(file)
+        }
+    }
+
+    func showSettings() { sidebar.showSettings() }
+    func showTimer() { sidebar.showTimer() }
+    func toggleSidebar() { sidebar.toggleSidebar() }
+
+    func returnToFiles() {
+        if let file = sidebar.noteFiles.first {
+            selectFile(file)
+        } else {
+            sidebar.activePanel = .empty
+        }
+    }
+
+    func saveFileContent() {
+        editor.saveFileContent(for: sidebar.selectedFile)
+    }
+
+    func openInObsidian() {
+        guard let file = sidebar.selectedFile else { return }
+        let vaultPath = URL(fileURLWithPath: settings.folderPath).deletingLastPathComponent()
+        let vaultName = vaultPath.lastPathComponent
+        let relativePath = file.url.lastPathComponent
+        let encoded = relativePath.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? relativePath
+        let folderName = URL(fileURLWithPath: settings.folderPath).lastPathComponent
+
+        if let url = URL(string: "obsidian://open?vault=\\(vaultName)&file=\\(folderName)/\\(encoded)") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+}`,
+
+                "App/SettingsState.swift": `import SwiftUI
+import Observation
+
+/// Persisted user preferences — theme, typography, accent color, folder path, window frames.
+///
+/// Each property writes to UserDefaults via didSet. The defaults instance is injectable
+/// so tests can pass a throwaway suite.
+@Observable
+@MainActor
+final class SettingsState {
+    @ObservationIgnored let defaults: UserDefaults
+
     var folderPath: String {
-        didSet { UserDefaults.standard.set(folderPath, forKey: "folderPath") }
+        didSet { defaults.set(folderPath, forKey: "folderPath") }
     }
     var theme: AppTheme {
-        didSet { UserDefaults.standard.set(theme.rawValue, forKey: "theme") }
+        didSet { defaults.set(theme.rawValue, forKey: "theme") }
     }
     var typography: TypographySize {
-        didSet { UserDefaults.standard.set(typography.rawValue, forKey: "typography") }
+        didSet { defaults.set(typography.rawValue, forKey: "typography") }
     }
-    var windowWidth: Double {
-        didSet { if windowWidth != oldValue { UserDefaults.standard.set(windowWidth, forKey: "windowWidth") } }
+    var accentColor: AccentColor {
+        didSet { defaults.set(accentColor.rawValue, forKey: "accentColor") }
     }
-    var windowHeight: Double {
-        didSet { if windowHeight != oldValue { UserDefaults.standard.set(windowHeight, forKey: "windowHeight") } }
+
+    /// Reactive accent color — views should use this instead of reading from a static.
+    var accent: Color { accentColor.color }
+
+    /// Per-Space window frames: [SpaceID: [x, y, width, height]]
+    @ObservationIgnored var windowFrames: [String: [Double]] {
+        didSet { defaults.set(windowFrames, forKey: "windowFrames") }
     }
-    /// Saved overlay X position (-1 means "center on screen")
-    var windowX: Double {
-        didSet { if windowX != oldValue { UserDefaults.standard.set(windowX, forKey: "windowX") } }
+
+    var preferredColorScheme: ColorScheme? {
+        switch theme {
+        case .light: return .light
+        case .dark: return .dark
+        case .system: return nil
+        }
     }
-    /// Saved overlay Y position (-1 means "center on screen")
-    var windowY: Double {
-        didSet { if windowY != oldValue { UserDefaults.standard.set(windowY, forKey: "windowY") } }
+
+    static let defaultWindowSize = NSSize(width: 700, height: 500)
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        self.folderPath = defaults.string(forKey: "folderPath") ?? ""
+        self.theme = AppTheme(rawValue: defaults.string(forKey: "theme") ?? "") ?? .dark
+        self.typography = TypographySize(rawValue: defaults.string(forKey: "typography") ?? "") ?? .default
+        self.accentColor = AccentColor(rawValue: defaults.string(forKey: "accentColor") ?? "") ?? .sage
+        self.windowFrames = defaults.object(forKey: "windowFrames") as? [String: [Double]] ?? [:]
     }
+
+    func windowFrame(forSpace spaceID: Int) -> NSRect? {
+        guard let vals = windowFrames[String(spaceID)], vals.count == 4 else { return nil }
+        return NSRect(x: vals[0], y: vals[1], width: vals[2], height: vals[3])
+    }
+
+    func saveWindowFrame(_ frame: NSRect, forSpace spaceID: Int) {
+        let newVal = [
+            Double(frame.origin.x), Double(frame.origin.y),
+            Double(frame.width), Double(frame.height)
+        ]
+        let key = String(spaceID)
+        guard windowFrames[key] != newVal else { return }
+        windowFrames[key] = newVal
+    }
+}`,
+
+                "App/EditorState.swift": `import SwiftUI
+import Observation
+
+/// Manages the active file's text content, debounced saving, and file watchers.
+///
+/// Watches the currently-open file for external edits (e.g. from Obsidian).
+/// An isWriting flag prevents the watcher from reloading content we just saved.
+/// Also owns the directory watcher that refreshes the file list when files change on disk.
+@Observable
+@MainActor
+final class EditorState {
+    var editorContent: String = ""
+
+    @ObservationIgnored private var saveTask: DispatchWorkItem?
+    @ObservationIgnored private var isWriting = false
+    @ObservationIgnored private var dirWatcher: FileWatcher?
+    @ObservationIgnored private var dirWatcherURL: URL?
+    @ObservationIgnored private var dirWatcherSuppressCount = 0
+    @ObservationIgnored private var fileWatcher: FileWatcher?
+    @ObservationIgnored private var externalChangeHandler: (() -> Void)?
+
+    func loadFileContent(_ file: NoteFile) {
+        saveTask?.cancel()
+        saveTask = nil
+        isWriting = false
+
+        if let content = try? String(contentsOf: file.url, encoding: .utf8) {
+            editorContent = content
+        }
+    }
+
+    func saveFileContent(for file: NoteFile?) {
+        guard let file else { return }
+        saveTask?.cancel()
+        isWriting = true
+        let contentToSave = editorContent
+        let task = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            DispatchQueue.global(qos: .utility).async { [weak self] in
+                try? contentToSave.write(to: file.url, atomically: true, encoding: .utf8)
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    self.rearmFileWatcher(file)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                        self?.isWriting = false
+                    }
+                }
+            }
+        }
+        saveTask = task
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: task)
+    }
+
+    func watchFile(_ file: NoteFile, onExternalChange: @escaping () -> Void) {
+        externalChangeHandler = onExternalChange
+        rearmFileWatcher(file)
+    }
+
+    private func rearmFileWatcher(_ file: NoteFile) {
+        let handler = externalChangeHandler
+        fileWatcher = FileWatcher(url: file.url) { [weak self] in
+            Task { @MainActor in
+                guard let self, !self.isWriting else { return }
+                handler?()
+            }
+        }
+    }
+
+    func suppressNextDirectoryEvent() {
+        dirWatcherSuppressCount += 1
+    }
+
+    func watchDirectory(at url: URL, onDirectoryChange: @escaping () -> Void) {
+        guard dirWatcherURL != url else { return }
+        dirWatcherURL = url
+        dirWatcher = FileWatcher(url: url) { [weak self] in
+            Task { @MainActor in
+                guard let self else { return }
+                if self.dirWatcherSuppressCount > 0 {
+                    self.dirWatcherSuppressCount -= 1
+                    return
+                }
+                onDirectoryChange()
+            }
+        }
+    }
+}`,
+
+                "App/SidebarState.swift": `import SwiftUI
+import Observation
+
+/// UI navigation, sidebar layout, file list, and rename state.
+///
+/// Owns the file list, active panel selection, sidebar visibility/width,
+/// and inline-rename state. Does NOT own file content or persistence —
+/// those live in EditorState and SettingsState respectively.
+@Observable
+@MainActor
+final class SidebarState {
+    @ObservationIgnored let defaults: UserDefaults
+
+    // MARK: - Sidebar layout (persisted)
+
     var sidebarVisible: Bool {
-        didSet { if sidebarVisible != oldValue { UserDefaults.standard.set(sidebarVisible, forKey: "sidebarVisible") } }
+        didSet { if sidebarVisible != oldValue { defaults.set(sidebarVisible, forKey: "sidebarVisible") } }
     }
     var sidebarWidth: Double {
-        didSet { if sidebarWidth != oldValue { UserDefaults.standard.set(sidebarWidth, forKey: "sidebarWidth") } }
+        didSet { if sidebarWidth != oldValue { defaults.set(sidebarWidth, forKey: "sidebarWidth") } }
     }
 
     // MARK: - Navigation (single source of truth)
+
     var activePanel: ActivePanel = .empty
 
     var selectedFile: NoteFile? {
@@ -1975,70 +2201,19 @@ final class AppState {
     }
 
     // MARK: - Files
+
     var noteFiles: [NoteFile] = []
 
-    // File watching
-    @ObservationIgnored private var dirWatcher: FileWatcher?
-    @ObservationIgnored private var fileWatcher: FileWatcher?
+    // MARK: - Rename
 
-    // MARK: - Editor
-    var editorContent: String = ""
-    @ObservationIgnored private var saveTask: DispatchWorkItem?
-    @ObservationIgnored private var isWriting = false
+    var renamingFileID: String?
+    var renameText = ""
+    var renameSessionID = 0
 
-    init() {
-        let defaults = UserDefaults.standard
-        self.folderPath = defaults.string(forKey: "folderPath") ?? ""
-        self.theme = AppTheme(rawValue: defaults.string(forKey: "theme") ?? "") ?? .dark
-        self.typography = TypographySize(rawValue: defaults.string(forKey: "typography") ?? "") ?? .default
-        self.windowWidth = defaults.object(forKey: "windowWidth") as? Double ?? 700
-        self.windowHeight = defaults.object(forKey: "windowHeight") as? Double ?? 500
-        self.windowX = defaults.object(forKey: "windowX") as? Double ?? -1
-        self.windowY = defaults.object(forKey: "windowY") as? Double ?? -1
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         self.sidebarVisible = defaults.object(forKey: "sidebarVisible") as? Bool ?? true
         self.sidebarWidth = defaults.object(forKey: "sidebarWidth") as? Double ?? 200
-        loadFiles()
-    }
-
-    func loadFiles() {
-        guard !folderPath.isEmpty else {
-            noteFiles = []
-            return
-        }
-
-        let url = URL(fileURLWithPath: folderPath)
-        guard let contents = try? FileManager.default.contentsOfDirectory(
-            at: url,
-            includingPropertiesForKeys: [.contentModificationDateKey],
-            options: [.skipsHiddenFiles]
-        ) else {
-            noteFiles = []
-            return
-        }
-
-        noteFiles = contents
-            .filter { $0.pathExtension == "md" }
-            .sorted { $0.lastPathComponent.localizedCaseInsensitiveCompare($1.lastPathComponent) == .orderedAscending }
-            .map { NoteFile(url: $0) }
-
-        // Only create dirWatcher if it doesn't already exist (avoid fd churn)
-        if dirWatcher == nil {
-            dirWatcher = FileWatcher(url: url) { [weak self] in
-                Task { @MainActor in
-                    self?.loadFiles()
-                }
-            }
-        }
-
-        if case .empty = activePanel, let first = noteFiles.first {
-            selectFile(first)
-        }
-    }
-
-    func selectFile(_ file: NoteFile) {
-        activePanel = .file(file)
-        loadFileContent(file)
-        watchFile(file)
     }
 
     func showSettings() {
@@ -2049,176 +2224,45 @@ final class AppState {
         activePanel = .timer
     }
 
-    func returnToFiles() {
-        if let file = noteFiles.first { selectFile(file) }
-    }
-
-    func loadFileContent(_ file: NoteFile) {
-        if let content = try? String(contentsOf: file.url, encoding: .utf8) {
-            editorContent = content
-        }
-    }
-
-    func saveFileContent() {
-        guard let file = selectedFile else { return }
-        saveTask?.cancel()
-        let task = DispatchWorkItem { [weak self] in
-            guard let self else { return }
-            self.isWriting = true
-            try? self.editorContent.write(to: file.url, atomically: true, encoding: .utf8)
-            self.isWriting = false
-        }
-        saveTask = task
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: task)
-    }
-
-    private func watchFile(_ file: NoteFile) {
-        fileWatcher = FileWatcher(url: file.url) { [weak self] in
-            Task { @MainActor in
-                guard let self, !self.isWriting else { return }
-                guard let current = self.selectedFile, current.id == file.id else { return }
-                self.loadFileContent(file)
-            }
-        }
-    }
-
-    func openInObsidian() {
-        guard let file = selectedFile else { return }
-        let vaultPath = URL(fileURLWithPath: folderPath).deletingLastPathComponent()
-        let vaultName = vaultPath.lastPathComponent
-        let relativePath = file.url.lastPathComponent
-        let encoded = relativePath.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? relativePath
-        let folderName = URL(fileURLWithPath: folderPath).lastPathComponent
-
-        if let url = URL(string: "obsidian://open?vault=\\(vaultName)&file=\\(folderName)/\\(encoded)") {
-            NSWorkspace.shared.open(url)
-        }
-    }
-
     func toggleSidebar() {
         withAnimation(.easeInOut(duration: 0.2)) {
             sidebarVisible.toggle()
         }
     }
 
-    var preferredColorScheme: ColorScheme? {
-        switch theme {
-        case .light: return .light
-        case .dark: return .dark
-        case .system: return nil
-        }
+    func startRename(_ file: NoteFile) {
+        renameText = file.name
+        renameSessionID += 1
+        renamingFileID = file.id
+    }
+
+    func cancelRename() {
+        renamingFileID = nil
     }
 }`,
 
                 "Models/NoteFile.swift": `import Foundation
 
+/// Represents a single markdown file in the configured folder.
+/// Used throughout the app for sidebar listing, note editing, and todo source tracking.
 struct NoteFile: Identifiable, Hashable {
-    let id: String
-    let url: URL
-    let name: String
+    let id: String       // filename without .md extension
+    let url: URL         // full file path
+    var name: String { id }
 
     init(url: URL) {
         self.url = url
         self.id = url.deletingPathExtension().lastPathComponent
-        self.name = Self.formatName(self.id)
-    }
-
-    static func formatName(_ id: String) -> String {
-        id.split(separator: "-")
-            .map { $0.prefix(1).uppercased() + $0.dropFirst() }
-            .joined(separator: " ")
-    }
-}`,
-
-                "Models/TodoItem.swift": `import Foundation
-
-struct TodoItem: Identifiable {
-    let id: String
-    let text: String
-    let isDone: Bool
-    let sourceFile: NoteFile
-    let lineIndex: Int
-
-    init(text: String, isDone: Bool, sourceFile: NoteFile, lineIndex: Int) {
-        self.text = text
-        self.isDone = isDone
-        self.sourceFile = sourceFile
-        self.lineIndex = lineIndex
-        self.id = "\\(sourceFile.id):\\(lineIndex):\\(text)"
-    }
-}`,
-
-                "Services/DatabaseService.swift": `import Foundation
-import SQLite3
-
-@MainActor
-final class DatabaseService {
-    static let shared = DatabaseService()
-    private var db: OpaquePointer?
-
-    private init() {
-        openDatabase()
-        createTables()
-    }
-
-    private func openDatabase() {
-        let fileManager = FileManager.default
-        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let appDir = appSupport.appendingPathComponent("Flowbar", isDirectory: true)
-        try? fileManager.createDirectory(at: appDir, withIntermediateDirectories: true)
-        let dbPath = appDir.appendingPathComponent("flowbar.sqlite").path
-        if sqlite3_open(dbPath, &db) != SQLITE_OK {
-            print("Failed to open database at \\(dbPath)")
-        }
-    }
-
-    private func createTables() {
-        let sql = """
-        CREATE TABLE IF NOT EXISTS timer_sessions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            todo_text TEXT NOT NULL,
-            source_file TEXT NOT NULL,
-            started_at REAL NOT NULL,
-            ended_at REAL,
-            completed INTEGER DEFAULT 0
-        );
-        """
-        sqlite3_exec(db, sql, nil, nil, nil)
-    }
-
-    @discardableResult
-    func startSession(todoText: String, sourceFile: String) -> Int64 {
-        let sql = "INSERT INTO timer_sessions (todo_text, source_file, started_at) VALUES (?, ?, ?)"
-        var stmt: OpaquePointer?
-        sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
-        sqlite3_bind_text(stmt, 1, (todoText as NSString).utf8String, -1, nil)
-        sqlite3_bind_text(stmt, 2, (sourceFile as NSString).utf8String, -1, nil)
-        sqlite3_bind_double(stmt, 3, Date().timeIntervalSince1970)
-        sqlite3_step(stmt)
-        let rowId = sqlite3_last_insert_rowid(db)
-        sqlite3_finalize(stmt)
-        return rowId
-    }
-
-    func allTotalTimes() -> [String: TimeInterval] {
-        let sql = "SELECT todo_text, source_file, SUM(COALESCE(ended_at, ?) - started_at) as total FROM timer_sessions GROUP BY todo_text, source_file"
-        var stmt: OpaquePointer?
-        sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
-        sqlite3_bind_double(stmt, 1, Date().timeIntervalSince1970)
-        defer { sqlite3_finalize(stmt) }
-        var result: [String: TimeInterval] = [:]
-        while sqlite3_step(stmt) == SQLITE_ROW {
-            let text = String(cString: sqlite3_column_text(stmt, 0))
-            let source = String(cString: sqlite3_column_text(stmt, 1))
-            let total = sqlite3_column_double(stmt, 2)
-            result["\\(text)|\\(source)"] = total
-        }
-        return result
     }
 }`,
 
                 "Services/FileWatcher.swift": `import Foundation
 
+/// Watches a single file or directory for filesystem changes using GCD dispatch sources.
+///
+/// Used by EditorState to watch the notes directory (for new/deleted files) and the
+/// currently selected file (for external edits, e.g. from Obsidian). Each watcher
+/// opens a file descriptor and fires the onChange callback on the main queue.
 @MainActor
 final class FileWatcher {
     private var source: DispatchSourceFileSystemObject?
@@ -2230,20 +2274,27 @@ final class FileWatcher {
         startWatching(url: url)
     }
 
-    deinit { source?.cancel() }
+    deinit {
+        source?.cancel()
+    }
 
     func startWatching(url: URL) {
         stopWatching()
         fileDescriptor = open(url.path, O_EVTONLY)
         guard fileDescriptor >= 0 else { return }
+
         source = DispatchSource.makeFileSystemObjectSource(
             fileDescriptor: fileDescriptor,
             eventMask: [.write, .rename, .delete, .attrib],
             queue: .main
         )
-        source?.setEventHandler { [weak self] in self?.onChange() }
+        source?.setEventHandler { [weak self] in
+            self?.onChange()
+        }
         source?.setCancelHandler { [weak self] in
-            if let fd = self?.fileDescriptor, fd >= 0 { close(fd) }
+            if let fd = self?.fileDescriptor, fd >= 0 {
+                close(fd)
+            }
         }
         source?.resume()
     }
@@ -2257,17 +2308,24 @@ final class FileWatcher {
 
                 "Services/MarkdownParser.swift": `import Foundation
 
+/// Reads and writes markdown files to extract/toggle todos.
+///
+/// Used by TimerTodosView to build the todo list and by TimerService callers to mark
+/// todos done on completion. All methods are static — no instance state.
 enum MarkdownParser {
     static func extractTodos(from url: URL, noteFile: NoteFile) -> [TodoItem] {
         guard let content = try? String(contentsOf: url, encoding: .utf8) else { return [] }
         let lines = content.components(separatedBy: "\\n")
         var todos: [TodoItem] = []
+
         for (index, line) in lines.enumerated() {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             if trimmed.hasPrefix("- [ ] ") {
-                todos.append(TodoItem(text: String(trimmed.dropFirst(6)), isDone: false, sourceFile: noteFile, lineIndex: index))
+                let text = String(trimmed.dropFirst(6))
+                todos.append(TodoItem(text: text, isDone: false, sourceFile: noteFile, lineIndex: index))
             } else if trimmed.hasPrefix("- [x] ") || trimmed.hasPrefix("- [X] ") {
-                todos.append(TodoItem(text: String(trimmed.dropFirst(6)), isDone: true, sourceFile: noteFile, lineIndex: index))
+                let text = String(trimmed.dropFirst(6))
+                todos.append(TodoItem(text: text, isDone: true, sourceFile: noteFile, lineIndex: index))
             }
         }
         return todos
@@ -2277,16 +2335,24 @@ enum MarkdownParser {
         guard var content = try? String(contentsOf: url, encoding: .utf8) else { return false }
         var lines = content.components(separatedBy: "\\n")
         guard lineIndex < lines.count else { return false }
+
         let line = lines[lineIndex]
         if line.contains("- [ ] ") {
             lines[lineIndex] = line.replacingOccurrences(of: "- [ ] ", with: "- [x] ")
         } else if line.contains("- [x] ") || line.contains("- [X] ") {
             lines[lineIndex] = line.replacingOccurrences(of: "- [x] ", with: "- [ ] ")
                 .replacingOccurrences(of: "- [X] ", with: "- [ ] ")
-        } else { return false }
+        } else {
+            return false
+        }
+
         content = lines.joined(separator: "\\n")
-        do { try content.write(to: url, atomically: true, encoding: .utf8); return true }
-        catch { return false }
+        do {
+            try content.write(to: url, atomically: true, encoding: .utf8)
+            return true
+        } catch {
+            return false
+        }
     }
 
     static func markTodoDone(text: String, in url: URL) {
@@ -2305,6 +2371,11 @@ enum MarkdownParser {
                 "Services/TimerService.swift": `import Foundation
 import Observation
 
+/// Manages the stopwatch timer for tracking time spent on todos.
+///
+/// Supports start, pause, resume, and complete. Persists sessions to SQLite via DatabaseService.
+/// Views observe properties to update the UI; hasActiveSession and isTracking()
+/// provide convenient checks.
 @Observable
 @MainActor
 final class TimerService {
@@ -2314,6 +2385,7 @@ final class TimerService {
     var currentSourceFile = ""
     var elapsed: TimeInterval = 0
 
+    /// True when a timer session exists (running or paused)
     var hasActiveSession: Bool { isRunning || isPaused }
 
     @ObservationIgnored private var sessionId: Int64?
@@ -2322,7 +2394,20 @@ final class TimerService {
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private let db = DatabaseService.shared
 
-    init() { restoreActiveSession() }
+    init() {
+        restoreActiveSession()
+    }
+
+    private func restoreActiveSession() {
+        if let session = db.activeSession() {
+            sessionId = session.id
+            currentTodoText = session.todoText
+            currentSourceFile = session.sourceFile
+            startedAt = session.startedAt
+            isRunning = true
+            startTicking()
+        }
+    }
 
     func start(todoText: String, sourceFile: String) {
         if hasActiveSession { stopSession() }
@@ -2339,15 +2424,18 @@ final class TimerService {
 
     func pause() {
         guard isRunning else { return }
-        timer?.invalidate(); timer = nil
+        timer?.invalidate()
+        timer = nil
         pausedElapsed = elapsed
-        isRunning = false; isPaused = true
+        isRunning = false
+        isPaused = true
     }
 
     func resume() {
         guard isPaused else { return }
         startedAt = Date()
-        isRunning = true; isPaused = false
+        isRunning = true
+        isPaused = false
         startTicking()
     }
 
@@ -2364,6 +2452,25 @@ final class TimerService {
         hasActiveSession && currentTodoText == todoText && currentSourceFile == sourceFile
     }
 
+    private func stopSession() {
+        if let id = sessionId { db.endSession(id: id, completed: false) }
+        timer?.invalidate()
+        timer = nil
+    }
+
+    private func cleanup() {
+        timer?.invalidate()
+        timer = nil
+        isRunning = false
+        isPaused = false
+        sessionId = nil
+        startedAt = nil
+        elapsed = 0
+        pausedElapsed = 0
+        currentTodoText = ""
+        currentSourceFile = ""
+    }
+
     private func startTicking() {
         timer?.invalidate()
         let base = pausedElapsed
@@ -2378,66 +2485,14 @@ final class TimerService {
     func allTotalTimes() -> [String: TimeInterval] { db.allTotalTimes() }
 
     nonisolated static func formatTime(_ seconds: TimeInterval) -> String {
-        String(format: "%02d:%02d", Int(seconds) / 60, Int(seconds) % 60)
-    }
-
-    private func cleanup() {
-        timer?.invalidate(); timer = nil
-        isRunning = false; isPaused = false
-        sessionId = nil; startedAt = nil
-        elapsed = 0; pausedElapsed = 0
-        currentTodoText = ""; currentSourceFile = ""
-    }
-    private func stopSession() {
-        if let id = sessionId { db.endSession(id: id, completed: false) }
-        timer?.invalidate(); timer = nil
-    }
-    private func restoreActiveSession() {
-        if let s = db.activeSession() {
-            sessionId = s.id; currentTodoText = s.todoText
-            currentSourceFile = s.sourceFile; startedAt = s.startedAt
-            isRunning = true; startTicking()
+        let total = Int(seconds)
+        let hrs = total / 3600
+        let mins = (total % 3600) / 60
+        let secs = total % 60
+        if hrs > 0 {
+            return String(format: "%d:%02d:%02d", hrs, mins, secs)
         }
-    }
-}`,
-
-                "Theme/Colors.swift": `import SwiftUI
-
-enum FlowbarColors {
-    static let accent = Color(hex: "8B9A6B")
-    static var sidebarBg: Color { Color.primary.opacity(0.04) }
-}
-
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let r = Double((int >> 16) & 0xFF) / 255.0
-        let g = Double((int >> 8) & 0xFF) / 255.0
-        let b = Double(int & 0xFF) / 255.0
-        self.init(red: r, green: g, blue: b)
-    }
-}`,
-
-                "Theme/Typography.swift": `import SwiftUI
-
-enum TypographySize: String, CaseIterable {
-    case small, \`default\`, large
-
-    var bodySize: CGFloat {
-        switch self {
-        case .small: return 12
-        case .default: return 14
-        case .large: return 16
-        }
-    }
-    var titleSize: CGFloat {
-        switch self {
-        case .small: return 20
-        case .default: return 24
-        case .large: return 28
-        }
+        return String(format: "%02d:%02d", mins, secs)
     }
 }`,
 
@@ -2451,18 +2506,17 @@ struct MainView: View {
     @Environment(AppState.self) var appState
 
     var body: some View {
-        @Bindable var appState = appState
         HStack(spacing: 0) {
-            if appState.sidebarVisible {
+            if appState.sidebar.sidebarVisible {
                 SidebarView()
-                    .frame(width: CGFloat(appState.sidebarWidth))
+                    .frame(width: CGFloat(appState.sidebar.sidebarWidth))
                     .transition(.move(edge: .leading).combined(with: .opacity))
 
-                SidebarDivider(width: $appState.sidebarWidth)
+                SidebarDivider()
             }
 
             Group {
-                switch appState.activePanel {
+                switch appState.sidebar.activePanel {
                 case .settings:
                     SettingsView()
                 case .timer:
@@ -2474,14 +2528,24 @@ struct MainView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .ignoresSafeArea(.all, edges: .top)
         }
         .background(.regularMaterial)
-        .preferredColorScheme(appState.preferredColorScheme)
-        .background(
+        .preferredColorScheme(appState.settings.preferredColorScheme)
+        .background(keyboardShortcuts)
+    }
+
+    @ViewBuilder
+    private var keyboardShortcuts: some View {
+        Group {
             Button("") { appState.toggleSidebar() }
                 .keyboardShortcut("b", modifiers: .command)
-                .hidden()
-        )
+            Button("") { appState.selectPreviousFile() }
+                .keyboardShortcut(.leftArrow, modifiers: [.option, .command])
+            Button("") { appState.selectNextFile() }
+                .keyboardShortcut(.rightArrow, modifiers: [.option, .command])
+        }
+        .hidden()
     }
 
     private var emptyState: some View {
@@ -2495,21 +2559,6 @@ struct MainView: View {
     }
 }`,
 
-                "Components/SidebarToggleButton.swift": `import SwiftUI
-
-struct SidebarToggleButton: View {
-    var action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: "sidebar.left")
-                .font(.system(size: 13))
-                .foregroundStyle(.secondary)
-        }
-        .buttonStyle(.plain)
-    }
-}`,
-
                 "Window/WindowManager.swift": `import AppKit
 import SwiftUI
 import Observation
@@ -2517,8 +2566,8 @@ import Observation
 /// Manages the menu bar status item and the floating overlay panel.
 ///
 /// Owns the NSStatusItem (menu bar icon). Clicking the icon or pressing
-/// double-Fn toggles the overlay panel on/off. Injected via .environment()
-/// so views can access window state.
+/// double-Fn toggles the overlay panel on/off. Remembers window position
+/// and size per desktop Space. Injected via .environment().
 @Observable
 @MainActor
 final class WindowManager: NSObject {
@@ -2595,22 +2644,25 @@ final class WindowManager: NSObject {
             return
         }
 
-        let size = NSSize(width: appState.windowWidth, height: appState.windowHeight)
-        let screen = NSScreen.main ?? NSScreen.screens.first!
+        let spaceID = activeSpaceID()
 
-        // Use saved position if available, otherwise center on screen
-        let origin: NSPoint
-        if appState.windowX >= 0, appState.windowY >= 0 {
-            origin = NSPoint(x: appState.windowX, y: appState.windowY)
+        // Load saved frame for this Space, or center with default size
+        let frame: NSRect
+        if let saved = appState.settings.windowFrame(forSpace: spaceID) {
+            frame = saved
         } else {
-            origin = NSPoint(
+            let size = SettingsState.defaultWindowSize
+            let screen = NSScreen.main ?? NSScreen.screens.first!
+            frame = NSRect(
                 x: screen.frame.midX - size.width / 2,
-                y: screen.frame.midY - size.height / 2
+                y: screen.frame.midY - size.height / 2,
+                width: size.width, height: size.height
             )
         }
-        let frame = NSRect(origin: origin, size: size)
 
-        let newPanel = FloatingPanel(contentRect: frame, appState: appState)
+        let newPanel = FloatingPanel(contentRect: frame, spaceID: spaceID) { [weak self] frame, spaceID in
+            self?.appState.settings.saveWindowFrame(frame, forSpace: spaceID)
+        }
         let mainView = MainView()
             .environment(appState)
             .environment(timerService)
@@ -2645,7 +2697,6 @@ final class WindowManager: NSObject {
             transform.scale(by: scale)
 
             let path = NSBezierPath()
-            // Outer circle (stone shape)
             path.move(to: NSPoint(x: 12, y: 2.5))
             path.curve(to: NSPoint(x: 2.5, y: 12),
                        controlPoint1: NSPoint(x: 7, y: 2.5),
@@ -2661,7 +2712,6 @@ final class WindowManager: NSObject {
                        controlPoint2: NSPoint(x: 17, y: 2.5))
             path.close()
 
-            // Flow groove (cutout) — winds through the center
             let groove = NSBezierPath()
             groove.move(to: NSPoint(x: 3.8, y: 11.2))
             groove.curve(to: NSPoint(x: 10.5, y: 10.8),
@@ -2716,18 +2766,21 @@ import SwiftUI
 /// The overlay window shown when the user clicks the menu bar icon or presses double-Fn.
 ///
 /// Configured as an always-on-top utility panel that joins all Spaces. Saves its
-/// size back to AppState on close so dimensions persist across sessions.
+/// size back via an onClose callback so dimensions persist across sessions.
 /// The full title bar is the drag region. Traffic lights sit inside it over the sidebar.
 class FloatingPanel: NSPanel {
-    /// Width of the standard traffic light buttons area (close/minimize/zoom).
-    /// Used by SidebarView to inset its header past the buttons.
-    static let trafficLightWidth: CGFloat = 76
+    static let trafficLightX: CGFloat = 20
+    /// Width past the traffic lights area. Used by SidebarView to inset its header.
+    static let trafficLightWidth: CGFloat = 80
 
-    private let appState: AppState
+    /// Called with (frame, spaceID) when the panel closes
+    private let onClose: (NSRect, Int) -> Void
     private var initialSize: NSSize = .zero
+    let spaceID: Int
 
-    init(contentRect: NSRect, appState: AppState) {
-        self.appState = appState
+    init(contentRect: NSRect, spaceID: Int, onClose: @escaping (NSRect, Int) -> Void) {
+        self.onClose = onClose
+        self.spaceID = spaceID
         super.init(
             contentRect: contentRect,
             styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
@@ -2751,17 +2804,21 @@ class FloatingPanel: NSPanel {
 
     func setContent(_ view: some View) {
         contentView = NSHostingView(rootView: view)
+        repositionTrafficLights()
+    }
+
+    private func repositionTrafficLights() {
+        let types: [NSWindow.ButtonType] = [.closeButton, .miniaturizeButton, .zoomButton]
+        let spacing: CGFloat = 20
+        for (i, type) in types.enumerated() {
+            guard let button = standardWindowButton(type) else { continue }
+            let x = Self.trafficLightX + CGFloat(i) * spacing
+            button.setFrameOrigin(NSPoint(x: x, y: button.frame.origin.y))
+        }
     }
 
     override func close() {
-        // Persist size if user resized
-        if frame.size != initialSize {
-            appState.windowWidth = Double(frame.width)
-            appState.windowHeight = Double(frame.height)
-        }
-        // Always persist position so it reopens where the user left it
-        appState.windowX = Double(frame.origin.x)
-        appState.windowY = Double(frame.origin.y)
+        onClose(frame, spaceID)
         super.close()
     }
 
@@ -2781,29 +2838,17 @@ class FloatingPanel: NSPanel {
                     },
                     5: {
                         title: "@NSApplicationDelegateAdaptor",
-                        body: "Bridges SwiftUI's <code>App</code> protocol with AppKit's <code>NSApplicationDelegate</code>. Since Flowbar needs AppKit features (menu bar icon, floating overlay panel, global keyboard shortcuts), this adapter lets us use an old-school delegate alongside modern SwiftUI.",
-                    },
-                    7: {
-                        title: "some Scene",
-                        body: "The <code>some</code> keyword creates an <em>opaque return type</em>. It means \"this returns something that conforms to <code>Scene</code>, but the caller doesn't need to know exactly what type.\" This enables SwiftUI's declarative API without exposing complex generic types.",
+                        body: "Bridges SwiftUI's <code>App</code> lifecycle to AppKit's <code>NSApplicationDelegate</code>. This property wrapper creates the AppDelegate instance and connects it to the app's lifecycle. Without it, <code>applicationDidFinishLaunching</code> would never fire.",
                     },
                 },
                 "App/AppDelegate.swift": {
-                    8: {
-                        title: "@MainActor",
-                        body: "Ensures all code in this class runs on the main thread. In macOS/iOS, UI work must happen on the main thread. <code>@MainActor</code> is a Swift concurrency annotation that makes this guarantee at compile time, preventing subtle threading bugs.",
-                    },
-                    9: {
-                        title: "class vs struct",
-                        body: "AppDelegate is a <code>class</code> (reference type), not a <code>struct</code> (value type). Classes are used here because: (1) NSObject requires it, (2) we need a single shared instance, (3) we need identity (delegates are passed by reference). Structs are preferred for data; classes for objects with identity.",
-                    },
                     10: {
                         title: "Implicitly Unwrapped Optional (!)",
                         body: "The <code>!</code> after the type means this is an implicitly unwrapped optional. It starts as <code>nil</code> but will be set in <code>applicationDidFinishLaunching</code> before anyone uses it. After that, you can use it without <code>if let</code> unwrapping. Dangerous if used before initialization!",
                     },
                     40: {
                         title: "Global + Local Event Monitors",
-                        body: "Two separate event monitors ensure double-Fn works everywhere. The <em>global</em> monitor (<code>addGlobalMonitorForEvents</code>) fires when another app is focused. The <em>local</em> monitor (<code>addLocalMonitorForEvents</code>) fires when Flowbar itself is focused. Global monitors can't return events, so the local one returns the event to avoid swallowing it.",
+                        body: "Two separate event monitors ensure double-Fn works everywhere. The <em>global</em> monitor (<code>addGlobalMonitorForEvents</code>) fires when another app is focused. The <em>local</em> monitor (<code>addLocalMonitorForEvents</code>) fires when Flowbar itself is focused.",
                     },
                     42: {
                         title: "[weak self]",
@@ -2815,257 +2860,249 @@ class FloatingPanel: NSPanel {
                     },
                 },
                 "App/AppState.swift": {
-                    21: {
+                    19: {
                         title: "@Observable macro",
-                        body: "It automatically tracks which properties each view reads, so only views that actually use a changed property re-render. Any stored property is automatically observable.",
+                        body: "Automatically tracks which properties each view reads, so only views that actually use a changed property re-render. Any stored property is automatically observable.",
                     },
-                    25: {
-                        title: "UserDefaults with didSet",
-                        body: "With <code>@Observable</code>, you can't use <code>@AppStorage</code> (it's a property wrapper, and <code>@Observable</code> already transforms properties). Instead, Flowbar reads defaults in <code>init()</code> and writes them back in <code>didSet</code>. Same persistence, just explicit &mdash; and the <code>@Observable</code> macro handles reactivity automatically.",
+                    22: {
+                        title: "Coordinator Pattern",
+                        body: "AppState owns three sub-state objects (<code>SettingsState</code>, <code>SidebarState</code>, <code>EditorState</code>). It provides cross-cutting methods that touch multiple sub-states &mdash; like <code>selectFile</code> which updates both sidebar and editor. Views access sub-state via <code>appState.settings</code>, <code>appState.sidebar</code>, <code>appState.editor</code>.",
                     },
-                    34: {
-                        title: "oldValue guard in didSet",
-                        body: "The <code>if windowWidth != oldValue</code> check prevents writing to UserDefaults when the value hasn't actually changed. <code>oldValue</code> is an implicit parameter available inside any <code>didSet</code> observer. This avoids unnecessary disk writes during initialization or when setting the same value.",
+                    26: {
+                        title: "Injectable defaults",
+                        body: "The <code>defaults</code> parameter defaults to <code>.standard</code> but can be overridden. Tests pass a throwaway <code>UserDefaults(suiteName:)</code> so they don't pollute the real app's settings.",
                     },
-                    65: {
-                        title: "@ObservationIgnored",
-                        body: "Opts a property out of observation tracking. Private implementation details like <code>dirWatcher</code>, <code>fileWatcher</code>, and <code>saveTask</code> don't need to trigger view re-renders. Without this, any change to these internal fields would cause unnecessary UI updates.",
-                    },
-                    57: {
-                        title: "Computed Property",
-                        body: "A computed property has no stored value &mdash; it calculates the result each time it's accessed. <code>var selectedFile: NoteFile?</code> derives its value from <code>activePanel</code>. The <code>{ get }</code> body runs on every access. This is a common pattern for derived state.",
-                    },
-                    58: {
-                        title: "if case pattern matching",
-                        body: "Swift's pattern matching extracts the associated value from an enum. <code>if case .file(let f) = activePanel</code> checks if activePanel is the <code>.file</code> case, and if so, binds the associated <code>NoteFile</code> to <code>f</code>. This is how you work with enums that carry data.",
-                    },
-                    89: {
+                    43: {
                         title: "guard ... else { return }",
-                        body: "The <code>guard</code> statement ensures a condition is true before proceeding. If it fails, you must exit the scope (return, throw, break). This pattern keeps functions flat and readable &mdash; all the error handling is at the top, and the main logic is un-indented below.",
+                        body: "The <code>guard</code> statement ensures a condition is true before proceeding. If it fails, you must exit the scope (return, throw, break). This pattern keeps functions flat and readable.",
                     },
-                    103: {
+                    55: {
                         title: "Trailing Closure Syntax",
                         body: "When the last parameter of a function is a closure, Swift lets you write it outside the parentheses. <code>.map { NoteFile(url: $0) }</code> is short for <code>.map({ NoteFile(url: $0) })</code>. The <code>$0</code> is a shorthand for the first closure parameter.",
                     },
-                    107: {
+                    57: {
                         title: "[weak self] + Task { @MainActor }",
-                        body: "A common Swift concurrency pattern. The <code>[weak self]</code> prevents retain cycles. <code>Task { @MainActor in ... }</code> creates an async task that runs on the main thread. The <code>self?</code> uses optional chaining &mdash; if self is nil, the whole expression evaluates to nil safely.",
+                        body: "A common Swift concurrency pattern. The <code>[weak self]</code> prevents retain cycles. <code>Task { @MainActor in ... }</code> creates an async task that runs on the main thread.",
                     },
-                    137: {
-                        title: "returnToFiles()",
-                        body: "A navigation helper that returns from settings/timer back to the file list. Selects the first file if available. Used by <code>SidebarFooter</code> toggle buttons so tapping an active tab deselects it.",
+                    69: {
+                        title: "selectFile crosses sub-states",
+                        body: "This method touches both <code>sidebar</code> (to set the active panel) and <code>editor</code> (to load file content and set up a watcher). Cross-cutting methods like this are why AppState exists as a coordinator.",
+                    },
+                },
+                "App/SettingsState.swift": {
+                    11: {
+                        title: "@ObservationIgnored let defaults",
+                        body: "Excludes this property from observation tracking. The <code>defaults</code> reference never changes after init, so views don't need to re-render when it's accessed.",
+                    },
+                    14: {
+                        title: "UserDefaults with didSet",
+                        body: "With <code>@Observable</code>, you can't use <code>@AppStorage</code>. Instead, reads happen in <code>init()</code> and writes happen in <code>didSet</code>. Same persistence, just explicit.",
+                    },
+                    27: {
+                        title: "Reactive computed property",
+                        body: "<code>var accent: Color { accentColor.color }</code> derives the SwiftUI Color from the stored enum. The <code>@Observable</code> macro tracks access, so views reading <code>settings.accent</code> re-render when <code>accentColor</code> changes.",
+                    },
+                    43: {
+                        title: "static let (shared constant)",
+                        body: "<code>static let defaultWindowSize</code> is a type-level constant shared by all instances. Used by WindowManager when creating a panel for a Space with no saved frame.",
+                    },
+                },
+                "App/EditorState.swift": {
+                    12: {
+                        title: "@Observable + single tracked property",
+                        body: "Only <code>editorContent</code> is tracked by the observation system. All other properties are marked <code>@ObservationIgnored</code> since they're internal implementation details.",
+                    },
+                    34: {
+                        title: "Debounced save with DispatchWorkItem",
+                        body: "Instead of saving on every keystroke, the save is delayed by 0.5 seconds. Each new change cancels the previous pending save. <code>DispatchWorkItem</code> is cancellable, making it ideal for debouncing.",
+                    },
+                    42: {
+                        title: "Background write + main thread callback",
+                        body: "File writing happens on a background queue (<code>.global(qos: .utility)</code>) to avoid blocking the UI. After the write completes, it hops back to the main thread to re-arm the file watcher.",
+                    },
+                    76: {
+                        title: "Suppress count pattern",
+                        body: "After an explicit mutation (create, rename, trash), the directory watcher would fire and cause a redundant reload. The suppress count skips that event. It's a counter (not a boolean) to handle rapid successive mutations correctly.",
+                    },
+                },
+                "App/SidebarState.swift": {
+                    17: {
+                        title: "oldValue guard in didSet",
+                        body: "<code>if sidebarVisible != oldValue</code> prevents writing to UserDefaults when the value hasn't actually changed. <code>oldValue</code> is an implicit parameter available inside any <code>didSet</code> observer.",
+                    },
+                    27: {
+                        title: "Computed Property + Pattern Matching",
+                        body: "<code>var selectedFile</code> derives its value from <code>activePanel</code>. <code>if case .file(let f) = activePanel</code> extracts the associated <code>NoteFile</code> from the enum. This is how you work with enums that carry data.",
+                    },
+                    62: {
+                        title: "withAnimation",
+                        body: "Wrapping a state change in <code>withAnimation</code> tells SwiftUI to animate the resulting UI transition. Here the sidebar slides in/out with a 0.2s ease-in-out curve.",
                     },
                 },
                 "Models/NoteFile.swift": {
-                    3: {
+                    5: {
                         title: "struct + Protocols",
-                        body: "A <code>struct</code> is a value type &mdash; it's copied when passed around (like a number or string). <code>Identifiable</code> requires an <code>id</code> property (needed for SwiftUI lists). <code>Hashable</code> lets it be used in sets and as dictionary keys. Structs are the default choice for data in Swift.",
+                        body: "A <code>struct</code> is a value type &mdash; it's copied when passed around. <code>Identifiable</code> requires an <code>id</code> property (needed for SwiftUI lists). <code>Hashable</code> lets it be used in sets and as dictionary keys.",
                     },
                     8: {
-                        title: "init(url: URL)",
-                        body: "A custom initializer. Unlike classes, structs get a free memberwise init, but you can write your own. Here, it computes <code>id</code> and <code>name</code> from the URL. <code>self.url = url</code> distinguishes the property from the parameter. <code>Self</code> (capital S) refers to the type itself.",
+                        title: "Computed property (name)",
+                        body: "<code>var name: String { id }</code> is a computed property that just returns <code>id</code>. Keeps the interface clean: callers read <code>file.name</code> without knowing it's just the filename.",
                     },
-                    14: {
-                        title: "Static Method",
-                        body: "<code>static func</code> belongs to the type itself, not an instance. You call it as <code>NoteFile.formatName()</code> or <code>Self.formatName()</code> inside the type. Static methods can't access instance properties. They're used for utility functions that logically belong to the type.",
-                    },
-                },
-                "Models/TodoItem.swift": {
-                    3: {
-                        title: "struct TodoItem: Identifiable",
-                        body: "Another value-type data model. <code>Identifiable</code> requires a unique <code>id</code> property, which SwiftUI uses to track items in lists efficiently (like React's <code>key</code> prop). The <code>id</code> here is computed from the file, line number, and text to ensure uniqueness.",
-                    },
-                    15: {
-                        title: "String Interpolation",
-                        body: '<code>"\\(sourceFile.id):\\(lineIndex):\\(text)"</code> embeds values inside a string. Swift uses <code>\\(...)</code> syntax (backslash-parentheses) instead of template literals. Any expression that conforms to <code>CustomStringConvertible</code> can be interpolated.',
-                    },
-                },
-                "Services/DatabaseService.swift": {
-                    6: {
-                        title: "Singleton Pattern",
-                        body: "<code>static let shared</code> creates a single global instance. Because it's <code>let</code> (immutable), it's thread-safe and initialized lazily on first access. This is Swift's recommended singleton pattern. The <code>private init()</code> below prevents anyone else from creating instances.",
-                    },
-                    9: {
-                        title: "private init()",
-                        body: "A private initializer means only code inside this type can create an instance. Combined with <code>static let shared</code>, this enforces the singleton pattern: exactly one DatabaseService exists in the entire app.",
-                    },
-                    39: {
-                        title: "@discardableResult",
-                        body: "Tells the compiler it's OK to ignore the return value. Without this, calling <code>startSession()</code> without using the returned <code>Int64</code> would produce a warning. This is a common pattern for functions where the return value is sometimes useful but not always needed.",
-                    },
-                    7: {
-                        title: "OpaquePointer",
-                        body: "A type-erased C pointer, used when interacting with C libraries like SQLite3. Swift imports C APIs directly, and <code>OpaquePointer?</code> represents a nullable C pointer. The <code>?</code> makes it an optional &mdash; it can be <code>nil</code> (like null in other languages).",
+                    10: {
+                        title: "Custom initializer",
+                        body: "A custom initializer that computes <code>id</code> from the URL. <code>self.url = url</code> distinguishes the property from the parameter.",
                     },
                 },
                 "Services/FileWatcher.swift": {
-                    9: {
+                    15: {
                         title: "@escaping closure",
-                        body: "<code>@escaping</code> means this closure will outlive the function call. It's stored in a property and called later when a file changes. Non-escaping closures (the default) can only be called within the function. The compiler requires you to be explicit about escaping closures.",
+                        body: "<code>@escaping</code> means this closure will outlive the function call. It's stored in a property and called later when a file changes. The compiler requires you to be explicit about escaping closures.",
                     },
                     20: {
-                        title: "DispatchSource for file monitoring",
-                        body: "A low-level GCD (Grand Central Dispatch) API that watches file system events. The <code>eventMask</code> specifies which changes to watch: writes, renames, deletes, and attribute changes. This is how Flowbar live-reloads when you edit a file in Obsidian.",
+                        title: "deinit",
+                        body: "Called when an object is about to be freed. Here it cancels the dispatch source to stop watching and close the file descriptor.",
                     },
-                    25: {
+                    29: {
+                        title: "DispatchSource for file monitoring",
+                        body: "A low-level GCD API that watches file system events. The <code>eventMask</code> specifies which changes to watch: writes, renames, deletes, and attribute changes. This is how Flowbar live-reloads when you edit a file in Obsidian.",
+                    },
+                    34: {
                         title: "[weak self] in closure",
-                        body: "The event handler closure captures <code>self</code> weakly. Since <code>source</code> owns this closure and <code>self</code> owns <code>source</code>, a strong capture would create a retain cycle. <code>self?</code> uses optional chaining &mdash; if the FileWatcher is deallocated, the closure safely does nothing.",
+                        body: "The event handler closure captures <code>self</code> weakly. Since <code>source</code> owns this closure and <code>self</code> owns <code>source</code>, a strong capture would create a retain cycle.",
                     },
                 },
                 "Services/MarkdownParser.swift": {
-                    3: {
-                        title: "enum with no cases",
-                        body: "An enum with only static methods and no cases acts as a <em>namespace</em>. You can't create an instance of it (which is the point &mdash; it's just a collection of utility functions). This is the Swift equivalent of a static utility class.",
-                    },
-                    5: {
-                        title: "guard let ... else { return [] }",
-                        body: "Early return with a default value. If the file can't be read, we immediately return an empty array instead of crashing. <code>try?</code> converts a throwing function into an optional: success gives the value, failure gives <code>nil</code>.",
-                    },
                     8: {
+                        title: "enum with no cases",
+                        body: "An enum with only static methods and no cases acts as a <em>namespace</em>. You can't create an instance of it. This is the Swift equivalent of a static utility class.",
+                    },
+                    10: {
+                        title: "guard let ... else { return [] }",
+                        body: "Early return with a default value. If the file can't be read, we immediately return an empty array. <code>try?</code> converts a throwing function into an optional: success gives the value, failure gives <code>nil</code>.",
+                    },
+                    14: {
                         title: ".enumerated()",
-                        body: "Iterates over a collection while providing both the index and the element. <code>for (index, line) in lines.enumerated()</code> is equivalent to <code>for i, line in enumerate(lines)</code> in Python. The tuple <code>(index, line)</code> is destructured automatically.",
+                        body: "Iterates over a collection while providing both the index and the element. The tuple <code>(index, line)</code> is destructured automatically.",
                     },
                 },
                 "Services/TimerService.swift": {
-                    4: {
+                    10: {
                         title: "@Observable + @MainActor",
-                        body: "Like AppState, TimerService uses the <code>@Observable</code> macro for automatic change tracking. No <code>@Published</code> needed. The <code>@MainActor</code> guarantees all property access happens on the main thread. Views read properties via <code>@Environment(TimerService.self)</code>.",
-                    },
-                    7: {
-                        title: "Plain var (auto-observed)",
-                        body: "With <code>@Observable</code>, plain <code>var</code> properties are automatically tracked. When <code>isRunning</code> changes, only views that actually read <code>isRunning</code> re-render &mdash; not every view observing TimerService. This is more efficient than the old <code>@Published</code> approach.",
+                        body: "Like AppState, TimerService uses the <code>@Observable</code> macro for automatic change tracking. The <code>@MainActor</code> guarantees all property access happens on the main thread.",
                     },
                     13: {
+                        title: "Plain var (auto-observed)",
+                        body: "With <code>@Observable</code>, plain <code>var</code> properties are automatically tracked. When <code>isRunning</code> changes, only views that actually read <code>isRunning</code> re-render.",
+                    },
+                    20: {
                         title: "Computed Property (hasActiveSession)",
-                        body: "<code>var hasActiveSession: Bool { isRunning || isPaused }</code> is a computed property with no setter. It derives its value from other state. It's recalculated each time it's read. This avoids storing redundant state that could get out of sync.",
+                        body: "<code>var hasActiveSession: Bool { isRunning || isPaused }</code> is a computed property with no setter. Derives its value from other state.",
                     },
-                    51: {
+                    87: {
+                        title: "@discardableResult",
+                        body: "Tells the compiler it's OK to ignore the return value. Without this, calling <code>complete()</code> without using the returned tuple would produce a warning.",
+                    },
+                    88: {
                         title: "Named Tuple Return",
-                        body: "<code>-> (todoText: String, sourceFile: String)?</code> returns a named tuple (or nil). Tuples are lightweight ways to return multiple values without defining a struct. The <code>?</code> makes the whole tuple optional &mdash; the function returns nil if there's no active session.",
+                        body: "<code>-> (todoText: String, sourceFile: String)?</code> returns a named tuple (or nil). Tuples are lightweight ways to return multiple values without defining a struct.",
                     },
-                    66: {
+                    123: {
                         title: "Timer.scheduledTimer",
-                        body: "Creates a repeating timer that fires every second. The closure uses <code>[weak self]</code> to avoid retaining the TimerService. Inside, <code>Task { @MainActor in ... }</code> ensures the UI-bound <code>elapsed</code> property is updated on the main thread.",
+                        body: "Creates a repeating timer that fires every second. The closure uses <code>[weak self]</code> to avoid retaining the TimerService. <code>Task { @MainActor in ... }</code> ensures UI updates happen on the main thread.",
                     },
-                },
-                "Theme/Colors.swift": {
-                    3: {
-                        title: "Caseless Enum as Namespace",
-                        body: "Like MarkdownParser, this enum has no cases &mdash; it's used purely as a namespace for color constants. <code>static let</code> creates compile-time constants. This is idiomatic Swift for grouping related constants.",
-                    },
-                    4: {
-                        title: "static let vs static var",
-                        body: "<code>static let accent</code> is a constant computed once and cached forever. <code>static var sidebarBg</code> uses a computed getter (the <code>{ }</code> block) and recalculates every access. Use <code>let</code> for fixed values, <code>var</code> for dynamic ones.",
-                    },
-                    8: {
-                        title: "Extension",
-                        body: "<code>extension Color { init(hex:) }</code> adds a new initializer to SwiftUI's <code>Color</code> type without subclassing. Extensions can add methods, computed properties, and initializers to any type &mdash; even ones you don't own. This is one of Swift's most powerful features.",
-                    },
-                },
-                "Theme/Typography.swift": {
-                    3: {
-                        title: "Enum with Raw Values",
-                        body: '<code>enum TypographySize: String</code> gives each case an implicit String raw value ("small", "default", "large"). <code>CaseIterable</code> automatically provides an <code>allCases</code> array for iteration. The backtick around <code>\\`default\\`</code> is needed because "default" is a reserved keyword.',
-                    },
-                    6: {
-                        title: "Computed Property on Enum",
-                        body: "Enums can have computed properties with <code>switch self</code> to return different values per case. This is more type-safe than a dictionary lookup. The compiler ensures you handle all cases (exhaustive switching).",
+                    142: {
+                        title: "nonisolated static func",
+                        body: "Opts this method out of <code>@MainActor</code> isolation. Since <code>formatTime</code> is a pure function that doesn't access mutable state, it can be called from any context without <code>await</code>.",
                     },
                 },
                 "Views/MainView.swift": {
-                    7: {
+                    8: {
                         title: "@Environment(Type.self)",
-                        body: "Reads an <code>@Observable</code> object injected via <code>.environment()</code>. Replaces the older <code>@EnvironmentObject</code>. The type is passed as a parameter: <code>@Environment(AppState.self)</code>. If no matching object exists, the app crashes &mdash; so inject early in WindowManager's <code>showPanel()</code>.",
+                        body: "Reads an <code>@Observable</code> object injected via <code>.environment()</code>. Replaces the older <code>@EnvironmentObject</code>. If no matching object exists, the app crashes.",
                     },
                     10: {
                         title: "var body: some View",
-                        body: "Every SwiftUI view must have a <code>body</code> property that returns <code>some View</code>. This is a computed property that SwiftUI calls to get the view's content. The <code>some View</code> opaque return type lets you return any combination of views without specifying the complex nested generic type.",
+                        body: "Every SwiftUI view must have a <code>body</code> property that returns <code>some View</code>. The <code>some View</code> opaque return type lets you return any combination of views without specifying the complex nested generic type.",
                     },
-                    11: {
-                        title: "@Bindable",
-                        body: "Creates bindings to an <code>@Observable</code> object's properties. With the old <code>@EnvironmentObject</code>, the <code>$</code> prefix worked directly. With <code>@Environment</code>, you first create a local <code>@Bindable</code> copy: <code>@Bindable var appState = appState</code>. Then <code>$appState.property</code> gives you a <code>Binding</code>.",
-                    },
-                    17: {
-                        title: "$appState.sidebarWidth",
-                        body: "The <code>$</code> prefix creates a <code>Binding</code> &mdash; a two-way connection to the property. <code>appState.sidebarWidth</code> just reads the value, but <code>$appState.sidebarWidth</code> can both read AND write. The <code>SidebarDivider</code> uses this binding to update the width when the user drags it.",
+                    12: {
+                        title: "Sub-state access pattern",
+                        body: "Views access state through the coordinator: <code>appState.sidebar.sidebarVisible</code>. This makes dependencies explicit &mdash; you can see exactly which slice of state each view reads.",
                     },
                     21: {
                         title: "switch in ViewBuilder",
-                        body: "SwiftUI's <code>@ViewBuilder</code> (implicit in <code>body</code>) supports <code>switch</code> statements to conditionally show different views. Each case returns a different view type. This is how Flowbar switches between the note editor, settings, timer, and empty state based on <code>activePanel</code>.",
-                    },
-                    37: {
-                        title: "Hidden keyboard shortcut",
-                        body: "A hidden <code>Button</code> with <code>.keyboardShortcut(\"b\", modifiers: .command)</code> lets Cmd+B toggle the sidebar without a visible button. The <code>.hidden()</code> modifier makes the button invisible but still responsive to keyboard input. This is a common SwiftUI trick for app-wide shortcuts.",
+                        body: "SwiftUI's <code>@ViewBuilder</code> supports <code>switch</code> statements to conditionally show different views. Each case returns a different view type.",
                     },
                     42: {
-                        title: "private var (computed view)",
-                        body: "Extracting a view into a <code>private var</code> is a common SwiftUI pattern for readability. This computed property returns a <code>View</code>, keeping <code>body</code> clean. It's equivalent to extracting a component in React, but without creating a separate struct.",
+                        title: "Hidden keyboard shortcuts",
+                        body: "Hidden <code>Button</code>s with <code>.keyboardShortcut()</code> register app-wide shortcuts without visible UI. The <code>.hidden()</code> modifier makes them invisible but still responsive to keyboard input.",
+                    },
+                    37: {
+                        title: ".preferredColorScheme",
+                        body: "Applies the user's theme preference. <code>appState.settings.preferredColorScheme</code> returns <code>.light</code>, <code>.dark</code>, or <code>nil</code> (system default). SwiftUI propagates this to all child views.",
                     },
                 },
                 "Window/WindowManager.swift": {
-                    12: {
+                    21: {
                         title: "NSObject + @Observable",
                         body: "Inherits from <code>NSObject</code> (required for Objective-C interop, like <code>@objc</code> methods and <code>NSStatusBar</code>) and uses the <code>@Observable</code> macro for SwiftUI reactivity.",
                     },
-                    20: {
+                    29: {
                         title: "isHiding flag",
-                        body: "A guard flag that prevents <code>togglePanel()</code> from re-triggering during the fade-out animation. Without it, a rapid double-click could try to show the panel while it's still animating closed, causing visual glitches. Reset to <code>false</code> in both the animation completion and <code>windowWillClose</code>.",
+                        body: "A guard flag that prevents <code>togglePanel()</code> from re-triggering during the fade-out animation. Without it, a rapid double-click could try to show the panel while it's still animating closed.",
                     },
-                    27: {
+                    36: {
                         title: "super.init()",
-                        body: "Calls the parent class initializer. In Swift, you must initialize all your own properties BEFORE calling <code>super.init()</code>. This is stricter than most languages &mdash; it prevents accessing uninitialized state during parent initialization.",
+                        body: "Calls the parent class initializer. In Swift, you must initialize all your own properties BEFORE calling <code>super.init()</code>. This is stricter than most languages.",
                     },
-                    44: {
+                    53: {
                         title: "Right-click via local event monitor",
-                        body: "Instead of using <code>sendAction(on:)</code> to handle both left and right clicks on the status item, a local event monitor intercepts right-clicks. It checks whether the click landed inside the status bar button using <code>convert(_:from:)</code> and <code>bounds.contains()</code>, then temporarily attaches the menu for the click.",
+                        body: "A local event monitor intercepts right-clicks on the status item. It checks whether the click landed inside the button using <code>convert(_:from:)</code> and <code>bounds.contains()</code>, then temporarily attaches the menu.",
                     },
-                    69: {
-                        title: "guard !isHiding (toggle guard)",
-                        body: "If the panel is mid-fade (the 0.3s close animation), <code>isHiding</code> is true and <code>togglePanel()</code> returns immediately. This prevents race conditions where a second toggle call would try to show a panel that's about to close.",
+                    88: {
+                        title: "Per-Space window frames",
+                        body: "Loads a saved frame for the current desktop Space, or centers with the default size. The panel remembers its position separately on each Space.",
                     },
-                    119: {
+                    112: {
+                        title: "Closure-based onClose",
+                        body: "Instead of the panel knowing about AppState, it takes an <code>onClose</code> closure. This decouples FloatingPanel from the state layer.",
+                    },
+                    130: {
                         title: "NSAnimationContext",
-                        body: "AppKit's animation API. <code>runAnimationGroup</code> takes a setup closure (duration, timing) and a completion closure. Here it fades the panel to zero opacity, then closes it. The <code>[weak self]</code> in the completion prevents a retain cycle.",
+                        body: "AppKit's animation API. <code>runAnimationGroup</code> takes a setup closure (duration) and a completion closure. Fades the panel to zero opacity, then closes it.",
                     },
-                    127: {
+                    141: {
                         title: "Static factory method + NSImage",
-                        body: "Draws a custom menu bar icon programmatically using <code>NSBezierPath</code>. The image is marked <code>isTemplate = true</code> so macOS auto-colors it to match the system appearance (light/dark). This avoids shipping image assets for a simple icon.",
-                    },
-                    171: {
-                        title: "NSWindowDelegate",
-                        body: "By conforming to <code>NSWindowDelegate</code> and setting <code>newPanel.delegate = self</code>, WindowManager receives lifecycle callbacks. <code>windowWillClose</code> fires when the panel is closed (via close button or Cmd+W), letting us nil out the panel reference and reset the <code>isHiding</code> flag.",
+                        body: "Draws a custom menu bar icon programmatically using <code>NSBezierPath</code>. Marked <code>isTemplate = true</code> so macOS auto-colors it to match the system appearance.",
                     },
                 },
                 "Window/FloatingPanel.swift": {
                     9: {
                         title: "class inheritance",
-                        body: "<code>FloatingPanel: NSPanel</code> inherits from <code>NSPanel</code>, which is itself a subclass of <code>NSWindow</code>. Class inheritance lets you override behavior (like <code>close()</code> below) while reusing the parent's functionality. Structs can't inherit &mdash; only classes can.",
+                        body: "<code>FloatingPanel: NSPanel</code> inherits from <code>NSPanel</code>, which is itself a subclass of <code>NSWindow</code>. Class inheritance lets you override behavior while reusing the parent's functionality.",
                     },
-                    11: {
-                        title: "static let (shared constant)",
-                        body: "<code>static let trafficLightWidth</code> is a type-level constant shared by all instances. SidebarView reads <code>FloatingPanel.trafficLightWidth</code> to inset its header past the traffic light buttons. Using a constant here keeps the magic number in one place.",
+                    16: {
+                        title: "Closure callback (onClose)",
+                        body: "Instead of holding a reference to AppState, the panel takes an <code>onClose</code> closure. This is the <em>dependency inversion</em> pattern &mdash; the panel reports events without knowing who handles them.",
                     },
-                    21: {
+                    26: {
                         title: ".fullSizeContentView",
-                        body: "This style mask option lets the content extend behind the title bar, creating a seamless look. Combined with <code>titlebarAppearsTransparent</code> and <code>titleVisibility = .hidden</code>, the window looks borderless but still has standard close/minimize/zoom buttons.",
+                        body: "Lets the content extend behind the title bar for a seamless look. Combined with <code>titlebarAppearsTransparent</code> and <code>titleVisibility = .hidden</code>, the window looks borderless but keeps standard window buttons.",
                     },
-                    29: {
+                    34: {
                         title: "hidesOnDeactivate = false",
-                        body: "By default, floating panels hide when the app loses focus. Setting this to <code>false</code> means the overlay stays visible when you click behind it (e.g. to reference a webpage). The user must explicitly close or toggle the panel to dismiss it.",
+                        body: "By default, floating panels hide when the app loses focus. Setting this to <code>false</code> keeps the overlay visible when you click behind it.",
                     },
-                    44: {
+                    51: {
+                        title: "repositionTrafficLights",
+                        body: "Moves the standard close/minimize/zoom buttons to align with the sidebar. Uses <code>standardWindowButton()</code> and <code>setFrameOrigin()</code>.",
+                    },
+                    61: {
                         title: "override func close()",
-                        body: "Overrides the parent class's <code>close()</code> method to persist the window size and position before closing. <code>super.close()</code> calls the original implementation. The size is only saved if the user actually resized; the position is always saved so the panel reopens where they left it.",
+                        body: "Overrides the parent's <code>close()</code> to fire the <code>onClose</code> callback with the current frame and Space ID. <code>super.close()</code> calls the original.",
                     },
-                    55: {
+                    66: {
                         title: "override var (computed)",
-                        body: "Overrides a parent's computed property. <code>canBecomeKey</code> returns <code>true</code> to allow keyboard input. In the parent class, panels default to <code>false</code>. Overriding computed properties is how you customize behavior in class hierarchies.",
-                    },
-                },
-                "Components/SidebarToggleButton.swift": {
-                    3: {
-                        title: "Reusable View Component",
-                        body: "A small, focused SwiftUI view extracted into its own file. Both <code>SidebarView</code> and <code>NoteContentView</code> use this button. The <code>action</code> closure is passed in by the parent, keeping the component stateless and reusable &mdash; it doesn't know about AppState.",
+                        body: "Overrides a parent's computed property. <code>canBecomeKey</code> returns <code>true</code> to allow keyboard input. Panels default to <code>false</code>.",
                     },
                 },
             };
@@ -3084,7 +3121,7 @@ class FloatingPanel: NSPanel {
                     cat: "types",
                     title: "class",
                     desc: "Reference types passed by pointer. Used when you need identity, inheritance, or a single shared instance (like AppDelegate, AppState).",
-                    code: '<span class="pw">@Observable</span>\n<span class="pw">@MainActor</span>\n<span class="kw">final class</span> <span class="ty">AppState</span> {\n    <span class="kw">var</span> noteFiles: [<span class="ty">NoteFile</span>] = []\n}',
+                    code: '<span class="pw">@Observable</span>\n<span class="pw">@MainActor</span>\n<span class="kw">final class</span> <span class="ty">AppState</span> {\n    <span class="kw">let</span> settings: <span class="ty">SettingsState</span>\n    <span class="kw">let</span> sidebar: <span class="ty">SidebarState</span>\n    <span class="kw">let</span> editor: <span class="ty">EditorState</span>\n}',
                 },
                 {
                     cat: "types",
@@ -3132,7 +3169,7 @@ class FloatingPanel: NSPanel {
                     cat: "swiftui",
                     title: "@Bindable",
                     desc: "Creates bindings to @Observable properties. With @Environment, you first create @Bindable var x = x, then $x.prop gives you a Binding. Required because @Environment doesn't project bindings directly.",
-                    code: '<span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {\n    <span class="pw">@Bindable</span> <span class="kw">var</span> appState = appState\n    <span class="ty">TextField</span>(<span class="str">"Path"</span>, text: <span class="kw">$</span>appState.folderPath)\n}',
+                    code: '<span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {\n    <span class="pw">@Bindable</span> <span class="kw">var</span> settings = appState.settings\n    <span class="ty">TextField</span>(<span class="str">"Path"</span>, text: <span class="kw">$</span>settings.folderPath)\n}',
                 },
                 {
                     cat: "swiftui",
@@ -3144,7 +3181,7 @@ class FloatingPanel: NSPanel {
                     cat: "swiftui",
                     title: "@ObservationIgnored",
                     desc: "Excludes a property from @Observable tracking. Use it for internal state (watchers, timers, flags) that shouldn't trigger view re-renders.",
-                    code: '<span class="pw">@Observable</span>\n<span class="kw">final class</span> <span class="ty">AppState</span> {\n    <span class="kw">var</span> noteFiles: [<span class="ty">NoteFile</span>] = []  <span class="cmt">// tracked</span>\n    <span class="pw">@ObservationIgnored</span> <span class="kw">private var</span> dirWatcher: <span class="ty">FileWatcher</span>?  <span class="cmt">// not tracked</span>\n}',
+                    code: '<span class="pw">@Observable</span>\n<span class="kw">final class</span> <span class="ty">EditorState</span> {\n    <span class="kw">var</span> editorContent: <span class="ty">String</span> = <span class="str">""</span>  <span class="cmt">// tracked</span>\n    <span class="pw">@ObservationIgnored</span> <span class="kw">private var</span> fileWatcher: <span class="ty">FileWatcher</span>?  <span class="cmt">// not tracked</span>\n}',
                 },
                 {
                     cat: "swiftui",
@@ -3319,6 +3356,9 @@ class FloatingPanel: NSPanel {
                     "RawRepresentable",
                     "NoteFile",
                     "AppState",
+                    "SettingsState",
+                    "EditorState",
+                    "SidebarState",
                     "TimerService",
                     "WindowManager",
                     "FloatingPanel",
@@ -3327,6 +3367,7 @@ class FloatingPanel: NSPanel {
                     "TodoItem",
                     "MarkdownParser",
                     "FlowbarColors",
+                    "AccentColor",
                     "TypographySize",
                     "AppTheme",
                     "ActivePanel",
@@ -3413,7 +3454,7 @@ class FloatingPanel: NSPanel {
                     folders[folder].push({ path, name: parts[1] });
                 });
 
-                const folderOrder = ["App", "Models", "Services", "Theme", "Views", "Components", "Window"];
+                const folderOrder = ["App", "Models", "Services", "Views", "Window"];
                 folderOrder.forEach((folder) => {
                     if (!folders[folder]) return;
                     const div = document.createElement("div");
@@ -3592,11 +3633,11 @@ class FloatingPanel: NSPanel {
                 AppDelegate:
                     "The app's entry point. Receives lifecycle callbacks from macOS (launch, quit). Creates AppState, TimerService, WindowManager, and sets up global + local double-Fn keyboard shortcuts.",
                 AppState:
-                    "Central state container (@Observable). Holds the list of notes, active panel, editor content, and user settings. Views observe only the specific properties they read.",
+                    "Thin coordinator (@Observable) holding three sub-states: SettingsState, SidebarState, and EditorState. Cross-cutting methods like selectFile and loadFiles live here. Views access sub-state via appState.settings, appState.sidebar, appState.editor.",
                 TimerService:
                     "Manages the focus timer. Tracks elapsed time, start/pause/complete, and persists sessions to the SQLite database.",
                 WindowManager:
-                    "Controls the menu bar icon and the floating overlay panel. Manages the status bar icon (custom drawn logo), left-click toggle, right-click context menu, and animated show/hide transitions. Conforms to NSWindowDelegate to track panel close events.",
+                    "Controls the menu bar icon and the floating overlay panel. Manages the status bar icon (custom drawn logo), left-click toggle, right-click context menu, animated show/hide transitions, and per-Space window frame persistence. Conforms to NSWindowDelegate to track panel close events.",
                 NoteFile:
                     "A simple data model (struct) representing a single markdown file. Holds the URL, display name, and a unique ID.",
                 FileWatcher:
@@ -3604,15 +3645,15 @@ class FloatingPanel: NSPanel {
                 DatabaseService:
                     "SQLite wrapper (singleton) that stores timer sessions. Handles opening the DB, creating tables, and querying total times.",
                 FloatingPanel:
-                    "A custom NSPanel subclass for the overlay window. Uses fullSizeContentView for a seamless title bar, persists window size and position on close, stays visible when clicking behind it (hidesOnDeactivate = false), and enables keyboard input.",
+                    "A custom NSPanel subclass for the overlay window. Uses fullSizeContentView for a seamless title bar, repositions traffic light buttons, persists window frame via onClose callback, stays visible when clicking behind it, and enables keyboard input.",
                 MainView:
                     "The root SwiftUI view. Contains the sidebar, content area, and switches between notes, settings, and timer views. Registers a hidden Cmd+B shortcut for sidebar toggle.",
                 SidebarView:
                     "Displays the list of markdown files as a navigable sidebar. Insets its header past the traffic light buttons using FloatingPanel.trafficLightWidth.",
                 NoteContentView:
-                    "The markdown editor view. Shows file content in a TextEditor bound to AppState.editorContent. Shows a SidebarToggleButton when the sidebar is hidden.",
+                    "The markdown editor view. Shows file content in a TextEditor bound to EditorState.editorContent. Shows a SidebarToggleButton when the sidebar is hidden.",
                 SettingsView:
-                    "User preferences UI \u2014 theme, typography, vault folder picker, window size controls.",
+                    "User preferences UI \u2014 theme, typography, accent color, vault folder picker, keyboard shortcut reference.",
                 TimerContainerView:
                     "Parent view for the timer feature. Switches between the timer home and todo list sub-views.",
                 TimerHomeView:
@@ -3634,7 +3675,6 @@ class FloatingPanel: NSPanel {
                 MainView: "Views/MainView.swift",
                 NoteFile: "Models/NoteFile.swift",
                 FileWatcher: "Services/FileWatcher.swift",
-                DatabaseService: "Services/DatabaseService.swift",
                 MarkdownParser: "Services/MarkdownParser.swift",
             };
 
