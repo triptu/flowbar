@@ -32,6 +32,7 @@ struct SidebarFooter: View {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(isActive ? FlowbarColors.accent.opacity(0.3) : Color.clear)
             )
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .foregroundStyle(isActive ? .primary : .secondary)

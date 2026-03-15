@@ -24,21 +24,8 @@ struct SettingsView: View {
                 }
 
                 settingsSection("Appearance") {
-                    FlowbarSegmentedControl(
-                        selection: $appState.theme,
-                        options: AppTheme.allCases,
-                        label: { $0.rawValue.capitalized }
-                    )
-                    .frame(maxWidth: 300)
-                }
-
-                settingsSection("Typography") {
-                    FlowbarSegmentedControl(
-                        selection: $appState.typography,
-                        options: TypographySize.allCases,
-                        label: { $0.rawValue.capitalized }
-                    )
-                    .frame(maxWidth: 300)
+                    settingsPickerRow("Theme", selection: $appState.theme, options: AppTheme.allCases) { $0.rawValue.capitalized }
+                    settingsPickerRow("Text Size", selection: $appState.typography, options: TypographySize.allCases) { $0.rawValue.capitalized }
                 }
 
                 settingsSection("Keyboard Shortcuts") {
@@ -62,7 +49,27 @@ struct SettingsView: View {
             Text(title)
                 .font(.system(size: 14, weight: .medium))
             content()
-            Divider().opacity(0.2)
+        }
+    }
+
+    private func settingsPickerRow<T: Hashable>(
+        _ label: String,
+        selection: Binding<T>,
+        options: [T],
+        display: @escaping (T) -> String
+    ) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+            Spacer()
+            Picker("", selection: selection) {
+                ForEach(options, id: \.self) { option in
+                    Text(display(option)).tag(option)
+                }
+            }
+            .labelsHidden()
+            .frame(width: 120)
         }
     }
 
@@ -93,36 +100,5 @@ struct SettingsView: View {
         if panel.runModal() == .OK, let url = panel.url {
             appState.folderPath = url.path
         }
-    }
-}
-
-// Custom segmented control using accent color
-struct FlowbarSegmentedControl<T: Hashable>: View {
-    @Binding var selection: T
-    let options: [T]
-    let label: (T) -> String
-
-    var body: some View {
-        HStack(spacing: 2) {
-            ForEach(options, id: \.self) { option in
-                Button(action: { selection = option }) {
-                    Text(label(option))
-                        .font(.system(size: 13, weight: selection == option ? .semibold : .regular))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
-                        .background(
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(selection == option ? FlowbarColors.accent : Color.clear)
-                        )
-                        .foregroundStyle(selection == option ? .white : .secondary)
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(3)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.primary.opacity(0.06))
-        )
     }
 }

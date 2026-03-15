@@ -1,8 +1,8 @@
 import SwiftUI
 
 enum FlowbarColors {
-    // Single accent — earthy sage green, used for ALL active/selected states
-    static let accent = Color(hex: "8B9A6B")
+    // Single accent — deep olive green, readable in both light and dark mode
+    static let accent = Color(hex: "5F7A45")
 
     static var sidebarBg: Color {
         Color.primary.opacity(0.04)
