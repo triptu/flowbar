@@ -3265,8 +3265,11 @@ class FloatingPanel: NSPanel {
                 html = html.replace(/("""[\s\S]*?""")/g, '<span class="str">$1</span>');
 
                 // Strings
-                html = html.replace(/("(?:[^"\\]|\\.)*?")/g, function (m) {
+                html = html.replace(/("(?:[^"\\]|\\.)*?")/g, function (m, _p1, offset, str) {
                     if (m.indexOf('class="') !== -1 || m.indexOf("span") !== -1) return m;
+                    // Skip HTML attribute values (inside an unclosed tag)
+                    const before = str.substring(Math.max(0, offset - 60), offset);
+                    if (before.match(/<[^>]*$/)) return m;
                     return '<span class="str">' + m + "</span>";
                 });
 
