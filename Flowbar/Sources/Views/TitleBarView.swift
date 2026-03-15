@@ -1,30 +1,18 @@
 import SwiftUI
 
 /// Content rendered in the native title bar region (behind the transparent title bar).
-/// Sits alongside traffic lights. Shows sidebar toggle and active task info.
+/// Shows active task info centered. The sidebar toggle button is a native NSButton
+/// added directly to the title bar view hierarchy by FloatingPanel.
 struct TitleBarView: View {
-    @Environment(AppState.self) var appState
     @Environment(TimerService.self) var timerService
 
     var body: some View {
         ZStack {
             activeTaskLabel
-
-            HStack(spacing: 0) {
-                Button(action: { appState.toggleSidebar() }) {
-                    Image(systemName: "sidebar.left")
-                        .font(.system(size: 14, weight: .regular))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 24, height: 24)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .padding(.leading, FloatingPanel.trafficLightWidth + 10)
-                Spacer()
-            }
         }
         .frame(height: FloatingPanel.titleBarHeight)
         .frame(maxWidth: .infinity)
+        .background(FlowbarColors.titleBarBg)
     }
 
     @ViewBuilder

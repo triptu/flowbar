@@ -12,8 +12,7 @@ struct MainView: View {
     var body: some View {
         VStack(spacing: 0) {
             TitleBarView()
-
-            Divider()
+                .ignoresSafeArea(.all, edges: .top)
 
             HStack(spacing: 0) {
                 if appState.sidebar.sidebarVisible {
@@ -40,7 +39,6 @@ struct MainView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .ignoresSafeArea(.all, edges: .top)
         .background(.regularMaterial)
         .preferredColorScheme(appState.settings.preferredColorScheme)
         .background(keyboardShortcuts)

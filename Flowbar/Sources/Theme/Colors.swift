@@ -47,6 +47,9 @@ enum AccentColor: String, CaseIterable {
 }
 
 enum FlowbarColors {
+    static var titleBarBg: Color {
+        Color.primary.opacity(0.08)
+    }
     static var sidebarBg: Color {
         Color.primary.opacity(0.04)
     }

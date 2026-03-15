@@ -49,6 +49,32 @@ class FloatingPanel: NSPanel {
         repositionTrafficLights()
     }
 
+    /// Add a native NSButton to the title bar view hierarchy so it receives clicks.
+    /// Placed right after the traffic lights, vertically centered.
+    func addSidebarToggle(action: @escaping () -> Void) {
+        guard let closeButton = standardWindowButton(.closeButton),
+              let titlebarView = closeButton.superview else { return }
+
+        let button = TitleBarButton(action: action)
+        button.image = NSImage(
+            systemSymbolName: "sidebar.left",
+            accessibilityDescription: "Toggle Sidebar"
+        )
+        button.imagePosition = .imageOnly
+        button.isBordered = false
+        button.bezelStyle = .inline
+        (button.cell as? NSButtonCell)?.highlightsBy = .contentsCellMask
+        button.contentTintColor = .secondaryLabelColor
+
+        let size: CGFloat = 20
+        let x = Self.trafficLightWidth + 10
+        let y = (closeButton.superview!.bounds.height - size) / 2
+        button.frame = NSRect(x: x, y: y, width: size, height: size)
+        button.autoresizingMask = [.minYMargin]
+
+        titlebarView.addSubview(button)
+    }
+
     /// Move traffic lights so they align horizontally with sidebar item text.
     private func repositionTrafficLights() {
         let types: [NSWindow.ButtonType] = [.closeButton, .miniaturizeButton, .zoomButton]
@@ -67,4 +93,25 @@ class FloatingPanel: NSPanel {
 
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
+}
+
+/// NSButton that fires a closure and lives in the title bar view hierarchy.
+final class TitleBarButton: NSButton {
+    private let onClick: () -> Void
+
+    init(action: @escaping () -> Void) {
+        self.onClick = action
+        super.init(frame: .zero)
+        target = self
+        self.action = #selector(handleClick)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError() }
+
+    @objc private func handleClick() {
+        onClick()
+    }
+
+    override var mouseDownCanMoveWindow: Bool { false }
 }

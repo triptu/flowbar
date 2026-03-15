@@ -117,6 +117,9 @@ final class WindowManager: NSObject {
             .environment(timerService)
             .environment(self)
         newPanel.setContent(mainView)
+        newPanel.addSidebarToggle { [weak self] in
+            self?.appState.toggleSidebar()
+        }
         newPanel.delegate = self
         newPanel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
