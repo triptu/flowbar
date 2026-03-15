@@ -23,6 +23,8 @@ struct TitleBarLabel: View {
             }
         }
         .font(.system(size: 13))
+        .contentShape(Rectangle())
+        .onTapGesture { appState.showTimer() }
         .frame(maxWidth: .infinity)
         .padding(.leading, appState.sidebar.sidebarVisible ? CGFloat(appState.sidebar.sidebarWidth) + 5 : 0)
     }
