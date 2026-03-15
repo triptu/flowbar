@@ -77,6 +77,7 @@ struct SettingsView: View {
                 }
             }
             .labelsHidden()
+            .fixedSize()
         }
     }
 
