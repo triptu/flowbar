@@ -46,15 +46,30 @@ Tests/
   App/        AppStateNavigationTests, AppStateTests, FileOperationsTests
   Models/     ModelTests
   Services/   MarkdownParserTests, TimerServiceTests, TimerServiceLifecycleTests
+UITests/
+  SidebarUITests  (selection, rename flows, context menu, edge cases)
 ```
 
 **Adding new test files:** Must be added to both the filesystem AND the pbxproj (PBXFileReference, PBXGroup children, PBXBuildFile, and the FlowbarTests Sources build phase).
 
-**Style rules:**
+**Unit test style rules:**
 - No mocks, stubs, or fakes. Tests hit real code e2e.
 - Use `@Test(arguments:)` with case arrays for truth-table tests — never one method per input/output pair.
 - Use `struct` (not `class`), `init() throws` for setup (no setUp/tearDown).
 - Test real behavior, not implementation details. Don't test for the sake of testing.
+
+**UI test style rules:**
+- XCTest with XCUIAutomation (`final class`, `setUpWithError`/`tearDownWithError`).
+- Launch with `-uitest-folder <tempDir>` to inject a test folder and auto-show the panel.
+- Consolidate into few tests that cover full flows — each launch/teardown cycle adds ~3s overhead.
+- Use `waitForExistence(timeout:)` and `waitForNonExistence(timeout:)` — never `Thread.sleep`.
+- Access elements via accessibility identifiers (`sidebar-row-<id>`, `rename-field`, `content-area`, `sidebar-footer-*`).
+- Sidebar rows are `app.groups["sidebar-row-<id>"]`, footer buttons are `app.buttons["sidebar-footer-*"]`, rename field is `app.textFields["rename-field"]`.
+
+**Running UI tests:**
+```bash
+xcodebuild -scheme FlowbarUITests -destination 'platform=macOS' test 2>&1 | grep -E '(passed|failed|Executed|SUCCEEDED|FAILED)'
+```
 
 ### Running
 ```bash
@@ -134,6 +149,8 @@ defaults write com.flowbar.app accentColor ocean  # sage, ocean, lavender, amber
 10. **AppState in tests must use isolated UserDefaults** — use `AppState(defaults: UserDefaults(suiteName: "com.flowbar.tests-\(UUID().uuidString)")!)` so tests don't read or pollute the app's real settings. Never use `AppState()` (bare) in tests.
 11. **Accent color must go through `appState.accent`** — never use a static for accent color. `appState.accent` is a computed property (`accentColor.color`) on `@Observable AppState`, so all views reactively update when the user changes their color. For AppKit contexts (e.g. `NSViewRepresentable`), use `appState.accentColor.nsColor` and pass it as a parameter.
 12. **Swift Testing `#expect(try ...)` needs `throws`** — if a `#expect` contains a `try` expression, the test function must be marked `throws`. Otherwise extract the `try` to a `let` before the `#expect`.
+13. **NSViewRepresentable reuse across state toggles** — if a view goes `visible → hidden → visible`, SwiftUI may reuse the old `NSView` and `Coordinator` with stale state. Use `.id(sessionCounter)` to force fresh creation each time.
+14. **Double-click fires single-tap too** — SwiftUI's `onTapGesture(count: 2)` and `onTapGesture(count: 1)` both fire on a double-click. Guard the single-tap handler to skip when the double-tap action is active.
 
 ## After Making Changes
 
@@ -160,7 +177,7 @@ This skill should evolve as the project evolves. Update it when:
 - The build/test workflow changes (update Build & Test Workflow)
 - Swift/SwiftUI best practices change (e.g. migration from ObservableObject to @Observable)
 
-To update: edit `.claude/commands/flowbar-dev.md`
+To update: edit `.claude/skills/flowbar-dev.md`
 
 When making a significant change to the codebase which warrants updates, always end with:
 "Consider updating /flowbar-dev if this introduces new patterns or pitfalls.", Followed by your suggestions for what to add or change in this guide. Explain why the update is needed and how it helps future development. And propose to do it.

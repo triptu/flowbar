@@ -10,6 +10,7 @@ You can also use this repo as a reference to learn Swift, checkout [learn-swift]
 
 - **Floating overlay panel** — toggle from the menu bar icon or double-tap Fn
 - **Sidebar + editor** — all your .md files listed on the left, raw markdown editor on the right
+- **File management** — right-click for context menu: new file, rename (inline), reveal in Finder, open in Obsidian, trash
 - **Timer** — stopwatch to track time on todos, extracted from all your markdown files
 - **Settings** — folder path, dark/light/system theme, font size, keyboard shortcut
 

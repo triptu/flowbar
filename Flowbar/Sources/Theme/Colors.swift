@@ -70,9 +70,9 @@ extension NSColor {
 /// Shared hex→RGB parser used by both Color and NSColor initializers
 private func hexToRGB(_ hex: String) -> (Double, Double, Double) {
     let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+    guard hex.count == 6 else { return (0, 0, 0) }
     var int: UInt64 = 0
     Scanner(string: hex).scanHexInt64(&int)
-    guard hex.count == 6 else { return (0, 0, 0) }
     return (
         Double((int >> 16) & 0xFF) / 255.0,
         Double((int >> 8) & 0xFF) / 255.0,

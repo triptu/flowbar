@@ -15,10 +15,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var lastFnPress: Date?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        appState = AppState()
+        let args = ProcessInfo.processInfo.arguments
+        let uitestFolder = args.firstIndex(of: "-uitest-folder").flatMap { idx in
+            idx + 1 < args.count ? args[idx + 1] : nil
+        }
+
+        if let folder = uitestFolder {
+            // If running UI tests, use the provided folder path and a shared UserDefaults suite to persist it. This is to avoid conflicts with the regular app's settings.
+            let defaults = UserDefaults(suiteName: "com.flowbar.uitests")!
+            defaults.set(folder, forKey: "folderPath")
+            appState = AppState(defaults: defaults)
+        } else {
+            appState = AppState()
+        }
         timerService = TimerService()
         windowManager = WindowManager(appState: appState, timerService: timerService)
         setupDoubleFnShortcut()
+
+        if uitestFolder != nil {
+            // If running UI tests, show the panel immediately. Otherwise, rely on the user to click the menu bar icon or use the shortcut.
+            windowManager.showPanel()
+        }
     }
 
     private func handleFnEvent(_ event: NSEvent) {

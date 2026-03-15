@@ -29,6 +29,7 @@ struct MainView: View {
                     emptyState
                 }
             }
+            .accessibilityIdentifier("content-area")
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .ignoresSafeArea(.all, edges: .top)
         }

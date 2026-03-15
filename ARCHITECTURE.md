@@ -19,7 +19,8 @@ Flowbar/Sources/
 │                   FloatingPanel (NSPanel subclass, always-on-top overlay)
 │
 ├── Views/          MainView (sidebar + content switch on ActivePanel),
-│                   SidebarView, NoteContentView, SettingsView,
+│                   SidebarView (file list, inline RenameField, context menu),
+│                   NoteContentView, SettingsView,
 │                   Timer/ (TimerContainerView, TimerHomeView, TimerTodosView),
 │                   Components/ (TodoRow, SidebarFooter, SidebarToggleButton)
 │
@@ -33,6 +34,11 @@ Flowbar/Sources/
 **Notes data flow:** AppState watches the folder → builds `[NoteFile]` → sidebar displays them → user selects one → AppState loads content into `editorContent` → TextEditor binds to it → edits auto-save with 500ms debounce → FileWatcher detects external changes and reloads.
 
 **Timer data flow:** User picks a todo → TimerService.start() creates a DB session → timer ticks update `elapsed` → user hits Complete → view calls MarkdownParser to check it off in the .md file.
+
+
+## UI Tests
+
+`FlowbarUITests` target (XCTest/XCUIAutomation) launches the app with `-uitest-folder <path>` to inject a temp directory and auto-show the panel. Tests verify the full rename flow, context menu, selection, and edge cases. Accessibility identifiers (`sidebar-row-<id>`, `rename-field`, `content-area`, `sidebar-footer-*`) are set on views for element queries.
 
 ## Invariants
 

@@ -22,6 +22,7 @@
 		521CE08AE3FC9244CE92C597 /* TimerTodosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAF1CAFB6CFD0E5A2A75702D /* TimerTodosView.swift */; };
 		525F0DBEC750803D29A5BE5C /* TodoRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4437CE287B73D4B42D2A7488 /* TodoRow.swift */; };
 		56FDF78959DAAC5E59386E6F /* SidebarFooter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8510A28B4BDA11F845C2A2F0 /* SidebarFooter.swift */; };
+		5A15EAC1364827B93A4EC5B9 /* SidebarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177B3F6E2C33B19A7D5C7939 /* SidebarUITests.swift */; };
 		5CB99267DAC1962A81157A85 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 542C5A78074B276391DA809D /* Colors.swift */; };
 		66E4356102C5E6AD78E1EA11 /* TimerHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DABC3A9E8EB88A3D9F59F2 /* TimerHomeView.swift */; };
 		8995DCB6F7D39DB04F49F5FC /* DatabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475F8AB060E4655AA80A13E0 /* DatabaseService.swift */; };
@@ -50,6 +51,13 @@
 			remoteGlobalIDString = 0C56B4E08F3E32E7FA4F5D01;
 			remoteInfo = Flowbar;
 		};
+		EDEF6A12A644135D5D8B43ED /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = EFF728564FB4149D745FD4CB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0C56B4E08F3E32E7FA4F5D01;
+			remoteInfo = Flowbar;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +65,7 @@
 		0EACC84A08EAE2C331909302 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
 		0FE4FC5C82B7F98DA55EA658 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 		169227FE96874503D7ED8D2D /* FlowbarTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlowbarTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		177B3F6E2C33B19A7D5C7939 /* SidebarUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarUITests.swift; sourceTree = "<group>"; };
 		17BB2C6C1AB7D078E4FD1381 /* FileOperationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileOperationsTests.swift; sourceTree = "<group>"; };
 		19927FCA0D6E052D93303A86 /* FloatingPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingPanel.swift; sourceTree = "<group>"; };
 		270E141D1C4D7BA89319620F /* SidebarState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarState.swift; sourceTree = "<group>"; };
@@ -74,6 +83,7 @@
 		679770A71B494E81BD99BB16 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6D2938A16169339850B84E63 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		6F835D11B53685F85D8EF57A /* SidebarToggleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarToggleButton.swift; sourceTree = "<group>"; };
+		7A266BA9229D8B4FF01FD473 /* FlowbarUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlowbarUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7D9EFAC3B9D3F56345305475 /* EditorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorState.swift; sourceTree = "<group>"; };
 		8510A28B4BDA11F845C2A2F0 /* SidebarFooter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarFooter.swift; sourceTree = "<group>"; };
 		90E92AC056D0D1D801EA2F5A /* AppStateNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateNavigationTests.swift; sourceTree = "<group>"; };
@@ -105,6 +115,7 @@
 			children = (
 				FF70D3AF5D0BCB839138D476 /* Sources */,
 				F671781C531CA2B8B3993F1D /* Tests */,
+				ADAB072BBAAE15EDC4FCE40A /* UITests */,
 				C44FBD2640CD80E693BD7B0B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -172,6 +183,14 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		ADAB072BBAAE15EDC4FCE40A /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				177B3F6E2C33B19A7D5C7939 /* SidebarUITests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
 		B03C99342343F20312EE4AA6 /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -186,6 +205,7 @@
 			children = (
 				F6B0E80A3C0E7534674FD493 /* Flowbar.app */,
 				169227FE96874503D7ED8D2D /* FlowbarTests.xctest */,
+				7A266BA9229D8B4FF01FD473 /* FlowbarUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -247,6 +267,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		02E239A7D3A24708AC5DA3CC /* FlowbarUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7644013E5BF47460FB436085 /* Build configuration list for PBXNativeTarget "FlowbarUITests" */;
+			buildPhases = (
+				ECDC9F7A01C6FBC9E263CAC5 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				341184590A7C7AAA1208EAC8 /* PBXTargetDependency */,
+			);
+			name = FlowbarUITests;
+			packageProductDependencies = (
+			);
+			productName = FlowbarUITests;
+			productReference = 7A266BA9229D8B4FF01FD473 /* FlowbarUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		0C56B4E08F3E32E7FA4F5D01 /* Flowbar */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1E3E1A6687752FBCC4F06BB4 /* Build configuration list for PBXNativeTarget "Flowbar" */;
@@ -291,6 +329,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
+					02E239A7D3A24708AC5DA3CC = {
+						TestTargetID = 0C56B4E08F3E32E7FA4F5D01;
+					};
 					0C56B4E08F3E32E7FA4F5D01 = {
 						ProvisioningStyle = Manual;
 					};
@@ -312,6 +353,7 @@
 			targets = (
 				0C56B4E08F3E32E7FA4F5D01 /* Flowbar */,
 				134C1742E3474FC4FF78ABC4 /* FlowbarTests */,
+				02E239A7D3A24708AC5DA3CC /* FlowbarUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -364,9 +406,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		ECDC9F7A01C6FBC9E263CAC5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5A15EAC1364827B93A4EC5B9 /* SidebarUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		341184590A7C7AAA1208EAC8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0C56B4E08F3E32E7FA4F5D01 /* Flowbar */;
+			targetProxy = EDEF6A12A644135D5D8B43ED /* PBXContainerItemProxy */;
+		};
 		3AE8D83DAECAF26C5D30866C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 0C56B4E08F3E32E7FA4F5D01 /* Flowbar */;
@@ -429,6 +484,23 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Flowbar.app/Contents/MacOS/Flowbar";
 			};
 			name = Debug;
+		};
+		A20FCE95CBB2809019FBB06D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.flowbar.uitests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = Flowbar;
+			};
+			name = Release;
 		};
 		A382A1C820DAA6026BC269AB /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -570,6 +642,23 @@
 			};
 			name = Debug;
 		};
+		DE7A28D68600B2F446B5B576 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.flowbar.uitests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = Flowbar;
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -578,6 +667,15 @@
 			buildConfigurations = (
 				501916133A1B272B2D4303A5 /* Debug */,
 				1C29F99196B3598258ADF1D2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7644013E5BF47460FB436085 /* Build configuration list for PBXNativeTarget "FlowbarUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE7A28D68600B2F446B5B576 /* Debug */,
+				A20FCE95CBB2809019FBB06D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

@@ -145,9 +145,8 @@ final class AppState {
             sidebar.renamingFileID = nil
             return
         }
-        let trimmed = sidebar.renameText.trimmingCharacters(in: .whitespaces)
         sidebar.renamingFileID = nil
-        moveFile(file, toDisplayName: trimmed)
+        moveFile(file, toDisplayName: sidebar.renameText)
     }
 
     func startRename(_ file: NoteFile) {

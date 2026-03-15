@@ -36,5 +36,6 @@ struct SidebarFooter: View {
         }
         .buttonStyle(.plain)
         .foregroundStyle(isActive ? .primary : .secondary)
+        .accessibilityIdentifier("sidebar-footer-\(label.lowercased())")
     }
 }

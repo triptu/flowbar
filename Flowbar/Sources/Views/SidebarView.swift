@@ -34,6 +34,8 @@ struct SidebarView: View {
                             // actual typed text before this gesture fires. Just select.
                             appState.selectFile(file)
                         }
+                        .accessibilityElement(children: .contain)
+                        .accessibilityIdentifier("sidebar-row-\(file.id)")
                         .contextMenu {
                             Button("New File") { appState.createNewFile() }
                             Divider()
@@ -134,6 +136,7 @@ struct RenameField: NSViewRepresentable {
         field.layer?.cornerRadius = 4
         field.layer?.borderWidth = 1.5
         field.layer?.borderColor = accentColor.cgColor
+        field.setAccessibilityIdentifier("rename-field")
 
         // Delay focus until the field is in the window hierarchy.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak field] in
@@ -213,8 +216,6 @@ struct RenameField: NSViewRepresentable {
             monitor = nil
         }
 
-        deinit {
-            if let monitor { NSEvent.removeMonitor(monitor) }
-        }
+        deinit { removeMonitor() }
     }
 }

@@ -46,3 +46,15 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.flowbar.tests
         GENERATE_INFOPLIST_FILE: YES
+
+  FlowbarUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - UITests
+    dependencies:
+      - target: Flowbar
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.flowbar.uitests
+        GENERATE_INFOPLIST_FILE: YES
