@@ -31,17 +31,17 @@ final class AppState {
     var typography: TypographySize {
         didSet { UserDefaults.standard.set(typography.rawValue, forKey: "typography") }
     }
-    var popoverWidth: Double {
-        didSet { UserDefaults.standard.set(popoverWidth, forKey: "popoverWidth") }
+    var windowWidth: Double {
+        didSet { if windowWidth != oldValue { UserDefaults.standard.set(windowWidth, forKey: "popoverWidth") } }
     }
-    var popoverHeight: Double {
-        didSet { UserDefaults.standard.set(popoverHeight, forKey: "popoverHeight") }
+    var windowHeight: Double {
+        didSet { if windowHeight != oldValue { UserDefaults.standard.set(windowHeight, forKey: "popoverHeight") } }
     }
     var sidebarVisible: Bool {
-        didSet { UserDefaults.standard.set(sidebarVisible, forKey: "sidebarVisible") }
+        didSet { if sidebarVisible != oldValue { UserDefaults.standard.set(sidebarVisible, forKey: "sidebarVisible") } }
     }
     var sidebarWidth: Double {
-        didSet { UserDefaults.standard.set(sidebarWidth, forKey: "sidebarWidth") }
+        didSet { if sidebarWidth != oldValue { UserDefaults.standard.set(sidebarWidth, forKey: "sidebarWidth") } }
     }
 
     // MARK: - Navigation (single source of truth)
@@ -69,8 +69,8 @@ final class AppState {
         self.folderPath = defaults.string(forKey: "folderPath") ?? ""
         self.theme = AppTheme(rawValue: defaults.string(forKey: "theme") ?? "") ?? .dark
         self.typography = TypographySize(rawValue: defaults.string(forKey: "typography") ?? "") ?? .default
-        self.popoverWidth = defaults.object(forKey: "popoverWidth") as? Double ?? 700
-        self.popoverHeight = defaults.object(forKey: "popoverHeight") as? Double ?? 500
+        self.windowWidth = defaults.object(forKey: "popoverWidth") as? Double ?? 700
+        self.windowHeight = defaults.object(forKey: "popoverHeight") as? Double ?? 500
         self.sidebarVisible = defaults.object(forKey: "sidebarVisible") as? Bool ?? true
         self.sidebarWidth = defaults.object(forKey: "sidebarWidth") as? Double ?? 200
         loadFiles()
@@ -123,6 +123,10 @@ final class AppState {
 
     func showTimer() {
         activePanel = .timer
+    }
+
+    func returnToFiles() {
+        if let file = noteFiles.first { selectFile(file) }
     }
 
     func loadFileContent(_ file: NoteFile) {

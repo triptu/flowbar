@@ -1,13 +1,18 @@
 import AppKit
 import SwiftUI
 
-/// A detached floating window used when the user "pops out" from the menu bar popover.
+/// The overlay window shown when the user clicks the menu bar icon or presses double-Fn.
 ///
 /// Configured as an always-on-top utility panel that joins all Spaces. Saves its
-/// size back to AppState on close so the popover remembers the last used dimensions.
+/// size back to AppState on close so dimensions persist across sessions.
 /// The full title bar is the drag region. Traffic lights sit inside it over the sidebar.
 class FloatingPanel: NSPanel {
-    private var appState: AppState?
+    /// Width of the standard traffic light buttons area (close/minimize/zoom).
+    /// Used by SidebarView to inset its header past the buttons.
+    static let trafficLightWidth: CGFloat = 76
+
+    private let appState: AppState
+    private var initialSize: NSSize = .zero
 
     init(contentRect: NSRect, appState: AppState) {
         self.appState = appState
@@ -18,8 +23,10 @@ class FloatingPanel: NSPanel {
             defer: false
         )
 
+        initialSize = contentRect.size
         isFloatingPanel = true
         level = .floating
+        hidesOnDeactivate = false
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         isMovableByWindowBackground = false
         titlebarAppearsTransparent = true
@@ -28,9 +35,6 @@ class FloatingPanel: NSPanel {
         isOpaque = false
         hasShadow = true
         minSize = NSSize(width: 400, height: 300)
-
-        // Make the entire title bar area draggable
-        standardWindowButton(.closeButton)?.superview?.superview?.wantsLayer = true
     }
 
     func setContent(_ view: some View) {
@@ -38,9 +42,10 @@ class FloatingPanel: NSPanel {
     }
 
     override func close() {
-        if let state = appState {
-            state.popoverWidth = Double(frame.width)
-            state.popoverHeight = Double(frame.height)
+        // Only persist if user actually resized
+        if frame.size != initialSize {
+            appState.windowWidth = Double(frame.width)
+            appState.windowHeight = Double(frame.height)
         }
         super.close()
     }

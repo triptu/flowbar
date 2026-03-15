@@ -2,7 +2,6 @@ import SwiftUI
 
 struct NoteContentView: View {
     @Environment(AppState.self) var appState
-    @Environment(PopoverManager.self) var popoverManager
 
     var body: some View {
         @Bindable var appState = appState
@@ -23,12 +22,7 @@ struct NoteContentView: View {
     private var noteHeader: some View {
         HStack(spacing: 10) {
             if !appState.sidebarVisible {
-                Button(action: { appState.toggleSidebar() }) {
-                    Image(systemName: "sidebar.left")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
+                SidebarToggleButton { appState.toggleSidebar() }
             }
 
             Text(appState.selectedFile?.name ?? "")
@@ -42,19 +36,9 @@ struct NoteContentView: View {
             }
             .buttonStyle(.plain)
             .help("Open in Obsidian")
-
-            if !popoverManager.isFloating {
-                Button(action: { popoverManager.floatPanel() }) {
-                    Image(systemName: "pip.enter")
-                        .font(.system(size: 14))
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-                .help("Pop out as overlay")
-            }
         }
         .padding(.horizontal, 20)
-        .padding(.top, popoverManager.isFloating ? 4 : 8)
+        .padding(.top, 4)
         .padding(.bottom, 8)
     }
 }

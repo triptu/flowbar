@@ -2,24 +2,17 @@ import SwiftUI
 
 struct SidebarView: View {
     @Environment(AppState.self) var appState
-    @Environment(PopoverManager.self) var popoverManager
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header bar — in floating mode, sits right of traffic lights
+            // Header bar — sits right of traffic lights
             HStack(spacing: 8) {
-                Button(action: { appState.toggleSidebar() }) {
-                    Image(systemName: "sidebar.left")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
+                SidebarToggleButton { appState.toggleSidebar() }
                 Spacer()
             }
-            // In floating mode, push past traffic lights (~76px from left edge)
-            .padding(.leading, popoverManager.isFloating ? 76 : 20)
+            .padding(.leading, FloatingPanel.trafficLightWidth)
             .padding(.trailing, 20)
-            .padding(.top, popoverManager.isFloating ? 6 : 10)
+            .padding(.top, 6)
             .padding(.bottom, 4)
 
             ScrollView {

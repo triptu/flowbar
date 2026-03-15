@@ -11,6 +11,7 @@
 		13B7ED8967A1A4B824777752 /* TodoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E055DC9A0DE8A87522720A1 /* TodoItem.swift */; };
 		1E5052E9569AE84B38C2C0F3 /* TimerServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2705123F4FA326A6DFC877D8 /* TimerServiceTests.swift */; };
 		33F5E63DCB5F9DD94C47FD32 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4709745944EB39D269992BF /* Typography.swift */; };
+		3984983E23990B8B93A672AC /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FE4FC5C82B7F98DA55EA658 /* WindowManager.swift */; };
 		42A5459E77ED6745E1DBCD43 /* NoteFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 635F72DDE09908762049B42B /* NoteFile.swift */; };
 		4F139AF375C4FA41F292C0E7 /* MarkdownParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1B419B41DBE32FBEC53E7E /* MarkdownParser.swift */; };
 		519DC7D5F956BF9728A11B79 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9429D1FCA615F8FF6BA06083 /* SidebarView.swift */; };
@@ -22,12 +23,12 @@
 		7576910985CDCB6BADF17639 /* MarkdownParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08A4E9B5708812F7012B4B7F /* MarkdownParserTests.swift */; };
 		76AD7711155357239987CD1F /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7B4D68F1D94AEB1C9D1953 /* ModelTests.swift */; };
 		8995DCB6F7D39DB04F49F5FC /* DatabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475F8AB060E4655AA80A13E0 /* DatabaseService.swift */; };
-		94477EDEB696C005201FDF33 /* PopoverManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4666F986226364CA59E93D /* PopoverManager.swift */; };
 		97C23CB05145842759114559 /* TimerContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AB02F728664A2670EEFCAF /* TimerContainerView.swift */; };
 		A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2938A16169339850B84E63 /* AppState.swift */; };
 		A1C37D455CD1DEEE92C0F49F /* FloatingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19927FCA0D6E052D93303A86 /* FloatingPanel.swift */; };
 		A34CDF3EB4CF83E179BEF2BA /* TimerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39083BC43A019B06241FB227 /* TimerService.swift */; };
 		B09973A5834843B57F506206 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 679770A71B494E81BD99BB16 /* SettingsView.swift */; };
+		BC6659874A56FF8D6E7F4268 /* SidebarToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F835D11B53685F85D8EF57A /* SidebarToggleButton.swift */; };
 		BE8CACC0DB336F9249758FD2 /* FlowbarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2D31A2E469ADB3AE12A356 /* FlowbarApp.swift */; };
 		D8D82F66CEBB7C7A976E244E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DAC8FE70A4CC25EFC1101BE /* AppDelegate.swift */; };
 		E037448B11CE5D13C85FF32F /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F0362096FD8D2B22AA6247 /* FileWatcher.swift */; };
@@ -47,6 +48,7 @@
 /* Begin PBXFileReference section */
 		06DABC3A9E8EB88A3D9F59F2 /* TimerHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerHomeView.swift; sourceTree = "<group>"; };
 		08A4E9B5708812F7012B4B7F /* MarkdownParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownParserTests.swift; sourceTree = "<group>"; };
+		0FE4FC5C82B7F98DA55EA658 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 		169227FE96874503D7ED8D2D /* FlowbarTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlowbarTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		19927FCA0D6E052D93303A86 /* FloatingPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingPanel.swift; sourceTree = "<group>"; };
 		2705123F4FA326A6DFC877D8 /* TimerServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerServiceTests.swift; sourceTree = "<group>"; };
@@ -62,6 +64,7 @@
 		635F72DDE09908762049B42B /* NoteFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteFile.swift; sourceTree = "<group>"; };
 		679770A71B494E81BD99BB16 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6D2938A16169339850B84E63 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		6F835D11B53685F85D8EF57A /* SidebarToggleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarToggleButton.swift; sourceTree = "<group>"; };
 		8510A28B4BDA11F845C2A2F0 /* SidebarFooter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarFooter.swift; sourceTree = "<group>"; };
 		9429D1FCA615F8FF6BA06083 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		AA28AD0B52FFBD4002D7108F /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
@@ -70,7 +73,6 @@
 		C4709745944EB39D269992BF /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
 		CB2D31A2E469ADB3AE12A356 /* FlowbarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowbarApp.swift; sourceTree = "<group>"; };
 		ED1B419B41DBE32FBEC53E7E /* MarkdownParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownParser.swift; sourceTree = "<group>"; };
-		ED4666F986226364CA59E93D /* PopoverManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverManager.swift; sourceTree = "<group>"; };
 		F6B0E80A3C0E7534674FD493 /* Flowbar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flowbar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -97,7 +99,7 @@
 			isa = PBXGroup;
 			children = (
 				19927FCA0D6E052D93303A86 /* FloatingPanel.swift */,
-				ED4666F986226364CA59E93D /* PopoverManager.swift */,
+				0FE4FC5C82B7F98DA55EA658 /* WindowManager.swift */,
 			);
 			path = Window;
 			sourceTree = "<group>";
@@ -119,6 +121,7 @@
 			isa = PBXGroup;
 			children = (
 				8510A28B4BDA11F845C2A2F0 /* SidebarFooter.swift */,
+				6F835D11B53685F85D8EF57A /* SidebarToggleButton.swift */,
 				4437CE287B73D4B42D2A7488 /* TodoRow.swift */,
 			);
 			path = Components;
@@ -294,9 +297,9 @@
 				4F139AF375C4FA41F292C0E7 /* MarkdownParser.swift in Sources */,
 				02809DCA65555BE65F063A9F /* NoteContentView.swift in Sources */,
 				42A5459E77ED6745E1DBCD43 /* NoteFile.swift in Sources */,
-				94477EDEB696C005201FDF33 /* PopoverManager.swift in Sources */,
 				B09973A5834843B57F506206 /* SettingsView.swift in Sources */,
 				56FDF78959DAAC5E59386E6F /* SidebarFooter.swift in Sources */,
+				BC6659874A56FF8D6E7F4268 /* SidebarToggleButton.swift in Sources */,
 				519DC7D5F956BF9728A11B79 /* SidebarView.swift in Sources */,
 				97C23CB05145842759114559 /* TimerContainerView.swift in Sources */,
 				66E4356102C5E6AD78E1EA11 /* TimerHomeView.swift in Sources */,
@@ -305,6 +308,7 @@
 				13B7ED8967A1A4B824777752 /* TodoItem.swift in Sources */,
 				525F0DBEC750803D29A5BE5C /* TodoRow.swift in Sources */,
 				33F5E63DCB5F9DD94C47FD32 /* Typography.swift in Sources */,
+				3984983E23990B8B93A672AC /* WindowManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

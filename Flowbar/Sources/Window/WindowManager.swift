@@ -2,41 +2,40 @@ import AppKit
 import SwiftUI
 import Observation
 
-/// Manages the menu bar status item, popover, and floating panel lifecycle.
+/// Manages the menu bar status item and the floating overlay panel.
 ///
-/// Owns the NSStatusItem (menu bar icon) and the NSPopover. Can switch between
-/// popover mode (attached to menu bar) and floating panel mode (detached window).
-/// Injected via .environment() so views can trigger float/dock and read isFloating.
+/// Owns the NSStatusItem (menu bar icon). Clicking the icon or pressing
+/// double-Fn toggles the overlay panel on/off. Injected via .environment()
+/// so views can access window state.
 @Observable
 @MainActor
-final class PopoverManager: NSObject {
+final class WindowManager: NSObject {
     let statusItem: NSStatusItem
-    let popover: NSPopover
-    var isFloating = false
 
-    @ObservationIgnored private var floatingPanel: FloatingPanel?
+    @ObservationIgnored private var panel: FloatingPanel?
     @ObservationIgnored private var appState: AppState
-    @ObservationIgnored private var timerService: TimerService?
+    @ObservationIgnored private var timerService: TimerService
     @ObservationIgnored private var statusMenu: NSMenu
     @ObservationIgnored private var rightClickMonitor: Any?
+    @ObservationIgnored private var isHiding = false
 
-    init(appState: AppState) {
+    init(appState: AppState, timerService: TimerService) {
         self.appState = appState
+        self.timerService = timerService
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        popover = NSPopover()
         statusMenu = NSMenu()
         super.init()
 
-        popover.behavior = .transient
-        popover.animates = true
-
+        let openItem = NSMenuItem(title: "Open Flowbar", action: #selector(openFromMenu), keyEquivalent: "")
+        openItem.target = self
+        statusMenu.addItem(openItem)
+        statusMenu.addItem(.separator())
         let quitItem = NSMenuItem(title: "Quit Flowbar", action: #selector(quitApp), keyEquivalent: "q")
         quitItem.target = self
         statusMenu.addItem(quitItem)
 
         if let button = statusItem.button {
             button.image = Self.makeMenuBarIcon()
-            // Default sendAction fires on mouseDown — this gives native highlight behavior
             button.action = #selector(statusItemClicked(_:))
             button.target = self
         }
@@ -56,80 +55,64 @@ final class PopoverManager: NSObject {
     }
 
     @objc private func statusItemClicked(_ sender: Any?) {
-        togglePopover(sender)
+        togglePanel()
+    }
+
+    @objc private func openFromMenu() {
+        showPanel()
     }
 
     @objc private func quitApp() {
         NSApp.terminate(nil)
     }
 
-    func setContentView(_ view: some View, timerService: TimerService) {
-        self.timerService = timerService
-        popover.contentViewController = NSHostingController(rootView: view)
-        popover.contentSize = NSSize(width: appState.popoverWidth, height: appState.popoverHeight)
+    func togglePanel() {
+        guard !isHiding else { return }
+        if let panel, panel.isVisible {
+            hidePanel()
+        } else {
+            showPanel()
+        }
     }
 
-    @objc func togglePopover(_ sender: Any?) {
-        if isFloating {
-            dockPanel()
+    func showPanel() {
+        if let panel {
+            panel.alphaValue = 1
+            panel.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
             return
         }
-        if popover.isShown {
-            closePopover()
-        } else {
-            showPopover()
-        }
-    }
 
-    func showPopover() {
-        guard let button = statusItem.button else { return }
-        popover.contentSize = NSSize(width: appState.popoverWidth, height: appState.popoverHeight)
-        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-        NSApp.activate(ignoringOtherApps: true)
-        popover.contentViewController?.view.window?.makeKey()
-    }
-
-    func closePopover() {
-        popover.performClose(nil)
-    }
-
-    func floatPanel() {
-        guard let timerService else { return }
-        let size = NSSize(width: appState.popoverWidth, height: appState.popoverHeight)
+        let size = NSSize(width: appState.windowWidth, height: appState.windowHeight)
         let screen = NSScreen.main ?? NSScreen.screens.first!
         let origin = NSPoint(
             x: screen.frame.midX - size.width / 2,
             y: screen.frame.midY - size.height / 2
         )
         let frame = NSRect(origin: origin, size: size)
-        closePopover()
 
-        let panel = FloatingPanel(contentRect: frame, appState: appState)
+        let newPanel = FloatingPanel(contentRect: frame, appState: appState)
         let mainView = MainView()
             .environment(appState)
             .environment(timerService)
             .environment(self)
-        panel.setContent(mainView)
-        panel.makeKeyAndOrderFront(nil)
+        newPanel.setContent(mainView)
+        newPanel.delegate = self
+        newPanel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
 
-        panel.delegate = self
-        floatingPanel = panel
-        isFloating = true
+        panel = newPanel
     }
 
-    func dockPanel() {
+    func hidePanel() {
+        guard let panelToClose = panel else { return }
+        isHiding = true
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.3
-            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-            self.floatingPanel?.animator().alphaValue = 0
+            panelToClose.animator().alphaValue = 0
         }) { [weak self] in
-            DispatchQueue.main.async {
-                self?.floatingPanel?.close()
-                self?.floatingPanel = nil
-                self?.isFloating = false
-                self?.showPopover()
-            }
+            panelToClose.close()
+            self?.isHiding = false
         }
     }
 
@@ -162,7 +145,6 @@ final class PopoverManager: NSObject {
             // Flow groove (cutout) — winds through the center
             let groove = NSBezierPath()
             groove.move(to: NSPoint(x: 3.8, y: 11.2))
-            // Top edge of groove (S-curve right)
             groove.curve(to: NSPoint(x: 10.5, y: 10.8),
                          controlPoint1: NSPoint(x: 7, y: 8.8),
                          controlPoint2: NSPoint(x: 7, y: 8.8))
@@ -172,7 +154,6 @@ final class PopoverManager: NSObject {
             groove.curve(to: NSPoint(x: 20.2, y: 10.8),
                          controlPoint1: NSPoint(x: 17, y: 13),
                          controlPoint2: NSPoint(x: 17, y: 13))
-            // Bottom edge of groove (S-curve back left)
             groove.line(to: NSPoint(x: 20.2, y: 12.8))
             groove.curve(to: NSPoint(x: 13.5, y: 14.2),
                          controlPoint1: NSPoint(x: 17, y: 15),
@@ -188,8 +169,6 @@ final class PopoverManager: NSObject {
             path.transform(using: transform as AffineTransform)
             groove.transform(using: transform as AffineTransform)
 
-            // Use even-odd rule: append groove inside the stone path
-            // so the groove is punched out automatically
             path.append(groove)
             path.windingRule = .evenOdd
             NSColor.black.setFill()
@@ -203,11 +182,11 @@ final class PopoverManager: NSObject {
 }
 
 // MARK: - NSWindowDelegate
-/// Tracks floating panel close (e.g. via close button) to reset isFloating state.
-extension PopoverManager: NSWindowDelegate {
+/// Tracks panel close (e.g. via close button or Cmd+W) to clean up.
+extension WindowManager: NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
-        guard notification.object as? FloatingPanel === floatingPanel else { return }
-        floatingPanel = nil
-        isFloating = false
+        guard notification.object as? FloatingPanel === panel else { return }
+        panel = nil
+        isHiding = false
     }
 }

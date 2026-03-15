@@ -9,18 +9,10 @@ struct SidebarFooter: View {
     var body: some View {
         HStack(spacing: 4) {
             footerButton(icon: "gearshape", label: "Settings", isActive: isSettings) {
-                if isSettings {
-                    if let file = appState.noteFiles.first { appState.selectFile(file) }
-                } else {
-                    appState.showSettings()
-                }
+                isSettings ? appState.returnToFiles() : appState.showSettings()
             }
             footerButton(icon: "clock", label: "Timer", isActive: isTimer) {
-                if isTimer {
-                    if let file = appState.noteFiles.first { appState.selectFile(file) }
-                } else {
-                    appState.showTimer()
-                }
+                isTimer ? appState.returnToFiles() : appState.showTimer()
             }
         }
         .padding(6)

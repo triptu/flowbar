@@ -4,10 +4,8 @@ import SwiftUI
 ///
 /// Reads activePanel from AppState to decide what to show: a note editor,
 /// settings, the timer, or an empty state. The sidebar is togglable with Cmd+B.
-/// Used identically in both popover and floating panel modes.
 struct MainView: View {
     @Environment(AppState.self) var appState
-    @Environment(PopoverManager.self) var popoverManager
 
     var body: some View {
         @Bindable var appState = appState
@@ -36,11 +34,6 @@ struct MainView: View {
         }
         .background(.regularMaterial)
         .preferredColorScheme(appState.preferredColorScheme)
-        .onAppear {
-            if case .empty = appState.activePanel, let first = appState.noteFiles.first {
-                appState.selectFile(first)
-            }
-        }
         .background(
             Button("") { appState.toggleSidebar() }
                 .keyboardShortcut("b", modifiers: .command)
@@ -61,7 +54,6 @@ struct MainView: View {
 
 struct SidebarDivider: View {
     @Binding var width: Double
-    @GestureState private var dragOffset: CGFloat = 0
     @State private var startWidth: Double = 0
 
     var body: some View {
