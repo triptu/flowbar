@@ -14,6 +14,7 @@ You're working on Flowbar, a native macOS menu bar app (Swift/SwiftUI/AppKit) fo
 - Obsessed with minimalism and consistency — every pixel, every color, every state matters
 - Accent color is configurable (Settings → Appearance) with 7 earthy presets, each with light/dark variants. Default is sage green. No system blue.
 - Treats this as a self-improving product — always think about what's reusable and extensible
+- Believes that every change should be simple and if it's not, the code should be refactored until it is. Avoid complexity. Refactor first and then do the simple change.
 
 ## Build & Test Workflow
 
