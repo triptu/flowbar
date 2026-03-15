@@ -17,26 +17,26 @@ struct MainView: View {
                 SidebarDivider()
             }
 
-            VStack(spacing: 0) {
+            Group {
+                switch appState.sidebar.activePanel {
+                case .settings:
+                    SettingsView()
+                case .timer:
+                    TimerContainerView()
+                case .file:
+                    NoteContentView()
+                case .empty:
+                    emptyState
+                }
+            }
+            .accessibilityIdentifier("content-area")
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .overlay(alignment: .top) {
                 Rectangle()
                     .fill(Color(nsColor: .separatorColor))
                     .frame(height: 1)
-                    .frame(maxWidth: .infinity)
-
-                Group {
-                    switch appState.sidebar.activePanel {
-                    case .settings:
-                        SettingsView()
-                    case .timer:
-                        TimerContainerView()
-                    case .file:
-                        NoteContentView()
-                    case .empty:
-                        emptyState
-                    }
-                }
-                .accessibilityIdentifier("content-area")
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .offset(x: appState.sidebar.sidebarVisible ? -2.5 : 0)
+                    .padding(.leading, appState.sidebar.sidebarVisible ? -2.5 : 0)
             }
         }
         .background {
