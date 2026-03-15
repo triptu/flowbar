@@ -33,42 +33,21 @@ xcodegen generate && xcodebuild ...
 open ~/Library/Developer/Xcode/DerivedData/Flowbar-*/Build/Products/Debug/Flowbar.app
 ```
 
-### Taking Screenshots (critical pitfalls!)
+### Taking Screenshots
 
-The popover has `.transient` behavior — it CLOSES when anything else gets focus, including `screencapture`. Solutions:
+The overlay panel has `hidesOnDeactivate = false`, so it stays visible when `screencapture` runs:
 
-1. **Click menu bar icon and capture immediately** (race condition, works ~50% of the time):
-   ```bash
-   osascript -e 'tell application "System Events" to tell process "Flowbar" to click menu bar item 1 of menu bar 2' && sleep 0.5 && screencapture -x /tmp/screenshot.png
-   ```
+```bash
+# Click menu bar icon to show the overlay, then capture
+osascript -e 'tell application "System Events" to tell process "Flowbar" to click menu bar item 1 of menu bar 2' && sleep 0.5 && screencapture -x /tmp/screenshot.png
+```
 
-2. **Use a debug window** (reliable, add temporarily to AppDelegate):
-   ```swift
-   #if DEBUG
-   DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-       let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 700, height: 500),
-           styleMask: [.titled, .closable, .resizable, .miniaturizable],
-           backing: .buffered, defer: false)
-       window.center()
-       window.titlebarAppearsTransparent = true
-       window.titleVisibility = .hidden
-       window.contentView = NSHostingView(rootView: MainView().environment(self.appState!).environment(self.timerService!).environment(self.popoverManager!))
-       window.makeKeyAndOrderFront(nil)
-       NSApp.activate(ignoringOtherApps: true)
-       self.debugWindow = window
-   }
-   #endif
-   ```
-   **IMPORTANT**: Remove the debug window before committing. It creates a parallel view hierarchy sharing mutable state.
+You can also use AppleScript to find UI elements for clicking:
+```bash
+osascript -e 'tell application "System Events" to tell process "Flowbar" to tell window 1 to tell group 1 to set btns to every button ...'
+```
 
-3. **Use AppleScript to find UI elements** for clicking:
-   ```bash
-   osascript -e 'tell application "System Events" to tell process "Flowbar" to tell window 1 to tell group 1 to set btns to every button ...'
-   ```
-
-4. **Use `cliclick`** for coordinate-based clicks (install via `brew install cliclick`). Get window position first via AppleScript.
-
-5. **NSPanel (FloatingPanel) won't show when created from code** (e.g. from AppDelegate's asyncAfter). It works when triggered from a button click in the popover. This is an NSPanel quirk with LSUIElement apps. Use a regular NSWindow for debug testing.
+Or use `cliclick` for coordinate-based clicks (install via `brew install cliclick`). Get window position first via AppleScript.
 
 ### Setting defaults without UI
 ```bash
@@ -107,7 +86,7 @@ defaults write com.flowbar.app theme dark  # or light, system
 2. **No system blue.** Custom controls everywhere. If a system control sneaks in blue, replace it.
 3. **Earthy, calm, minimal.** Glassmorphic but not washed out. `.regularMaterial` not `.ultraThinMaterial`.
 4. **Light AND dark must both look good.** `preferredColorScheme` from settings. Test both.
-5. **Pop-out button.** Open the menubar window as overlay.
+5. **Overlay architecture.** Single floating panel toggled from the menu bar icon or double-Fn.
 6. **Sidebar toggle shows next to title** when sidebar is hidden.
 7. **Todo row layout**: source file name below title text, aligned with title start (not under the checkbox).
 8. **Timer**: PAUSE (not stop) preserves state. Only COMPLETE clears and marks done. Pausing stays on timer view. Completing switches to todos to pick next task.
