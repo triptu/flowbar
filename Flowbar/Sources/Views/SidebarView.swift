@@ -5,7 +5,6 @@ struct SidebarView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header bar — sits right of traffic lights
             HStack(spacing: 8) {
                 SidebarToggleButton { appState.toggleSidebar() }
                 Spacer()
@@ -27,39 +26,31 @@ struct SidebarView: View {
                             appState.startRename(file)
                         }
                         .onTapGesture {
-                            // If renaming a different file, commit that rename first
-                            if let renaming = appState.sidebar.renamingFileID, renaming != file.id {
-                                appState.commitRename()
-                            }
-                            // Skip select while this row is in rename mode
-                            if appState.sidebar.renamingFileID != file.id {
-                                appState.selectFile(file)
-                            }
+                            // Double-click fires both gestures in the same run loop.
+                            // Skip the single-tap for the file being renamed so it
+                            // doesn't race with startRename.
+                            guard appState.sidebar.renamingFileID != file.id else { return }
+                            // The click-outside monitor commits the rename with the
+                            // actual typed text before this gesture fires. Just select.
+                            appState.selectFile(file)
                         }
                         .contextMenu {
-                            Button("New File") {
-                                appState.createNewFile()
-                            }
+                            Button("New File") { appState.createNewFile() }
                             Divider()
-                            Button("Reveal in Finder") {
-                                appState.revealInFinder(file)
-                            }
-                            Button("Open in Obsidian") {
-                                appState.openInObsidian(file)
-                            }
+                            Button("Reveal in Finder") { appState.revealInFinder(file) }
+                            Button("Open in Obsidian") { appState.openInObsidian(file) }
                             Divider()
-                            Button("Rename") {
-                                appState.startRename(file)
-                            }
+                            Button("Rename") { appState.startRename(file) }
                             Divider()
-                            Button("Move to Trash", role: .destructive) {
-                                appState.trashFile(file)
-                            }
+                            Button("Move to Trash", role: .destructive) { appState.trashFile(file) }
                         }
                     }
                 }
                 .padding(.vertical, 4)
                 .padding(.horizontal, 8)
+            }
+            .contextMenu {
+                Button("New File") { appState.createNewFile() }
             }
 
             Spacer()
@@ -71,7 +62,7 @@ struct SidebarView: View {
     }
 }
 
-/// A single file row in the sidebar — shows display name, or an inline text field when renaming.
+/// A single file row — plain text normally, inline NSTextField when renaming.
 struct SidebarFileRow: View {
     @Environment(AppState.self) var appState
     let file: NoteFile
@@ -81,16 +72,21 @@ struct SidebarFileRow: View {
     var body: some View {
         Group {
             if isRenaming {
-                RenameTextField(
-                    text: appState.sidebar.renameText,
-                    fontSize: appState.settings.typography.sidebarSize,
+                RenameField(
+                    initialText: appState.sidebar.renameText,
                     accentColor: appState.settings.accentColor.nsColor,
-                    onCommit: { newName in
-                        appState.sidebar.renameText = newName
+                    fontSize: appState.settings.typography.sidebarSize,
+                    onCommit: { text in
+                        appState.sidebar.renameText = text
                         appState.commitRename()
                     },
-                    onCancel: { appState.cancelRename() }
+                    onCancel: {
+                        appState.cancelRename()
+                    }
                 )
+                // Force a fresh NSTextField per rename session so the coordinator
+                // (finished flag, click-outside monitor) always starts clean.
+                .id(appState.sidebar.renameSessionID)
             } else {
                 Text(file.name)
                     .font(.system(size: appState.settings.typography.sidebarSize))
@@ -108,20 +104,28 @@ struct SidebarFileRow: View {
     }
 }
 
-// MARK: - NSTextField wrapper for inline rename
+// MARK: - RenameField (NSViewRepresentable)
+//
+// Design: ONE dismiss path. Every exit (Enter, Escape, click-outside, Tab)
+// funnels through `finish()`. The click-outside monitor just resigns first
+// responder → controlTextDidEndEditing → finish(). No racing dismiss paths.
 
-/// Uses AppKit NSTextField for reliable focus, blinking cursor, Enter/Escape,
-/// and click-outside detection in the floating panel.
-struct RenameTextField: NSViewRepresentable {
-    let text: String
-    let fontSize: CGFloat
+struct RenameField: NSViewRepresentable {
+    let initialText: String
     let accentColor: NSColor
+    let fontSize: CGFloat
     let onCommit: (String) -> Void
     let onCancel: () -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onCommit: onCommit, onCancel: onCancel)
+    }
 
     func makeNSView(context: Context) -> NSTextField {
         let field = NSTextField()
         field.font = .systemFont(ofSize: fontSize)
+        field.stringValue = initialText
+        field.delegate = context.coordinator
         field.isBordered = false
         field.focusRingType = .none
         field.drawsBackground = true
@@ -130,82 +134,78 @@ struct RenameTextField: NSViewRepresentable {
         field.layer?.cornerRadius = 4
         field.layer?.borderWidth = 1.5
         field.layer?.borderColor = accentColor.cgColor
-        field.stringValue = text
-        field.delegate = context.coordinator
 
-        // Make panel key and focus the field
+        // Delay focus until the field is in the window hierarchy.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak field] in
             guard let field, let window = field.window else { return }
             window.makeKey()
             window.makeFirstResponder(field)
             field.currentEditor()?.selectAll(nil)
-        }
-        // Delay click-outside monitor so the context menu dismiss click doesn't leak through
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak field] in
-            guard let field else { return }
-            context.coordinator.startMonitoring(field: field)
+            context.coordinator.installClickOutsideMonitor(for: field)
         }
         return field
     }
 
     func updateNSView(_ nsView: NSTextField, context: Context) {}
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator(onCommit: onCommit, onCancel: onCancel)
-    }
+    // MARK: - Coordinator
 
-    class Coordinator: NSObject, NSTextFieldDelegate {
-        let onCommit: (String) -> Void
-        let onCancel: () -> Void
+    final class Coordinator: NSObject, NSTextFieldDelegate {
+        private let onCommit: (String) -> Void
+        private let onCancel: () -> Void
+        /// NSEvent monitor handle (not Sendable). Only accessed on @MainActor.
         private nonisolated(unsafe) var monitor: Any?
-        private var didFinish = false
+        private var finished = false
 
         init(onCommit: @escaping (String) -> Void, onCancel: @escaping () -> Void) {
             self.onCommit = onCommit
             self.onCancel = onCancel
-            super.init()
         }
 
-        @MainActor func startMonitoring(field: NSTextField) {
+        @MainActor func installClickOutsideMonitor(for field: NSTextField) {
             monitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) {
                 [weak self, weak field] event in
-                guard let self, let field, !self.didFinish else { return event }
-                let locationInField = field.convert(event.locationInWindow, from: nil)
-                if !field.bounds.contains(locationInField) {
-                    self.finish(field.stringValue, isCancel: false)
+                guard let self, let field, !self.finished else { return event }
+                if event.window === field.window {
+                    let pt = field.convert(event.locationInWindow, from: nil)
+                    if !field.bounds.contains(pt) {
+                        field.window?.makeFirstResponder(nil)
+                    }
+                } else {
+                    field.window?.makeFirstResponder(nil)
                 }
                 return event
             }
         }
 
-        /// Intercept Enter and Escape to prevent them propagating to the panel
+        // MARK: NSTextFieldDelegate
+
+        /// Intercept Enter and Escape so they don't propagate to the NSPanel.
         func control(_ control: NSControl, textView: NSTextView, doCommandBy sel: Selector) -> Bool {
             if sel == #selector(NSResponder.insertNewline(_:)) {
                 finish((control as? NSTextField)?.stringValue ?? "", isCancel: false)
                 return true
             }
             if sel == #selector(NSResponder.cancelOperation(_:)) {
-                finish((control as? NSTextField)?.stringValue ?? "", isCancel: true)
+                finish("", isCancel: true)
                 return true
             }
             return false
         }
 
-        /// Fallback for focus loss via Tab or other reasons
+        /// Fires when the field loses first responder (click-outside, Tab, etc.).
         func controlTextDidEndEditing(_ obj: Notification) {
-            guard !didFinish, let field = obj.object as? NSTextField else { return }
+            guard let field = obj.object as? NSTextField else { return }
             finish(field.stringValue, isCancel: false)
         }
 
-        private func finish(_ value: String, isCancel: Bool) {
-            guard !didFinish else { return }
-            didFinish = true
+        // MARK: Single exit point
+
+        private func finish(_ text: String, isCancel: Bool) {
+            guard !finished else { return }
+            finished = true
             removeMonitor()
-            if isCancel {
-                onCancel()
-            } else {
-                onCommit(value)
-            }
+            isCancel ? onCancel() : onCommit(text)
         }
 
         private func removeMonitor() {

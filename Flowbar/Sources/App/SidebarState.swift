@@ -39,6 +39,8 @@ final class SidebarState {
     var renamingFileID: String?
     /// The live text in the rename field — stored here so any caller can commit
     var renameText = ""
+    /// Bumped on each startRename to force SwiftUI to create a fresh RenameField
+    var renameSessionID = 0
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -66,6 +68,7 @@ final class SidebarState {
 
     func startRename(_ file: NoteFile) {
         renameText = file.name
+        renameSessionID += 1
         renamingFileID = file.id
     }
 
