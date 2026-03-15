@@ -79,7 +79,7 @@ struct AppStateFileLifecycleTests {
         state.saveFileContent()
 
         // saveFileContent debounces 0.5s via DispatchQueue.main.asyncAfter
-        try await Task.sleep(for: .seconds(1.5))
+        try await Task.sleep(for: .seconds(0.8))
 
         let onDisk = try String(contentsOf: alpha.url, encoding: .utf8)
         #expect(onDisk == "# Alpha\nEdited content")
