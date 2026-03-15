@@ -8,19 +8,23 @@ struct TitleBarLabel: View {
     var body: some View {
         Group {
             if timerService.hasActiveSession {
-                HStack(spacing: 4) {
-                    Text("Active — \(timerService.currentTodoText)")
-                        .lineLimit(1)
-                        .truncationMode(.tail)
+                HStack(spacing: 6) {
                     Text(TimerService.formatTime(timerService.elapsed))
                         .monospacedDigit()
                         .foregroundStyle(.secondary)
+                    Text(truncated(timerService.currentTodoText, limit: 25))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                 }
             } else {
                 Text("No active task")
                     .foregroundStyle(.tertiary)
             }
         }
-        .font(.system(size: 11))
+        .font(.system(size: 13))
+    }
+
+    private func truncated(_ text: String, limit: Int) -> String {
+        text.count > limit ? String(text.prefix(limit)) + "…" : text
     }
 }

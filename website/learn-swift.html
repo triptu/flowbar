@@ -2500,8 +2500,8 @@ final class TimerService {
 
 /// Root view that combines the sidebar and content area.
 ///
-/// Reads activePanel from AppState to decide what to show: a note editor,
-/// settings, the timer, or an empty state. The sidebar is togglable with Cmd+B.
+/// Title bar content (sidebar toggle, active task label) is handled natively
+/// by FloatingPanel. This view just manages the sidebar and content panels.
 struct MainView: View {
     @Environment(AppState.self) var appState
 
@@ -2527,10 +2527,12 @@ struct MainView: View {
                     emptyState
                 }
             }
+            .accessibilityIdentifier("content-area")
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .ignoresSafeArea(.all, edges: .top)
         }
-        .background(.regularMaterial)
+        .background {
+            Rectangle().fill(.regularMaterial).ignoresSafeArea(.all, edges: .top)
+        }
         .preferredColorScheme(appState.settings.preferredColorScheme)
         .background(keyboardShortcuts)
     }
@@ -2544,6 +2546,10 @@ struct MainView: View {
                 .keyboardShortcut(.leftArrow, modifiers: [.option, .command])
             Button("") { appState.selectNextFile() }
                 .keyboardShortcut(.rightArrow, modifiers: [.option, .command])
+            Button("") { appState.showSettings() }
+                .keyboardShortcut(",", modifiers: .command)
+            Button("") { appState.showTimer() }
+                .keyboardShortcut("t", modifiers: [.option, .command])
         }
         .hidden()
     }
@@ -2556,6 +2562,33 @@ struct MainView: View {
             Text("Select a folder in Settings")
                 .foregroundStyle(.secondary)
         }
+    }
+}`,
+
+                "Views/TitleBarView.swift": `import SwiftUI
+
+/// Active task label displayed centered in the native title bar.
+/// Hosted as an NSHostingView added to the title bar view hierarchy by FloatingPanel.
+struct TitleBarLabel: View {
+    @Environment(TimerService.self) var timerService
+
+    var body: some View {
+        Group {
+            if timerService.hasActiveSession {
+                HStack(spacing: 4) {
+                    Text("Active — \\(timerService.currentTodoText)")
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                    Text(TimerService.formatTime(timerService.elapsed))
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                }
+            } else {
+                Text("No active task")
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .font(.system(size: 11))
     }
 }`,
 
@@ -2637,14 +2670,15 @@ final class WindowManager: NSObject {
     }
 
     func showPanel() {
+        let spaceID = activeSpaceID()
+
+        // If panel already exists, just bring it forward (it's on all Spaces)
         if let panel {
             panel.alphaValue = 1
             panel.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
         }
-
-        let spaceID = activeSpaceID()
 
         // Load saved frame for this Space, or center with default size
         let frame: NSRect
@@ -2668,6 +2702,12 @@ final class WindowManager: NSObject {
             .environment(timerService)
             .environment(self)
         newPanel.setContent(mainView)
+        newPanel.addSidebarToggle { [weak self] in
+            self?.appState.toggleSidebar()
+        }
+        let taskLabel = TitleBarLabel()
+            .environment(timerService)
+        newPanel.addActiveTaskLabel(taskLabel)
         newPanel.delegate = self
         newPanel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -2767,16 +2807,23 @@ import SwiftUI
 ///
 /// Configured as an always-on-top utility panel that joins all Spaces. Saves its
 /// size back via an onClose callback so dimensions persist across sessions.
-/// The full title bar is the drag region. Traffic lights sit inside it over the sidebar.
+/// Traffic lights, sidebar toggle, and active task label all live in the native
+/// title bar view hierarchy so they receive clicks and align naturally.
 class FloatingPanel: NSPanel {
+    /// Horizontal offset where traffic lights start (aligned with sidebar item text).
     static let trafficLightX: CGFloat = 20
-    /// Width past the traffic lights area. Used by SidebarView to inset its header.
+    /// Width past the traffic lights area. Used by views to inset content.
     static let trafficLightWidth: CGFloat = 80
+    /// Height of the native title bar region.
+    static let titleBarHeight: CGFloat = 28
 
-    /// Called with (frame, spaceID) when the panel closes
+    /// Called with (frame, spaceID) when the panel closes, so the caller can persist the window frame.
     private let onClose: (NSRect, Int) -> Void
     private var initialSize: NSSize = .zero
+    /// The Space ID this panel was created on, used to save per-Space frame
     let spaceID: Int
+    /// Hosting view for the active task label, kept for cleanup
+    private var activeTaskHost: NSView?
 
     init(contentRect: NSRect, spaceID: Int, onClose: @escaping (NSRect, Int) -> Void) {
         self.onClose = onClose
@@ -2807,9 +2854,57 @@ class FloatingPanel: NSPanel {
         repositionTrafficLights()
     }
 
+    /// Add a native NSButton to the title bar view hierarchy so it receives clicks.
+    /// Placed right after the traffic lights, vertically centered.
+    func addSidebarToggle(action: @escaping () -> Void) {
+        guard let closeButton = standardWindowButton(.closeButton),
+              let titlebarView = closeButton.superview else { return }
+
+        let button = TitleBarButton(action: action)
+        button.image = NSImage(
+            systemSymbolName: "sidebar.left",
+            accessibilityDescription: "Toggle Sidebar"
+        )
+        button.imagePosition = .imageOnly
+        button.isBordered = false
+        button.bezelStyle = .inline
+        (button.cell as? NSButtonCell)?.highlightsBy = .contentsCellMask
+        button.contentTintColor = .secondaryLabelColor
+
+        let size: CGFloat = 20
+        let x = Self.trafficLightWidth + 10
+        let y = (titlebarView.bounds.height - size) / 2
+        button.frame = NSRect(x: x, y: y, width: size, height: size)
+        button.autoresizingMask = [.minYMargin]
+
+        titlebarView.addSubview(button)
+    }
+
+    /// Add a SwiftUI active task label centered in the title bar.
+    func addActiveTaskLabel(_ view: some View) {
+        guard let closeButton = standardWindowButton(.closeButton),
+              let titlebarView = closeButton.superview else { return }
+
+        let host = NSHostingView(rootView: view)
+        host.translatesAutoresizingMaskIntoConstraints = false
+        host.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        // Transparent background so the title bar shows through
+        host.layer?.backgroundColor = .clear
+        titlebarView.addSubview(host)
+
+        NSLayoutConstraint.activate([
+            host.centerXAnchor.constraint(equalTo: titlebarView.centerXAnchor),
+            host.centerYAnchor.constraint(equalTo: titlebarView.centerYAnchor),
+            host.heightAnchor.constraint(equalTo: titlebarView.heightAnchor),
+        ])
+
+        activeTaskHost = host
+    }
+
+    /// Move traffic lights so they align horizontally with sidebar item text.
     private func repositionTrafficLights() {
         let types: [NSWindow.ButtonType] = [.closeButton, .miniaturizeButton, .zoomButton]
-        let spacing: CGFloat = 20
+        let spacing: CGFloat = 20 // center-to-center
         for (i, type) in types.enumerated() {
             guard let button = standardWindowButton(type) else { continue }
             let x = Self.trafficLightX + CGFloat(i) * spacing
@@ -2824,6 +2919,27 @@ class FloatingPanel: NSPanel {
 
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
+}
+
+/// NSButton that fires a closure and lives in the title bar view hierarchy.
+final class TitleBarButton: NSButton {
+    private let onClick: () -> Void
+
+    init(action: @escaping () -> Void) {
+        self.onClick = action
+        super.init(frame: .zero)
+        target = self
+        self.action = #selector(handleClick)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError() }
+
+    @objc private func handleClick() {
+        onClick()
+    }
+
+    override var mouseDownCanMoveWindow: Bool { false }
 }`,
             };
 
@@ -3066,43 +3182,77 @@ class FloatingPanel: NSPanel {
                         title: "Closure-based onClose",
                         body: "Instead of the panel knowing about AppState, it takes an <code>onClose</code> closure. This decouples FloatingPanel from the state layer.",
                     },
-                    130: {
+                    120: {
+                        title: "Native title bar setup",
+                        body: "After setting the SwiftUI content, adds native AppKit controls to the title bar: a sidebar toggle button and an active task label. These are added directly to the title bar's view hierarchy (via <code>standardWindowButton(.closeButton).superview</code>) so they receive mouse events that the title bar would otherwise consume for window dragging.",
+                    },
+                    136: {
                         title: "NSAnimationContext",
                         body: "AppKit's animation API. <code>runAnimationGroup</code> takes a setup closure (duration) and a completion closure. Fades the panel to zero opacity, then closes it.",
                     },
-                    141: {
+                    147: {
                         title: "Static factory method + NSImage",
                         body: "Draws a custom menu bar icon programmatically using <code>NSBezierPath</code>. Marked <code>isTemplate = true</code> so macOS auto-colors it to match the system appearance.",
                     },
                 },
                 "Window/FloatingPanel.swift": {
-                    9: {
+                    10: {
                         title: "class inheritance",
                         body: "<code>FloatingPanel: NSPanel</code> inherits from <code>NSPanel</code>, which is itself a subclass of <code>NSWindow</code>. Class inheritance lets you override behavior while reusing the parent's functionality.",
                     },
-                    16: {
+                    18: {
                         title: "Closure callback (onClose)",
                         body: "Instead of holding a reference to AppState, the panel takes an <code>onClose</code> closure. This is the <em>dependency inversion</em> pattern &mdash; the panel reports events without knowing who handles them.",
                     },
-                    26: {
+                    31: {
                         title: ".fullSizeContentView",
                         body: "Lets the content extend behind the title bar for a seamless look. Combined with <code>titlebarAppearsTransparent</code> and <code>titleVisibility = .hidden</code>, the window looks borderless but keeps standard window buttons.",
                     },
-                    34: {
+                    39: {
                         title: "hidesOnDeactivate = false",
                         body: "By default, floating panels hide when the app loses focus. Setting this to <code>false</code> keeps the overlay visible when you click behind it.",
                     },
-                    51: {
+                    57: {
+                        title: "addSidebarToggle — native NSButton in title bar",
+                        body: "Adds an NSButton directly to the title bar's view hierarchy (accessed via <code>standardWindowButton(.closeButton).superview</code>). This is necessary because the native title bar intercepts mouse events for window dragging before they reach SwiftUI content. By adding the button as a sibling of the traffic lights, it receives clicks naturally.",
+                    },
+                    82: {
+                        title: "addActiveTaskLabel — NSHostingView in title bar",
+                        body: "Embeds a SwiftUI view (TitleBarLabel) as an <code>NSHostingView</code> centered in the native title bar using Auto Layout constraints. This gives reactive SwiftUI content (timer updates) while living in the AppKit title bar hierarchy.",
+                    },
+                    102: {
                         title: "repositionTrafficLights",
                         body: "Moves the standard close/minimize/zoom buttons to align with the sidebar. Uses <code>standardWindowButton()</code> and <code>setFrameOrigin()</code>.",
                     },
-                    61: {
+                    113: {
                         title: "override func close()",
                         body: "Overrides the parent's <code>close()</code> to fire the <code>onClose</code> callback with the current frame and Space ID. <code>super.close()</code> calls the original.",
                     },
-                    66: {
+                    118: {
                         title: "override var (computed)",
                         body: "Overrides a parent's computed property. <code>canBecomeKey</code> returns <code>true</code> to allow keyboard input. Panels default to <code>false</code>.",
+                    },
+                    123: {
+                        title: "TitleBarButton — closure-based NSButton",
+                        body: "A custom <code>NSButton</code> subclass that fires a closure on click and overrides <code>mouseDownCanMoveWindow</code> to <code>false</code>. Without this override, clicks on the button would be consumed by the title bar's window-dragging behavior instead of triggering the button action.",
+                    },
+                    140: {
+                        title: "mouseDownCanMoveWindow = false",
+                        body: "The native title bar uses <code>mouseDown</code> events for window dragging. This override tells AppKit that clicks on this button should NOT initiate a window drag, allowing the button's action to fire instead.",
+                    },
+                },
+                "Views/TitleBarView.swift": {
+                    5: {
+                        title: "TitleBarLabel — hosted in native title bar",
+                        body: "A lightweight SwiftUI view embedded as an <code>NSHostingView</code> in the native title bar by <code>FloatingPanel.addActiveTaskLabel()</code>. It reads <code>TimerService</code> from the environment to reactively display the active task name and elapsed time.",
+                    },
+                    6: {
+                        title: "@Environment(TimerService.self)",
+                        body: "Reads the <code>TimerService</code> instance from the SwiftUI environment. The environment value is injected when <code>WindowManager</code> creates this view with <code>.environment(timerService)</code>.",
+                    },
+                    15: {
+                        title: ".monospacedDigit()",
+                        body: "Uses fixed-width digits so the timer display doesn't shift horizontally as numbers change. Without this, the width of the text would jitter as digits like '1' (narrow) and '0' (wide) alternate.",
                     },
                 },
             };
@@ -3640,7 +3790,7 @@ class FloatingPanel: NSPanel {
                 TimerService:
                     "Manages the focus timer. Tracks elapsed time, start/pause/complete, and persists sessions to the SQLite database.",
                 WindowManager:
-                    "Controls the menu bar icon and the floating overlay panel. Manages the status bar icon (custom drawn logo), left-click toggle, right-click context menu, animated show/hide transitions, and per-Space window frame persistence. Conforms to NSWindowDelegate to track panel close events.",
+                    "Controls the menu bar icon and the floating overlay panel. Manages the status bar icon (custom drawn logo), left-click toggle, right-click context menu, animated show/hide transitions, and per-Space window frame persistence. Sets up native title bar controls (sidebar toggle, active task label) on the panel. Conforms to NSWindowDelegate to track panel close events.",
                 NoteFile:
                     "A simple data model (struct) representing a single markdown file. Holds the URL, display name, and a unique ID.",
                 FileWatcher:
@@ -3648,13 +3798,13 @@ class FloatingPanel: NSPanel {
                 DatabaseService:
                     "SQLite wrapper (singleton) that stores timer sessions. Handles opening the DB, creating tables, and querying total times.",
                 FloatingPanel:
-                    "A custom NSPanel subclass for the overlay window. Uses fullSizeContentView for a seamless title bar, repositions traffic light buttons, persists window frame via onClose callback, stays visible when clicking behind it, and enables keyboard input.",
+                    "A custom NSPanel subclass for the overlay window. Uses fullSizeContentView for a seamless title bar, repositions traffic light buttons, and hosts native title bar elements: a sidebar toggle NSButton and a centered SwiftUI active task label (via NSHostingView). Also includes TitleBarButton, an NSButton subclass that overrides mouseDownCanMoveWindow to receive clicks in the title bar.",
                 MainView:
                     "The root SwiftUI view. Contains the sidebar, content area, and switches between notes, settings, and timer views. Registers a hidden Cmd+B shortcut for sidebar toggle.",
                 SidebarView:
-                    "Displays the list of markdown files as a navigable sidebar. Insets its header past the traffic light buttons using FloatingPanel.trafficLightWidth.",
+                    "Displays the list of markdown files as a navigable sidebar. The sidebar sits below the native title bar, which hosts its own toggle button and active task label.",
                 NoteContentView:
-                    "The markdown editor view. Shows file content in a TextEditor bound to EditorState.editorContent. Shows a SidebarToggleButton when the sidebar is hidden.",
+                    "The markdown editor view. Shows file content in a TextEditor bound to EditorState.editorContent. The sidebar toggle has moved to the native title bar.",
                 SettingsView:
                     "User preferences UI \u2014 theme, typography, accent color, vault folder picker, keyboard shortcut reference.",
                 TimerContainerView:
@@ -3675,6 +3825,7 @@ class FloatingPanel: NSPanel {
                 TimerService: "Services/TimerService.swift",
                 WindowManager: "Window/WindowManager.swift",
                 FloatingPanel: "Window/FloatingPanel.swift",
+                TitleBarLabel: "Views/TitleBarView.swift",
                 MainView: "Views/MainView.swift",
                 NoteFile: "Models/NoteFile.swift",
                 FileWatcher: "Services/FileWatcher.swift",

@@ -17,20 +17,25 @@ struct MainView: View {
                 SidebarDivider()
             }
 
-            Group {
-                switch appState.sidebar.activePanel {
-                case .settings:
-                    SettingsView()
-                case .timer:
-                    TimerContainerView()
-                case .file:
-                    NoteContentView()
-                case .empty:
-                    emptyState
+            VStack(spacing: 0) {
+                Divider()
+                    .padding(.leading, -1) // close gap with sidebar divider
+
+                Group {
+                    switch appState.sidebar.activePanel {
+                    case .settings:
+                        SettingsView()
+                    case .timer:
+                        TimerContainerView()
+                    case .file:
+                        NoteContentView()
+                    case .empty:
+                        emptyState
+                    }
                 }
+                .accessibilityIdentifier("content-area")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .accessibilityIdentifier("content-area")
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background {
             Rectangle().fill(.regularMaterial).ignoresSafeArea(.all, edges: .top)
