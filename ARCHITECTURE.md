@@ -1,42 +1,19 @@
+## How things connect
 
-## How the code is structured
+**AppDelegate** creates three singletons on launch:
+1. `AppState` — owns the folder path, file list, editor text, navigation state
+2. `TimerService` — owns the stopwatch, talks to SQLite for persistence
+3. `WindowManager` — owns the menu bar icon and the floating overlay panel
 
-```
-Sources/
-├── App/                    # App lifecycle
-│   ├── FlowbarApp.swift    # @main entry, just a SwiftUI App shell
-│   ├── AppDelegate.swift   # Creates services, sets up menu bar + Fn shortcut
-│   └── AppState.swift      # Central state: navigation, file list, editor content
-├── Models/
-│   ├── NoteFile.swift      # One markdown file (id, url, display name)
-│   └── TodoItem.swift      # One todo extracted from markdown (text, done, source)
-├── Services/
-│   ├── DatabaseService.swift   # SQLite wrapper for timer session persistence
-│   ├── FileWatcher.swift       # Watches a file/directory for changes via GCD
-│   ├── MarkdownParser.swift    # Extracts todos from .md files, toggles checkboxes
-│   └── TimerService.swift      # Stopwatch logic: start/pause/resume/complete
-├── Theme/
-│   ├── Colors.swift        # Single accent color (sage green), hex helper
-│   └── Typography.swift    # Font size presets (small/default/large)
-├── Views/
-│   ├── MainView.swift      # Root: sidebar + content split view
-│   ├── SidebarView.swift   # File list + footer tabs
-│   ├── NoteContentView.swift   # Note header + markdown editor
-│   ├── SettingsView.swift      # All settings with custom segmented controls
-│   ├── Components/
-│   │   ├── SidebarFooter.swift       # Settings/Timer tab buttons
-│   │   ├── SidebarToggleButton.swift # Reusable sidebar toggle (used in sidebar + note header)
-│   │   └── TodoRow.swift             # Single todo in the timer list
-│   └── Timer/
-│       ├── TimerContainerView.swift  # Switches between home and todos list
-│       ├── TimerHomeView.swift       # Running timer display or idle state
-│       └── TimerTodosView.swift      # All todos across files with filters
-└── Window/
-    ├── WindowManager.swift     # Menu bar icon, overlay panel show/hide lifecycle
-    └── FloatingPanel.swift     # NSPanel for the always-on-top overlay window
-```
+These get injected via `.environment()` into the SwiftUI view tree. Views read from them, call methods on them, and SwiftUI handles the reactivity.
+
+**Data flow for notes:** AppState reads the folder → creates NoteFile list → sidebar shows them → user clicks one → AppState loads its content into `editorContent` → TextEditor binds to it → edits auto-save with 500ms debounce → FileWatcher detects external changes and reloads.
+
+**Data flow for timer:** User picks a todo in TimerTodosView → TimerService.start() creates a DB session → timer ticks update `elapsed` → UI reflects it → user hits Complete → TimerService returns the todo info → view calls MarkdownParser to check it off in the .md file.
 
 ## Database Schema (SQLite)
+
+Timer sessions are stored in DB.
 
 ```sql
 CREATE TABLE timer_sessions (
@@ -53,19 +30,6 @@ CREATE TABLE app_state (
     value TEXT NOT NULL
 );
 ```
-
-## How things connect
-
-**AppDelegate** creates three singletons on launch:
-1. `AppState` — owns the folder path, file list, editor text, navigation state
-2. `TimerService` — owns the stopwatch, talks to SQLite for persistence
-3. `WindowManager` — owns the menu bar icon and the floating overlay panel
-
-These get injected via `.environment()` into the SwiftUI view tree. Views read from them, call methods on them, and SwiftUI handles the reactivity.
-
-**Data flow for notes:** AppState reads the folder → creates NoteFile list → sidebar shows them → user clicks one → AppState loads its content into `editorContent` → TextEditor binds to it → edits auto-save with 500ms debounce → FileWatcher detects external changes and reloads.
-
-**Data flow for timer:** User picks a todo in TimerTodosView → TimerService.start() creates a DB session → timer ticks update `elapsed` → UI reflects it → user hits Complete → TimerService returns the todo info → view calls MarkdownParser to check it off in the .md file.
 
 ## Design decisions
 
