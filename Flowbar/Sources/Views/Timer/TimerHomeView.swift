@@ -84,23 +84,7 @@ struct TimerHomeView: View {
                 }
                 .buttonStyle(.plain)
 
-                Button(action: { timerService.clear() }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 11))
-                        Text("CLEAR")
-                            .font(.system(size: 13, weight: .semibold))
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.primary.opacity(0.08))
-                    )
-                }
-                .buttonStyle(.plain)
-
-                Button(action: {
+Button(action: {
                     timerService.completeAndMarkDone(folderPath: appState.settings.folderPath)
                 }) {
                     HStack(spacing: 8) {
