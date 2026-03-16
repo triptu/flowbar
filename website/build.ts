@@ -57,8 +57,8 @@ async function copyAssets(): Promise<void> {
     cpSync(screenshotsDir, join(distDir, "screenshots"), { recursive: true });
   }
 
-  // Copy assets/ directory if it exists (for logo.svg etc.)
-  const assetsDir = join(rootDir, "assets");
+  // Copy assets/ directory from repo root (for logo.svg, screenshots, etc.)
+  const assetsDir = join(rootDir, "..", "assets");
   if (existsSync(assetsDir)) {
     cpSync(assetsDir, join(distDir, "assets"), { recursive: true });
   }
