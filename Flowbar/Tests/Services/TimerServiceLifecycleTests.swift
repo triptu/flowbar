@@ -9,9 +9,8 @@ struct TimerServiceLifecycleTests {
     private var timer: TimerService
 
     init() {
-        timer = TimerService()
-        // Clean up any leftover active session from a previous test run
-        if timer.hasActiveSession { timer.clear() }
+        let db = DatabaseService(path: ":memory:")
+        timer = TimerService(db: db)
     }
 
     @Test("start sets running state and tracks todo")

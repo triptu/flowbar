@@ -10,8 +10,8 @@ struct TimerServiceIntentTests {
     private var tempDir: URL
 
     init() throws {
-        timer = TimerService()
-        if timer.hasActiveSession { timer.clear() }
+        let db = DatabaseService(path: ":memory:")
+        timer = TimerService(db: db)
         tempDir = FileManager.default.temporaryDirectory
             .appendingPathComponent("FlowbarIntentTests-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)

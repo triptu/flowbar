@@ -3,30 +3,32 @@ import SQLite3
 
 /// Persistence layer backed by SQLite. Stores timer sessions and app key-value state.
 ///
-/// Accessed via DatabaseService.shared singleton. TimerService calls into this for all
-/// session CRUD operations; AppState does not use the database directly.
-/// The database file lives in ~/Library/Application Support/Flowbar/flowbar.sqlite.
+/// Production code uses DatabaseService.shared. Pass a custom path (or ":memory:")
+/// to create isolated instances for tests or per-vault scoping.
 @MainActor
 final class DatabaseService {
     static let shared = DatabaseService()
-    private var db: OpaquePointer?
+    private nonisolated(unsafe) var db: OpaquePointer?
 
-    private init() {
-        openDatabase()
-        createTables()
-    }
-
-    private func openDatabase() {
+    /// Opens the default database at ~/Library/Application Support/Flowbar/flowbar.sqlite.
+    private convenience init() {
         let fileManager = FileManager.default
         let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let appDir = appSupport.appendingPathComponent("Flowbar", isDirectory: true)
         try? fileManager.createDirectory(at: appDir, withIntermediateDirectories: true)
         let dbPath = appDir.appendingPathComponent("flowbar.sqlite").path
-
-        if sqlite3_open(dbPath, &db) != SQLITE_OK {
-            print("Failed to open database at \(dbPath)")
-        }
+        self.init(path: dbPath)
     }
+
+    /// Opens (or creates) a database at the given path. Pass ":memory:" for an in-memory DB.
+    init(path: String) {
+        if sqlite3_open(path, &db) != SQLITE_OK {
+            print("Failed to open database at \(path)")
+        }
+        createTables()
+    }
+
+    deinit { sqlite3_close(db) }
 
     private func createTables() {
         let sql = """

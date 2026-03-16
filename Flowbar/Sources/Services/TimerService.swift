@@ -27,9 +27,10 @@ final class TimerService {
     @ObservationIgnored private var pausedElapsed: TimeInterval = 0
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private var currentLineIndex: Int?
-    @ObservationIgnored private let db = DatabaseService.shared
+    @ObservationIgnored private let db: DatabaseService
 
-    init() {
+    init(db: DatabaseService = .shared) {
+        self.db = db
         restoreActiveSession()
     }
 
