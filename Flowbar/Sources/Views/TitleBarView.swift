@@ -39,14 +39,10 @@ struct TitleBarLabel: View {
                         timerService.toggleScreen()
                     }
                 }) {
-                    Image(systemName: "list.bullet")
-                        .font(.system(size: 11))
-                        .foregroundStyle(timerService.screen == .todos ? .primary : .secondary)
-                        .frame(width: 22, height: 22)
-                        .background(
-                            RoundedRectangle(cornerRadius: 5)
-                                .fill(timerService.screen == .todos ? appState.settings.accent : Color.primary.opacity(0.06))
-                        )
+                    Image(systemName: "sidebar.right")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 20, height: 20)
                 }
                 .buttonStyle(.plain)
                 .padding(.trailing, 16)
