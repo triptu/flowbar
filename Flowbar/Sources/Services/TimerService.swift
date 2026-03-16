@@ -31,25 +31,14 @@ final class TimerService {
 
     init(db: DatabaseService = .shared) {
         self.db = db
-        restoreActiveSession()
+        clearStaleSession()
     }
 
-    private func restoreActiveSession() {
+    /// On app launch, any session left active in the DB is stale — end it so the timer starts clean.
+    private func clearStaleSession() {
         if let session = db.activeSession() {
-            sessionId = session.id
-            currentTodoText = session.todoText
-            currentSourceFile = session.sourceFile
-            if let paused = session.pausedElapsed {
-                pausedElapsed = paused
-                elapsed = paused
-                isPaused = true
-            } else {
-                pausedElapsed = session.accumulated
-                startedAt = session.startedAt
-                isRunning = true
-                startTicking()
-            }
-            screen = .home
+            let finalElapsed = session.pausedElapsed ?? session.accumulated
+            db.endSession(id: session.id, completed: false, finalElapsed: finalElapsed)
         }
     }
 
