@@ -52,7 +52,7 @@ struct MarkdownEditorView: NSViewRepresentable {
         }
     }
 
-    final class Coordinator: NSObject, NSTextViewDelegate {
+    @MainActor final class Coordinator: NSObject, NSTextViewDelegate {
         var parent: MarkdownEditorView
         weak var textView: NSTextView?
         var isUpdating = false

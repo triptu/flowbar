@@ -228,7 +228,7 @@ final class TimerService {
     }
 
     /// Merge consecutive entries (DESC order) that share the same todoText.
-    static func mergeTimeline(_ raw: [(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date)])
+    nonisolated static func mergeTimeline(_ raw: [(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date)])
         -> [(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date, duration: TimeInterval)]
     {
         var merged: [(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date, duration: TimeInterval)] = []
