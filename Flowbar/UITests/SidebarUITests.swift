@@ -40,7 +40,12 @@ final class SidebarUITests: XCTestCase {
 
     private func row(_ id: String) -> XCUIElement { app.groups["sidebar-row-\(id)"] }
     private var renameField: XCUIElement { app.textFields["rename-field"] }
-    private var contentTextView: XCUIElement { app.textViews["content-area"] }
+    /// Click somewhere outside the sidebar to dismiss rename.
+    private func clickOutsideRename() {
+        let win = app.windows.firstMatch
+        let point = win.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.5))
+        point.click()
+    }
 
     private func enterRename(_ id: String) {
         let r = row(id)
@@ -119,7 +124,7 @@ final class SidebarUITests: XCTestCase {
         // Click content area commits rename
         enterRename("alpha")
         typeInRename("renamed-alpha")
-        contentTextView.click()
+        clickOutsideRename()
         XCTAssertTrue(renameField.waitForNonExistence(timeout: 2))
         XCTAssertTrue(row("renamed-alpha").waitForExistence(timeout: 2))
 
@@ -132,7 +137,7 @@ final class SidebarUITests: XCTestCase {
 
         // No stuck state: can re-enter rename after click-outside dismiss
         enterRename("gamma")
-        contentTextView.click()
+        clickOutsideRename()
         XCTAssertTrue(renameField.waitForNonExistence(timeout: 2))
         enterRename("gamma")
         typeInRename("gamma-v2")
