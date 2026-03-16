@@ -1,17 +1,31 @@
 # Flowbar
 
-A native macOS menu bar app for quick access to a folder of markdown notes and todos with integrated time tracking to help you focus. Opens as a window overlay on top of whatever else you're doing with the shortcut double Fn. I use Obsidian but want something lighter so I can check/edit todos and notes without opening the full app.
+A native macOS menu bar app for quick access to a folder of markdown notes and todos with integrated time tracking to help you focus. Opens as a window overlay on top of whatever else you're doing with the shortcut double Fn. I use Obsidian but want something lighter so I can check/edit todos and notes without opening the full app. So I built this app which is pointed to a directory in my Obsidian vault.
 
 Click the Flowbar icon in your menu bar or double press `Fn` key and a floating overlay appears with your notes right there. Edit them, check off todos, track time on tasks. Click the icon again or double-tap Fn to toggle it from anywhere.
+
+## Screenshots
+
+| Notes | Notes + Todos |
+|-------|---------------|
+| ![Notes](assets/note.png) | ![Notes with Todos](assets/note-todo.png) |
+
+| Note Editing | Todo List |
+|--------------|-----------|
+| ![Note Editing](assets/note-edit.png) | ![Todo List](assets/todolist.png) |
+
+| Timer | Settings |
+|-------|----------|
+| ![Timer](assets/timer-home.png) | ![Settings](assets/settings.png) |
 
 ## What it does
 
 - **Floating overlay panel** — toggle from the menu bar icon or double-tap Fn
 - **Sidebar + markdown preview** — all your .md files listed on the left, rendered markdown on the right with clickable checkboxes and styled headings (⌘E to toggle edit mode)
-- **File management** — right-click for context menu: new file, rename (inline), reveal in Finder, open in Obsidian, trash
+- **Todo list** — aggregated view of all todos across your markdown files and ability to check them off, which updates the source file
 - **Timer** — stopwatch to track time on todos, extracted from all your markdown files
+- **Timeline** - timeline of the day showing time spent on each todo
 - **Smart editor** — auto-continues bullets, todos, and numbered lists on Enter; preserves indentation
-- **Settings** — folder path, dark/light/system theme, font size, keyboard shortcuts
 
 ## Download & Install
 
