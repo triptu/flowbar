@@ -45,7 +45,8 @@ final class SidebarUITests: XCTestCase {
     private func enterRename(_ id: String) {
         let r = row(id)
         XCTAssertTrue(r.waitForExistence(timeout: 3))
-        r.doubleClick()
+        r.rightClick()
+        app.menuItems["Rename"].click()
         XCTAssertTrue(renameField.waitForExistence(timeout: 2))
     }
 
@@ -85,15 +86,11 @@ final class SidebarUITests: XCTestCase {
         XCTAssertTrue(alpha.waitForExistence(timeout: 2), "Files should reappear after timer toggle")
     }
 
-    /// Full rename keyboard flow: double-click entry, Enter commit, Escape cancel,
-    /// re-rename after cancel shows original name, rename persists after double-click
-    /// (no single-tap race).
+    /// Full rename keyboard flow: Enter commit, Escape cancel,
+    /// re-rename after cancel shows original name.
     func testRenameKeyboardFlow() {
-        // Double-click enters rename and it persists (no flicker from single-tap race)
-        enterRename("alpha")
-        XCTAssertTrue(renameField.exists, "Rename field should persist")
-
         // Enter commits the rename
+        enterRename("alpha")
         typeInRename("new-alpha")
         renameField.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(renameField.waitForNonExistence(timeout: 2))
@@ -142,7 +139,7 @@ final class SidebarUITests: XCTestCase {
         renameField.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(row("gamma-v2").waitForExistence(timeout: 2))
 
-        // Multiple sequential renames all work (renameSessionID resets coordinator)
+        // Multiple sequential renames all work
         enterRename("renamed-alpha")
         typeInRename("file-one")
         renameField.typeKey(.return, modifierFlags: [])
@@ -155,14 +152,9 @@ final class SidebarUITests: XCTestCase {
         XCTAssertTrue(row("file-two").exists)
     }
 
-    /// Context menu: rename, new file (enters rename mode), trash.
+    /// Context menu: new file (enters rename mode), trash.
     func testContextMenu() {
-        // Right-click → Rename enters rename mode
         let alpha = row("alpha")
-        alpha.rightClick()
-        app.menuItems["Rename"].click()
-        XCTAssertTrue(renameField.waitForExistence(timeout: 2))
-        renameField.typeKey(.escape, modifierFlags: [])
 
         // Right-click → New File creates untitled and enters rename
         alpha.rightClick()
