@@ -6,6 +6,7 @@ struct MarkdownPreviewView: View {
     let bodySize: CGFloat
     let accentColor: Color
     let onToggleTodo: (Int) -> Void
+    var onDoubleClick: (() -> Void)?
 
     var body: some View {
         ScrollView {
@@ -17,6 +18,7 @@ struct MarkdownPreviewView: View {
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .onTapGesture(count: 2) { onDoubleClick?() }
     }
 
     // MARK: - Block views

@@ -70,7 +70,7 @@ class FloatingPanel: NSPanel {
         button.contentTintColor = .secondaryLabelColor
 
         let size: CGFloat = 20
-        let x = Self.trafficLightWidth + 10
+        let x = Self.trafficLightWidth + 5
         let y = (titlebarView.bounds.height - size) / 2
         button.frame = NSRect(x: x, y: y, width: size, height: size)
         button.autoresizingMask = [.minYMargin]

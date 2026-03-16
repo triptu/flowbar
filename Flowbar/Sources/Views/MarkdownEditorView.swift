@@ -9,6 +9,7 @@ import AppKit
 struct MarkdownEditorView: NSViewRepresentable {
     @Binding var text: String
     var font: NSFont
+    var focusOnAppear: Bool = false
     var onTextChange: () -> Void
 
     func makeCoordinator() -> Coordinator {
@@ -35,6 +36,9 @@ struct MarkdownEditorView: NSViewRepresentable {
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
         context.coordinator.textView = textView
+        if focusOnAppear {
+            DispatchQueue.main.async { textView.window?.makeFirstResponder(textView) }
+        }
         return scrollView
     }
 

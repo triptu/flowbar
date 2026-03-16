@@ -15,6 +15,7 @@ struct NoteContentView: View {
                         set: { appState.editor.editorContent = $0 }
                     ),
                     font: .systemFont(ofSize: appState.settings.typography.bodySize),
+                    focusOnAppear: true,
                     onTextChange: { appState.saveFileContent() }
                 )
             } else {
@@ -24,7 +25,8 @@ struct NoteContentView: View {
                     accentColor: appState.settings.accent,
                     onToggleTodo: { lineIndex in
                         toggleTodoInContent(at: lineIndex)
-                    }
+                    },
+                    onDoubleClick: { appState.editor.isEditing = true }
                 )
             }
         }

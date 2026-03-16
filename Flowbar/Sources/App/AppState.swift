@@ -74,8 +74,11 @@ final class AppState {
     // MARK: - File selection (crosses sidebar + editor)
 
     func selectFile(_ file: NoteFile) {
+        let isSameFile = sidebar.selectedFile?.id == file.id
         sidebar.activePanel = .file(file)
-        editor.loadFileContent(file)
+        if !isSameFile {
+            editor.loadFileContent(file)
+        }
         editor.watchFile(file) { [weak self] in
             guard let self else { return }
             guard let current = self.sidebar.selectedFile, current.id == file.id else { return }
