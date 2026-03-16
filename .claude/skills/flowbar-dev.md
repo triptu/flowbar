@@ -150,6 +150,8 @@ defaults write com.flowbar.app accentColor ocean  # sage, ocean, lavender, amber
 12. **Swift Testing `#expect(try ...)` needs `throws`** — if a `#expect` contains a `try` expression, the test function must be marked `throws`. Otherwise extract the `try` to a `let` before the `#expect`.
 13. **NSViewRepresentable reuse across state toggles** — if a view goes `visible → hidden → visible`, SwiftUI may reuse the old `NSView` and `Coordinator` with stale state. Use `.id(sessionCounter)` to force fresh creation each time.
 14. **Double-click fires single-tap too** — SwiftUI's `onTapGesture(count: 2)` and `onTapGesture(count: 1)` both fire on a double-click. Guard the single-tap handler to skip when the double-tap action is active.
+15. **Preview is default, edit is opt-in** — NoteContentView shows MarkdownPreviewView by default. `EditorState.isEditing` toggles to MarkdownEditorView (⌘E). Resets to preview on file switch. Checkbox toggles in preview modify `editorContent` directly and trigger save — no file I/O round-trip.
+16. **MarkdownEditorView is NSViewRepresentable** — wraps NSTextView for bullet/todo auto-continuation on Enter. The Coordinator intercepts `insertNewline:` via `doCommandBy:`. When updating text from SwiftUI→NSTextView, guard with `isUpdating` flag to avoid feedback loops (similar to FileWatcher's `isWriting` pattern).
 
 ## After Making Changes
 

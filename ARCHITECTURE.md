@@ -20,7 +20,10 @@ Flowbar/Sources/
 │
 ├── Views/          MainView (sidebar + content switch on ActivePanel),
 │                   SidebarView (file list, inline RenameField, context menu),
-│                   NoteContentView, SettingsView,
+│                   NoteContentView (preview/edit toggle),
+│                   MarkdownPreviewView (rendered markdown with clickable todos),
+│                   MarkdownEditorView (NSTextView with bullet auto-continuation),
+│                   SettingsView,
 │                   Timer/ (TimerContainerView, TimerHomeView, TimerTodosView),
 │                   Components/ (TodoRow, SidebarFooter, SidebarToggleButton)
 │
@@ -31,7 +34,7 @@ Flowbar/Sources/
 
 **AppDelegate** creates three `@Observable` singletons on launch — `AppState`, `TimerService`, `WindowManager` — and injects them via `.environment()` into the SwiftUI view tree. `DatabaseService` is a fourth singleton (static `shared`) used by TimerService for persistence.
 
-**Notes data flow:** AppState watches the folder → builds `[NoteFile]` → sidebar displays them → user selects one → AppState loads content into `editorContent` → TextEditor binds to it → edits auto-save with 500ms debounce → FileWatcher detects external changes and reloads.
+**Notes data flow:** AppState watches the folder → builds `[NoteFile]` → sidebar displays them → user selects one → AppState loads content into `editorContent` → MarkdownPreviewView renders it with clickable checkboxes (default) or MarkdownEditorView for raw editing (⌘E toggle) → edits auto-save with 500ms debounce → FileWatcher detects external changes and reloads.
 
 **Timer data flow:** User picks a todo → TimerService.start() creates a DB session → timer ticks update `elapsed` → user hits Complete → view calls MarkdownParser to check it off in the .md file.
 

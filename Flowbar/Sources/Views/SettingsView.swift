@@ -44,6 +44,7 @@ struct SettingsView: View {
                         shortcutRow("Next File", "⌥ ⌘ →")
                         shortcutRow("Open Settings", "⌘ ,")
                         shortcutRow("Open Timer", "⌥ ⌘ T")
+                        shortcutRow("Edit / Preview Mode", "⌘ E")
                         shortcutRow("Pause / Resume Timer", "Space")
                     }
                 }

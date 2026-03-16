@@ -7,10 +7,11 @@ Click the Flowbar icon in your menu bar or double press `Fn` key and a floating 
 ## What it does
 
 - **Floating overlay panel** — toggle from the menu bar icon or double-tap Fn
-- **Sidebar + editor** — all your .md files listed on the left, raw markdown editor on the right
+- **Sidebar + markdown preview** — all your .md files listed on the left, rendered markdown on the right with clickable checkboxes and styled headings (⌘E to toggle edit mode)
 - **File management** — right-click for context menu: new file, rename (inline), reveal in Finder, open in Obsidian, trash
 - **Timer** — stopwatch to track time on todos, extracted from all your markdown files
-- **Settings** — folder path, dark/light/system theme, font size, keyboard shortcut
+- **Smart editor** — auto-continues bullets, todos, and numbered lists on Enter; preserves indentation
+- **Settings** — folder path, dark/light/system theme, font size, keyboard shortcuts
 
 ## Download & Install
 

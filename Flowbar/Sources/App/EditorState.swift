@@ -10,6 +10,7 @@ import Observation
 @MainActor
 final class EditorState {
     var editorContent: String = ""
+    var isEditing = false
 
     @ObservationIgnored private var saveTask: DispatchWorkItem?
     @ObservationIgnored private var isWriting = false
@@ -25,6 +26,7 @@ final class EditorState {
         saveTask?.cancel()
         saveTask = nil
         isWriting = false
+        isEditing = false
 
         if let content = try? String(contentsOf: file.url, encoding: .utf8) {
             editorContent = content

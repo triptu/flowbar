@@ -65,6 +65,10 @@ struct MainView: View {
             Button("") { appState.showSettings() }
                 .keyboardShortcut(",", modifiers: .command)
 
+            // Toggle edit/preview mode
+            Button("") { appState.editor.isEditing.toggle() }
+                .keyboardShortcut("e", modifiers: .command)
+
             // Open timer
             Button("") { appState.showTimer() }
                 .keyboardShortcut("t", modifiers: [.option, .command])

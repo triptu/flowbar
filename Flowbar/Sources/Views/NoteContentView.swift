@@ -8,17 +8,35 @@ struct NoteContentView: View {
             noteHeader
             Divider().opacity(0.2)
 
-            TextEditor(text: Binding(
-                get: { appState.editor.editorContent },
-                set: { newValue in
-                    appState.editor.editorContent = newValue
-                    appState.saveFileContent()
-                }
-            ))
-                .font(.system(size: appState.settings.typography.bodySize))
-                .scrollContentBackground(.hidden)
-                .padding(16)
+            if appState.editor.isEditing {
+                MarkdownEditorView(
+                    text: Binding(
+                        get: { appState.editor.editorContent },
+                        set: { appState.editor.editorContent = $0 }
+                    ),
+                    font: .systemFont(ofSize: appState.settings.typography.bodySize),
+                    onTextChange: { appState.saveFileContent() }
+                )
+            } else {
+                MarkdownPreviewView(
+                    content: appState.editor.editorContent,
+                    bodySize: appState.settings.typography.bodySize,
+                    accentColor: appState.settings.accent,
+                    onToggleTodo: { lineIndex in
+                        toggleTodoInContent(at: lineIndex)
+                    }
+                )
+            }
         }
+    }
+
+    private func toggleTodoInContent(at lineIndex: Int) {
+        var lines = appState.editor.editorContent.components(separatedBy: "\n")
+        guard lineIndex < lines.count,
+              let toggled = MarkdownParser.toggleTodoLine(lines[lineIndex]) else { return }
+        lines[lineIndex] = toggled
+        appState.editor.editorContent = lines.joined(separator: "\n")
+        appState.saveFileContent()
     }
 
     private var noteHeader: some View {
@@ -27,6 +45,15 @@ struct NoteContentView: View {
                 .font(.system(size: appState.settings.typography.titleSize, weight: .bold))
 
             Spacer()
+
+            // Edit/Preview toggle
+            Button(action: { appState.editor.isEditing.toggle() }) {
+                Image(systemName: appState.editor.isEditing ? "eye" : "pencil")
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help(appState.editor.isEditing ? "Preview (\u{2318}E)" : "Edit (\u{2318}E)")
 
             Button(action: { appState.openInObsidian() }) {
                 ObsidianIcon()

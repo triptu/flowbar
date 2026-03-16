@@ -43,6 +43,9 @@
 		E037448B11CE5D13C85FF32F /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F0362096FD8D2B22AA6247 /* FileWatcher.swift */; };
 		F6A2FCC540B165487531BA6C /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA28AD0B52FFBD4002D7108F /* MainView.swift */; };
 		F87CF5317C3FC2FF9D17983D /* EditorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D9EFAC3B9D3F56345305475 /* EditorState.swift */; };
+		A1B2C3D4E5F60001ABCDEF01 /* MarkdownPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60002ABCDEF01 /* MarkdownPreviewView.swift */; };
+		A1B2C3D4E5F60003ABCDEF01 /* MarkdownEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60004ABCDEF01 /* MarkdownEditorView.swift */; };
+		A1B2C3D4E5F60005ABCDEF01 /* MarkdownBlockParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60006ABCDEF01 /* MarkdownBlockParserTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -101,6 +104,9 @@
 		CB2D31A2E469ADB3AE12A356 /* FlowbarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowbarApp.swift; sourceTree = "<group>"; };
 		D6ED3E33C94F635C05FDAE36 /* SettingsState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsState.swift; sourceTree = "<group>"; };
 		ED1B419B41DBE32FBEC53E7E /* MarkdownParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownParser.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60002ABCDEF01 /* MarkdownPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPreviewView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60004ABCDEF01 /* MarkdownEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownEditorView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60006ABCDEF01 /* MarkdownBlockParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownBlockParserTests.swift; sourceTree = "<group>"; };
 		F6B0E80A3C0E7534674FD493 /* Flowbar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flowbar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -155,6 +161,8 @@
 			isa = PBXGroup;
 			children = (
 				AA28AD0B52FFBD4002D7108F /* MainView.swift */,
+				A1B2C3D4E5F60004ABCDEF01 /* MarkdownEditorView.swift */,
+				A1B2C3D4E5F60002ABCDEF01 /* MarkdownPreviewView.swift */,
 				3BE9090CD422B39C22928F8C /* NoteContentView.swift */,
 				679770A71B494E81BD99BB16 /* SettingsView.swift */,
 				9429D1FCA615F8FF6BA06083 /* SidebarView.swift */,
@@ -228,6 +236,7 @@
 		DC572085BD760192EA0B1954 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A1B2C3D4E5F60006ABCDEF01 /* MarkdownBlockParserTests.swift */,
 				4A002EBBE343A998F6AD2374 /* MarkdownParserTests.swift */,
 				3C0A0AFB96F9D551689167D3 /* TimerServiceIntentTests.swift */,
 				34CB4C7549D4E83A19F5FF43 /* TimerServiceLifecycleTests.swift */,
@@ -372,6 +381,7 @@
 				C746A5D814A657E0B9D744A4 /* AppStateNavigationTests.swift in Sources */,
 				1F5459341A5FC4B65113F386 /* AppStateTests.swift in Sources */,
 				42DD96B155C593078565CF7D /* FileOperationsTests.swift in Sources */,
+				A1B2C3D4E5F60005ABCDEF01 /* MarkdownBlockParserTests.swift in Sources */,
 				35D71C71BBC19C145CA3A4B1 /* MarkdownParserTests.swift in Sources */,
 				146F4D72B3489682B628BED5 /* ModelTests.swift in Sources */,
 				0355283C9CFC77C39858F458 /* TimerServiceIntentTests.swift in Sources */,
@@ -394,6 +404,8 @@
 				BE8CACC0DB336F9249758FD2 /* FlowbarApp.swift in Sources */,
 				F6A2FCC540B165487531BA6C /* MainView.swift in Sources */,
 				4F139AF375C4FA41F292C0E7 /* MarkdownParser.swift in Sources */,
+				A1B2C3D4E5F60003ABCDEF01 /* MarkdownEditorView.swift in Sources */,
+				A1B2C3D4E5F60001ABCDEF01 /* MarkdownPreviewView.swift in Sources */,
 				02809DCA65555BE65F063A9F /* NoteContentView.swift in Sources */,
 				42A5459E77ED6745E1DBCD43 /* NoteFile.swift in Sources */,
 				C895F36D66E375625C22A858 /* SettingsState.swift in Sources */,
