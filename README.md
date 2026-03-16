@@ -1,6 +1,6 @@
 # Flowbar
 
-A native macOS menu bar app for quick access to a folder of markdown notes and todos with integrated time tracking to help you focus. I use Obsidian but want something lighter so I can check/edit todos and notes without opening the full app.
+A native macOS menu bar app for quick access to a folder of markdown notes and todos with integrated time tracking to help you focus. Opens as a window overlay on top of whatever else you're doing with the shortcut double Fn. I use Obsidian but want something lighter so I can check/edit todos and notes without opening the full app.
 
 Click the Flowbar icon in your menu bar or double press `Fn` key and a floating overlay appears with your notes right there. Edit them, check off todos, track time on tasks. Click the icon again or double-tap Fn to toggle it from anywhere.
 
