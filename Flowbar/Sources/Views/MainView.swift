@@ -40,7 +40,7 @@ struct MainView: View {
             }
         }
         .background {
-            Rectangle().fill(.regularMaterial).ignoresSafeArea(.all, edges: .top)
+            Rectangle().fill(.thickMaterial).ignoresSafeArea(.all, edges: .top)
         }
         .preferredColorScheme(appState.settings.preferredColorScheme)
         .background(keyboardShortcuts)
