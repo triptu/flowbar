@@ -3,7 +3,6 @@ import SwiftUI
 struct TimerTodosView: View {
     @Environment(AppState.self) var appState
     @Environment(TimerService.self) var timerService
-    var onToggleView: () -> Void
     @State private var searchText = ""
     @AppStorage("todoFilter.showDone") private var showDone = false
     @AppStorage("todoFilter.sourceFile") private var sourceFilter: String = ""
@@ -68,11 +67,6 @@ struct TimerTodosView: View {
                 }
                 .buttonStyle(.plain)
                 .help(showDone ? "Hide completed" : "Show completed")
-
-                Button(action: onToggleView) {
-                    toolbarIcon("list.bullet", isActive: timerService.screen == .todos)
-                }
-                .buttonStyle(.plain)
             }
             .padding(.horizontal, 14)
             .padding(.top, 10)
