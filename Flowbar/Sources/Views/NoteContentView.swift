@@ -64,7 +64,7 @@ struct NoteContentView: View {
             .buttonStyle(.plain)
             .help("Open in Obsidian")
         }
-        .padding(.leading, appState.sidebar.sidebarVisible ? 20 : FloatingPanel.trafficLightWidth)
+        .padding(.leading, 20)
         .padding(.trailing, 20)
         .padding(.top, 10)
         .padding(.bottom, 10)
