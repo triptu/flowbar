@@ -2,7 +2,7 @@ import XCTest
 
 /// Smoke test for sidebar interactions. Single app launch covers selection,
 /// navigation, rename (commit/cancel/edge cases), context menu, and trash.
-final class SidebarUITests: XCTestCase {
+@MainActor final class SidebarUITests: XCTestCase {
 
     private var app: XCUIApplication!
     private var tempDir: URL!
