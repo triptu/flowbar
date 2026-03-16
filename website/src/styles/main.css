@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+    --color-sage: #8b9a6b;
+    --color-sage-dim: #8b9a6b88;
+    --color-sage-glow: #8b9a6b33;
+    --color-bg: #1a1e1a;
+    --color-bg-card: #22261f;
+    --color-bg-card-hover: #2a2e26;
+    --color-bg-sidebar: #1e221c;
+    --color-bg-code: #161916;
+    --color-text: #e0ddd4;
+    --color-text-dim: #a09d94;
+    --color-text-muted: #6a6a5e;
+    --color-border: #333830;
+    --color-orange: #d4a574;
+    --color-purple: #b088d4;
+    --color-yellow: #c4b46e;
+    --color-blue: #7eb8c9;
+    --color-red: #c97e7e;
+    --font-heading: "Instrument Serif", serif;
+    --font-body: "DM Sans", sans-serif;
+    --font-mono: "JetBrains Mono", monospace;
+}
+
+/* Selection */
+::selection {
+    background: var(--color-sage-dim);
+    color: #fff;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-muted);
+}
+
+/* Syntax highlighting classes */
+.kw { color: var(--color-sage); }
+.ty { color: var(--color-orange); }
+.pw { color: var(--color-purple); }
+.str { color: var(--color-yellow); }
+.cmt { color: var(--color-text-muted); font-style: italic; }
+.num { color: var(--color-blue); }
+.fn { color: #c9c1b8; }
+
+/* Animation */
+@keyframes popIn {
+    0% { opacity: 0; transform: translateY(4px) scale(0.97); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-pop-in {
+    animation: popIn 0.2s ease;
+}
