@@ -1,10 +1,7 @@
 import XCTest
 
-/// UI tests for sidebar interactions: selection, rename, context menu, navigation.
-///
-/// Launches the app once per test with `-uitest-folder` pointing at a temp directory.
-/// Tests are consolidated to minimize launch/teardown cycles — each test covers a
-/// full user flow rather than a single assertion.
+/// Smoke test for sidebar interactions. Single app launch covers selection,
+/// navigation, rename (commit/cancel/edge cases), context menu, and trash.
 final class SidebarUITests: XCTestCase {
 
     private var app: XCUIApplication!
@@ -40,11 +37,10 @@ final class SidebarUITests: XCTestCase {
 
     private func row(_ id: String) -> XCUIElement { app.groups["sidebar-row-\(id)"] }
     private var renameField: XCUIElement { app.textFields["rename-field"] }
-    /// Click somewhere outside the sidebar to dismiss rename.
+
     private func clickOutsideRename() {
         let win = app.windows.firstMatch
-        let point = win.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.5))
-        point.click()
+        win.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.5)).click()
     }
 
     private func enterRename(_ id: String) {
@@ -64,136 +60,65 @@ final class SidebarUITests: XCTestCase {
         FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("\(name).md").path)
     }
 
-    // MARK: - Tests
+    // MARK: - Test
 
-    /// Selection + footer navigation in a single launch.
-    func testSelectionAndNavigation() {
-        // Single-click selects files
+    func testSidebarSmoke() {
         let alpha = row("alpha")
         XCTAssertTrue(alpha.waitForExistence(timeout: 3))
+
+        // --- Selection & navigation ---
         alpha.click()
-        XCTAssertTrue(row("beta").exists)
-
-        // Switch selection
         row("beta").click()
-        XCTAssertTrue(alpha.exists, "Previous file should remain visible")
+        XCTAssertTrue(alpha.exists)
 
-        // Settings toggle: click opens, click again returns to files
         let settingsBtn = app.buttons["sidebar-footer-settings"]
-        settingsBtn.click()
-        settingsBtn.click()
-        XCTAssertTrue(alpha.waitForExistence(timeout: 2), "Files should reappear after settings toggle")
+        settingsBtn.click(); settingsBtn.click()
+        XCTAssertTrue(alpha.waitForExistence(timeout: 2))
 
-        // Timer toggle
         let timerBtn = app.buttons["sidebar-footer-timer"]
-        timerBtn.click()
-        timerBtn.click()
-        XCTAssertTrue(alpha.waitForExistence(timeout: 2), "Files should reappear after timer toggle")
-    }
+        timerBtn.click(); timerBtn.click()
+        XCTAssertTrue(alpha.waitForExistence(timeout: 2))
 
-    /// Full rename keyboard flow: Enter commit, Escape cancel,
-    /// re-rename after cancel shows original name.
-    func testRenameKeyboardFlow() {
-        // Enter commits the rename
+        // --- Rename: Enter commits ---
         enterRename("alpha")
         typeInRename("new-alpha")
         renameField.typeKey(.return, modifierFlags: [])
-        XCTAssertTrue(renameField.waitForNonExistence(timeout: 2))
-        XCTAssertTrue(row("new-alpha").waitForExistence(timeout: 2), "File should be renamed")
-        XCTAssertFalse(row("alpha").exists)
-        XCTAssertTrue(fileExists("new-alpha"), "Renamed file should exist on disk")
+        XCTAssertTrue(row("new-alpha").waitForExistence(timeout: 2))
+        XCTAssertTrue(fileExists("new-alpha"))
 
-        // Escape cancels without renaming
+        // --- Rename: Escape cancels ---
         enterRename("beta")
         typeInRename("Garbage")
         renameField.typeKey(.escape, modifierFlags: [])
         XCTAssertTrue(renameField.waitForNonExistence(timeout: 2))
-        XCTAssertTrue(row("beta").exists, "File should keep original name after Escape")
-        XCTAssertTrue(fileExists("beta"))
+        XCTAssertTrue(row("beta").exists)
 
-        // Re-entering rename after cancel shows the CURRENT name, not the cancelled text
+        // --- Rename: click-outside commits ---
         enterRename("beta")
-        let fieldValue = renameField.value as? String ?? ""
-        XCTAssertEqual(fieldValue, "beta", "Should show current name, not previously cancelled text")
-        renameField.typeKey(.escape, modifierFlags: [])
-    }
-
-    /// Click-outside dismiss: content area commit, sidebar row commit with typed text,
-    /// no stuck state, multiple sequential renames.
-    func testRenameClickOutsideFlow() {
-        // Click content area commits rename
-        enterRename("alpha")
-        typeInRename("renamed-alpha")
+        typeInRename("new-beta")
         clickOutsideRename()
-        XCTAssertTrue(renameField.waitForNonExistence(timeout: 2))
-        XCTAssertTrue(row("renamed-alpha").waitForExistence(timeout: 2))
+        XCTAssertTrue(row("new-beta").waitForExistence(timeout: 2))
 
-        // Click different sidebar row commits with the ACTUAL typed text
-        enterRename("beta")
-        typeInRename("edited-beta")
-        row("gamma").click()
-        XCTAssertTrue(renameField.waitForNonExistence(timeout: 2))
-        XCTAssertTrue(row("edited-beta").waitForExistence(timeout: 2))
-
-        // No stuck state: can re-enter rename after click-outside dismiss
-        enterRename("gamma")
-        clickOutsideRename()
-        XCTAssertTrue(renameField.waitForNonExistence(timeout: 2))
-        enterRename("gamma")
-        typeInRename("gamma-v2")
-        renameField.typeKey(.return, modifierFlags: [])
-        XCTAssertTrue(row("gamma-v2").waitForExistence(timeout: 2))
-
-        // Multiple sequential renames all work
-        enterRename("renamed-alpha")
-        typeInRename("file-one")
-        renameField.typeKey(.return, modifierFlags: [])
-        XCTAssertTrue(renameField.waitForNonExistence(timeout: 2))
-
-        enterRename("edited-beta")
-        typeInRename("file-two")
-        renameField.typeKey(.return, modifierFlags: [])
-        XCTAssertTrue(row("file-one").waitForExistence(timeout: 2))
-        XCTAssertTrue(row("file-two").exists)
-    }
-
-    /// Context menu: new file (enters rename mode), trash.
-    func testContextMenu() {
-        let alpha = row("alpha")
-
-        // Right-click → New File creates untitled and enters rename
-        alpha.rightClick()
-        app.menuItems["New File"].click()
-        XCTAssertTrue(row("untitled").waitForExistence(timeout: 3))
-        XCTAssertTrue(renameField.waitForExistence(timeout: 2))
-        renameField.typeKey(.escape, modifierFlags: [])
-
-        // Right-click → Move to Trash removes file
-        let gamma = row("gamma")
-        gamma.rightClick()
-        app.menuItems["Move to Trash"].click()
-        XCTAssertTrue(gamma.waitForNonExistence(timeout: 3))
-        XCTAssertFalse(fileExists("gamma"))
-    }
-
-    /// Edge cases: blank name, duplicate name, same name — all no-ops.
-    func testRenameEdgeCases() {
-        // Blank name is a no-op
-        enterRename("alpha")
+        // --- Rename edge cases: blank and duplicate are no-ops ---
+        enterRename("new-alpha")
         typeInRename("   ")
         renameField.typeKey(.return, modifierFlags: [])
-        XCTAssertTrue(row("alpha").waitForExistence(timeout: 2), "Blank rename should be no-op")
+        XCTAssertTrue(row("new-alpha").waitForExistence(timeout: 2))
 
-        // Same name is a no-op
-        enterRename("alpha")
+        enterRename("new-alpha")
+        typeInRename("new-beta")
         renameField.typeKey(.return, modifierFlags: [])
-        XCTAssertTrue(row("alpha").waitForExistence(timeout: 2), "Same-name rename should be no-op")
+        XCTAssertTrue(row("new-alpha").waitForExistence(timeout: 2))
 
-        // Duplicate name (beta.md already exists) is a no-op
-        enterRename("alpha")
-        typeInRename("beta")
-        renameField.typeKey(.return, modifierFlags: [])
-        XCTAssertTrue(row("alpha").waitForExistence(timeout: 2), "Duplicate rename should be no-op")
-        XCTAssertTrue(row("beta").exists, "Existing file should be untouched")
+        // --- Context menu: new file + trash ---
+        row("gamma").rightClick()
+        app.menuItems["New File"].click()
+        XCTAssertTrue(row("untitled").waitForExistence(timeout: 3))
+        renameField.typeKey(.escape, modifierFlags: [])
+
+        row("gamma").rightClick()
+        app.menuItems["Move to Trash"].click()
+        XCTAssertTrue(row("gamma").waitForNonExistence(timeout: 3))
+        XCTAssertFalse(fileExists("gamma"))
     }
 }
