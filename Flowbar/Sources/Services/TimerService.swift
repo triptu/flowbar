@@ -136,6 +136,18 @@ final class TimerService {
         _ = MarkdownParser.toggleTodo(at: todo.lineIndex, in: todo.sourceFile.url)
     }
 
+    /// Start a timer from the timeline (no TodoItem available). Marks the todo undone if needed.
+    func startFromTimeline(todoText: String, sourceFile: String, folderPath: String) {
+        if isTracking(todoText: todoText, sourceFile: sourceFile) {
+            togglePlayPause()
+            return
+        }
+        let fileURL = URL(fileURLWithPath: folderPath)
+            .appendingPathComponent(sourceFile + ".md")
+        _ = MarkdownParser.markTodoUndone(text: todoText, in: fileURL)
+        start(todoText: todoText, sourceFile: sourceFile)
+    }
+
     /// Complete the active session, mark the todo done in the markdown file, and clear state.
     func completeAndMarkDone(folderPath: String) {
         let lineIndex = currentLineIndex

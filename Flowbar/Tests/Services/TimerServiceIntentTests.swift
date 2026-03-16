@@ -242,6 +242,45 @@ struct TimerServiceIntentTests {
         #expect(content.contains("- [x] Original task"))
     }
 
+    // MARK: - startFromTimeline
+
+    @Test("startFromTimeline marks done todo undone before starting")
+    func startFromTimelineUndonesDoneTodo() throws {
+        let url = try writeTodos("- [x] Done task\n")
+        timer.startFromTimeline(todoText: "Done task", sourceFile: "tasks", folderPath: tempDir.path)
+
+        let content = try readFile(url)
+        #expect(content.contains("- [ ] Done task"))
+        #expect(timer.isRunning)
+        #expect(timer.currentTodoText == "Done task")
+        timer.clear()
+    }
+
+    @Test("startFromTimeline on undone todo starts without double-toggling")
+    func startFromTimelineUndoneTodo() throws {
+        let url = try writeTodos("- [ ] Open task\n")
+        timer.startFromTimeline(todoText: "Open task", sourceFile: "tasks", folderPath: tempDir.path)
+
+        let content = try readFile(url)
+        #expect(content.contains("- [ ] Open task"))
+        #expect(timer.isRunning)
+        timer.clear()
+    }
+
+    @Test("startFromTimeline on same item toggles play/pause")
+    func startFromTimelineSameToggles() throws {
+        _ = try writeTodos("- [ ] Task\n")
+        timer.startFromTimeline(todoText: "Task", sourceFile: "tasks", folderPath: tempDir.path)
+        #expect(timer.isRunning)
+
+        timer.startFromTimeline(todoText: "Task", sourceFile: "tasks", folderPath: tempDir.path)
+        #expect(timer.isPaused)
+
+        timer.startFromTimeline(todoText: "Task", sourceFile: "tasks", folderPath: tempDir.path)
+        #expect(timer.isRunning)
+        timer.clear()
+    }
+
     // MARK: - toggleScreen
 
     @Test("toggleScreen flips between todos and home")

@@ -164,6 +164,23 @@ enum MarkdownParser {
         }
     }
 
+    /// Find a specific done todo by text and mark it undone. Returns true if toggled.
+    static func markTodoUndone(text: String, in url: URL) -> Bool {
+        guard var content = try? String(contentsOf: url, encoding: .utf8) else { return false }
+        var lines = content.components(separatedBy: "\n")
+        for (index, line) in lines.enumerated() {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if (trimmed.hasPrefix("- [x] ") || trimmed.hasPrefix("- [X] ")) && String(trimmed.dropFirst(6)) == text {
+                lines[index] = line.replacingOccurrences(of: "- [x] ", with: "- [ ] ")
+                    .replacingOccurrences(of: "- [X] ", with: "- [ ] ")
+                content = lines.joined(separator: "\n")
+                try? content.write(to: url, atomically: true, encoding: .utf8)
+                return true
+            }
+        }
+        return false
+    }
+
     /// Find a specific incomplete todo by text and mark it done. Single read+write.
     static func markTodoDone(text: String, in url: URL) {
         guard var content = try? String(contentsOf: url, encoding: .utf8) else { return }

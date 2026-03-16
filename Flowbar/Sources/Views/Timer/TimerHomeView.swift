@@ -142,7 +142,7 @@ struct TimerHomeView: View {
             ForEach(timeline, id: \.startedAt) { entry in
                 HStack(spacing: 8) {
                     Button(action: {
-                        timerService.start(todoText: entry.todoText, sourceFile: entry.sourceFile)
+                        timerService.startFromTimeline(todoText: entry.todoText, sourceFile: entry.sourceFile, folderPath: appState.settings.folderPath)
                     }) {
                         Image(systemName: "play.fill")
                             .font(.system(size: 9))
