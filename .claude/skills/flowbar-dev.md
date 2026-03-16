@@ -1,5 +1,5 @@
 ---
-description: Build, test, and extend Flowbar — the macOS menu bar notes app. Encodes learnings about Swift/SwiftUI, the user's preferences, development workflow, and pitfalls to avoid.
+description: Build, test, and extend Flowbar — the macOS menu bar app for notes, todos and stopwatch, window opens as overlay on top. Encodes learnings about Swift/SwiftUI, the user's preferences, development workflow, and pitfalls to avoid.
 argument-hint: [what to build or fix]
 model: opus
 ---
