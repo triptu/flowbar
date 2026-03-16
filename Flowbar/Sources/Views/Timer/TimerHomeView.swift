@@ -4,7 +4,7 @@ struct TimerHomeView: View {
     @Environment(AppState.self) var appState
     @Environment(TimerService.self) var timerService
     @State private var previousTotal: TimeInterval = 0
-    @State private var timeline: [(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date)] = []
+    @State private var timeline: [(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date, duration: TimeInterval)] = []
 
     var body: some View {
         VStack(spacing: 0) {
@@ -42,7 +42,7 @@ struct TimerHomeView: View {
     }
 
     private func refreshTimeline() {
-        timeline = timerService.todayTimeline()
+        timeline = timerService.todayTimelineMerged()
     }
 
     private func refreshPreviousTotal() {
@@ -162,7 +162,7 @@ struct TimerHomeView: View {
                     Text("\(Self.timeFormatter.string(from: entry.startedAt)) – \(Self.timeFormatter.string(from: entry.endedAt))")
                         .font(.system(size: 11))
                         .foregroundStyle(.tertiary)
-                    Text(TimerService.formatTime(entry.endedAt.timeIntervalSince(entry.startedAt)))
+                    Text(TimerService.formatTime(entry.duration))
                         .font(.system(size: 13, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }

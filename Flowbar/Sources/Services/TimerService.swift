@@ -221,6 +221,29 @@ final class TimerService {
         db.todayTimeline()
     }
 
+    /// Timeline with consecutive same-name entries merged.
+    /// `duration` is the sum of individual durations (not endedAt − startedAt).
+    func todayTimelineMerged() -> [(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date, duration: TimeInterval)] {
+        Self.mergeTimeline(todayTimeline())
+    }
+
+    /// Merge consecutive entries (DESC order) that share the same todoText.
+    static func mergeTimeline(_ raw: [(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date)])
+        -> [(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date, duration: TimeInterval)]
+    {
+        var merged: [(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date, duration: TimeInterval)] = []
+        for entry in raw {
+            let dur = entry.endedAt.timeIntervalSince(entry.startedAt)
+            if let last = merged.last, last.todoText == entry.todoText {
+                merged[merged.count - 1].startedAt = entry.startedAt
+                merged[merged.count - 1].duration += dur
+            } else {
+                merged.append((entry.todoText, entry.sourceFile, entry.startedAt, entry.endedAt, dur))
+            }
+        }
+        return merged
+    }
+
     nonisolated static func formatTime(_ seconds: TimeInterval) -> String {
         let total = Int(seconds)
         let hrs = total / 3600
