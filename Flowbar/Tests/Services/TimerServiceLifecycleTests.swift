@@ -11,7 +11,7 @@ struct TimerServiceLifecycleTests {
     init() {
         timer = TimerService()
         // Clean up any leftover active session from a previous test run
-        if timer.hasActiveSession { timer.stop() }
+        if timer.hasActiveSession { timer.clear() }
     }
 
     @Test("start sets running state and tracks todo")
@@ -24,7 +24,7 @@ struct TimerServiceLifecycleTests {
         #expect(timer.currentTodoText == "Write tests")
         #expect(timer.currentSourceFile == "tasks.md")
 
-        timer.stop()
+        timer.clear()
     }
 
     @Test("pause freezes the timer")
@@ -36,7 +36,7 @@ struct TimerServiceLifecycleTests {
         #expect(timer.isPaused)
         #expect(timer.hasActiveSession)
 
-        timer.stop()
+        timer.clear()
     }
 
     @Test("resume after pause restarts the timer")
@@ -49,7 +49,7 @@ struct TimerServiceLifecycleTests {
         #expect(!timer.isPaused)
         #expect(timer.hasActiveSession)
 
-        timer.stop()
+        timer.clear()
     }
 
     @Test("togglePlayPause flips between running and paused")
@@ -62,13 +62,13 @@ struct TimerServiceLifecycleTests {
         timer.togglePlayPause()
         #expect(timer.isRunning)
 
-        timer.stop()
+        timer.clear()
     }
 
-    @Test("stop clears all state")
+    @Test("clear clears all state and sets screen to todos")
     func stop() {
         timer.start(todoText: "Stop test", sourceFile: "tasks.md")
-        timer.stop()
+        timer.clear()
 
         #expect(!timer.isRunning)
         #expect(!timer.isPaused)
@@ -76,6 +76,7 @@ struct TimerServiceLifecycleTests {
         #expect(timer.currentTodoText == "")
         #expect(timer.currentSourceFile == "")
         #expect(timer.elapsed == 0)
+        #expect(timer.screen == .todos)
     }
 
     @Test("complete returns todo info and clears state")
@@ -101,7 +102,7 @@ struct TimerServiceLifecycleTests {
         #expect(timer.currentTodoText == "Second")
         #expect(timer.currentSourceFile == "b.md")
 
-        timer.stop()
+        timer.clear()
     }
 
     @Test("isTracking matches current todo")
@@ -115,7 +116,7 @@ struct TimerServiceLifecycleTests {
         timer.pause()
         #expect(timer.isTracking(todoText: "Track me", sourceFile: "tasks.md"))
 
-        timer.stop()
+        timer.clear()
         #expect(!timer.isTracking(todoText: "Track me", sourceFile: "tasks.md"))
     }
 

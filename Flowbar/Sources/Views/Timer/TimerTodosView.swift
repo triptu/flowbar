@@ -4,7 +4,6 @@ struct TimerTodosView: View {
     @Environment(AppState.self) var appState
     @Environment(TimerService.self) var timerService
     var onToggleView: () -> Void
-    var isShowingTodos: Bool
     @State private var searchText = ""
     @AppStorage("todoFilter.showDone") private var showDone = false
     @AppStorage("todoFilter.sourceFile") private var sourceFilter: String = ""
@@ -71,7 +70,7 @@ struct TimerTodosView: View {
                 .help(showDone ? "Hide completed" : "Show completed")
 
                 Button(action: onToggleView) {
-                    toolbarIcon("list.bullet", isActive: isShowingTodos)
+                    toolbarIcon("list.bullet", isActive: timerService.screen == .todos)
                 }
                 .buttonStyle(.plain)
             }
@@ -120,23 +119,13 @@ struct TimerTodosView: View {
     }
 
     private func toggleTodo(_ todo: TodoItem) {
-        if !todo.isDone && timerService.isTracking(todoText: todo.text, sourceFile: todo.sourceFile.id) {
-            timerService.stop()
-        }
-        _ = MarkdownParser.toggleTodo(at: todo.lineIndex, in: todo.sourceFile.url)
+        timerService.toggleTodo(todo)
         loadTodos()
     }
 
     private func startTimer(for todo: TodoItem) {
-        if timerService.isTracking(todoText: todo.text, sourceFile: todo.sourceFile.id) {
-            timerService.togglePlayPause()
-        } else {
-            if todo.isDone {
-                _ = MarkdownParser.toggleTodo(at: todo.lineIndex, in: todo.sourceFile.url)
-                loadTodos()
-            }
-            timerService.start(todoText: todo.text, sourceFile: todo.sourceFile.id)
-        }
+        timerService.startTodo(todo)
+        loadTodos()
     }
 
     private func toolbarIcon(_ systemName: String, isActive: Bool, weight: Font.Weight = .regular) -> some View {

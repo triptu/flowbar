@@ -48,14 +48,34 @@ enum MarkdownParser {
         }
     }
 
-    /// Find a specific incomplete todo by text and mark it done.
+    /// Toggle a todo at the given line index, but only if the line is still `- [ ] <text>`.
+    /// Returns true if the toggle happened. Single file read+write (no double I/O).
+    static func toggleTodoIfMatches(text: String, at lineIndex: Int, in url: URL) -> Bool {
+        guard var content = try? String(contentsOf: url, encoding: .utf8) else { return false }
+        var lines = content.components(separatedBy: "\n")
+        guard lineIndex < lines.count else { return false }
+        let trimmed = lines[lineIndex].trimmingCharacters(in: .whitespaces)
+        guard trimmed.hasPrefix("- [ ] ") && String(trimmed.dropFirst(6)) == text else { return false }
+        lines[lineIndex] = lines[lineIndex].replacingOccurrences(of: "- [ ] ", with: "- [x] ")
+        content = lines.joined(separator: "\n")
+        do {
+            try content.write(to: url, atomically: true, encoding: .utf8)
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    /// Find a specific incomplete todo by text and mark it done. Single read+write.
     static func markTodoDone(text: String, in url: URL) {
-        guard let content = try? String(contentsOf: url, encoding: .utf8) else { return }
-        let lines = content.components(separatedBy: "\n")
+        guard var content = try? String(contentsOf: url, encoding: .utf8) else { return }
+        var lines = content.components(separatedBy: "\n")
         for (index, line) in lines.enumerated() {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             if trimmed.hasPrefix("- [ ] ") && String(trimmed.dropFirst(6)) == text {
-                _ = toggleTodo(at: index, in: url)
+                lines[index] = line.replacingOccurrences(of: "- [ ] ", with: "- [x] ")
+                content = lines.joined(separator: "\n")
+                try? content.write(to: url, atomically: true, encoding: .utf8)
                 return
             }
         }

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		02809DCA65555BE65F063A9F /* NoteContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BE9090CD422B39C22928F8C /* NoteContentView.swift */; };
+		0355283C9CFC77C39858F458 /* TimerServiceIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0A0AFB96F9D551689167D3 /* TimerServiceIntentTests.swift */; };
 		13B7ED8967A1A4B824777752 /* TodoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E055DC9A0DE8A87522720A1 /* TodoItem.swift */; };
 		146F4D72B3489682B628BED5 /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EACC84A08EAE2C331909302 /* ModelTests.swift */; };
 		1D2BB381AFCD98E4DF91EC57 /* TimerServiceLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34CB4C7549D4E83A19F5FF43 /* TimerServiceLifecycleTests.swift */; };
@@ -19,7 +20,6 @@
 		42DD96B155C593078565CF7D /* FileOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17BB2C6C1AB7D078E4FD1381 /* FileOperationsTests.swift */; };
 		4F139AF375C4FA41F292C0E7 /* MarkdownParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1B419B41DBE32FBEC53E7E /* MarkdownParser.swift */; };
 		519DC7D5F956BF9728A11B79 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9429D1FCA615F8FF6BA06083 /* SidebarView.swift */; };
-		D1E2F3A4B5C6D7E8F9A0B1C2 /* TitleBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* TitleBarView.swift */; };
 		521CE08AE3FC9244CE92C597 /* TimerTodosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAF1CAFB6CFD0E5A2A75702D /* TimerTodosView.swift */; };
 		525F0DBEC750803D29A5BE5C /* TodoRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4437CE287B73D4B42D2A7488 /* TodoRow.swift */; };
 		56FDF78959DAAC5E59386E6F /* SidebarFooter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8510A28B4BDA11F845C2A2F0 /* SidebarFooter.swift */; };
@@ -32,6 +32,7 @@
 		A1C37D455CD1DEEE92C0F49F /* FloatingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19927FCA0D6E052D93303A86 /* FloatingPanel.swift */; };
 		A34CDF3EB4CF83E179BEF2BA /* TimerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39083BC43A019B06241FB227 /* TimerService.swift */; };
 		B09973A5834843B57F506206 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 679770A71B494E81BD99BB16 /* SettingsView.swift */; };
+		B212B9071DB0D2B27E7D5334 /* TitleBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0BF69A8C9E2C43EC6598948 /* TitleBarView.swift */; };
 		BC6659874A56FF8D6E7F4268 /* SidebarToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F835D11B53685F85D8EF57A /* SidebarToggleButton.swift */; };
 		BE8CACC0DB336F9249758FD2 /* FlowbarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2D31A2E469ADB3AE12A356 /* FlowbarApp.swift */; };
 		C746A5D814A657E0B9D744A4 /* AppStateNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E92AC056D0D1D801EA2F5A /* AppStateNavigationTests.swift */; };
@@ -74,6 +75,7 @@
 		34CB4C7549D4E83A19F5FF43 /* TimerServiceLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerServiceLifecycleTests.swift; sourceTree = "<group>"; };
 		39083BC43A019B06241FB227 /* TimerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerService.swift; sourceTree = "<group>"; };
 		3BE9090CD422B39C22928F8C /* NoteContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteContentView.swift; sourceTree = "<group>"; };
+		3C0A0AFB96F9D551689167D3 /* TimerServiceIntentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerServiceIntentTests.swift; sourceTree = "<group>"; };
 		4437CE287B73D4B42D2A7488 /* TodoRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoRow.swift; sourceTree = "<group>"; };
 		475F8AB060E4655AA80A13E0 /* DatabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseService.swift; sourceTree = "<group>"; };
 		4A002EBBE343A998F6AD2374 /* MarkdownParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownParserTests.swift; sourceTree = "<group>"; };
@@ -89,10 +91,10 @@
 		8510A28B4BDA11F845C2A2F0 /* SidebarFooter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarFooter.swift; sourceTree = "<group>"; };
 		90E92AC056D0D1D801EA2F5A /* AppStateNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateNavigationTests.swift; sourceTree = "<group>"; };
 		9429D1FCA615F8FF6BA06083 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* TitleBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleBarView.swift; sourceTree = "<group>"; };
 		968FA0A43E76B9C67650651E /* TimerServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerServiceTests.swift; sourceTree = "<group>"; };
 		AA28AD0B52FFBD4002D7108F /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		AEF20A10743ADB27EC3D5761 /* AppStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateTests.swift; sourceTree = "<group>"; };
+		B0BF69A8C9E2C43EC6598948 /* TitleBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleBarView.swift; sourceTree = "<group>"; };
 		B7F0362096FD8D2B22AA6247 /* FileWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileWatcher.swift; sourceTree = "<group>"; };
 		BAF1CAFB6CFD0E5A2A75702D /* TimerTodosView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerTodosView.swift; sourceTree = "<group>"; };
 		C4709745944EB39D269992BF /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
@@ -156,7 +158,7 @@
 				3BE9090CD422B39C22928F8C /* NoteContentView.swift */,
 				679770A71B494E81BD99BB16 /* SettingsView.swift */,
 				9429D1FCA615F8FF6BA06083 /* SidebarView.swift */,
-				A1B2C3D4E5F6A7B8C9D0E1F2 /* TitleBarView.swift */,
+				B0BF69A8C9E2C43EC6598948 /* TitleBarView.swift */,
 				A227C786E98033FCCA2597B3 /* Components */,
 				C9125AC1EDD6742936D70287 /* Timer */,
 			);
@@ -227,6 +229,7 @@
 			isa = PBXGroup;
 			children = (
 				4A002EBBE343A998F6AD2374 /* MarkdownParserTests.swift */,
+				3C0A0AFB96F9D551689167D3 /* TimerServiceIntentTests.swift */,
 				34CB4C7549D4E83A19F5FF43 /* TimerServiceLifecycleTests.swift */,
 				968FA0A43E76B9C67650651E /* TimerServiceTests.swift */,
 			);
@@ -371,6 +374,7 @@
 				42DD96B155C593078565CF7D /* FileOperationsTests.swift in Sources */,
 				35D71C71BBC19C145CA3A4B1 /* MarkdownParserTests.swift in Sources */,
 				146F4D72B3489682B628BED5 /* ModelTests.swift in Sources */,
+				0355283C9CFC77C39858F458 /* TimerServiceIntentTests.swift in Sources */,
 				1D2BB381AFCD98E4DF91EC57 /* TimerServiceLifecycleTests.swift in Sources */,
 				CB2C7B9F0F3A66563E946A8A /* TimerServiceTests.swift in Sources */,
 			);
@@ -398,11 +402,11 @@
 				D086C43C3929EF6052A89C94 /* SidebarState.swift in Sources */,
 				BC6659874A56FF8D6E7F4268 /* SidebarToggleButton.swift in Sources */,
 				519DC7D5F956BF9728A11B79 /* SidebarView.swift in Sources */,
-				D1E2F3A4B5C6D7E8F9A0B1C2 /* TitleBarView.swift in Sources */,
 				97C23CB05145842759114559 /* TimerContainerView.swift in Sources */,
 				66E4356102C5E6AD78E1EA11 /* TimerHomeView.swift in Sources */,
 				A34CDF3EB4CF83E179BEF2BA /* TimerService.swift in Sources */,
 				521CE08AE3FC9244CE92C597 /* TimerTodosView.swift in Sources */,
+				B212B9071DB0D2B27E7D5334 /* TitleBarView.swift in Sources */,
 				13B7ED8967A1A4B824777752 /* TodoItem.swift in Sources */,
 				525F0DBEC750803D29A5BE5C /* TodoRow.swift in Sources */,
 				33F5E63DCB5F9DD94C47FD32 /* Typography.swift in Sources */,

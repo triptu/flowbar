@@ -70,13 +70,18 @@ final class DatabaseService {
         return rowId
     }
 
-    func endSession(id: Int64, completed: Bool) {
-        let sql = "UPDATE timer_sessions SET ended_at = ?, completed = ? WHERE id = ?"
+    func endSession(id: Int64, completed: Bool, finalElapsed: TimeInterval) {
+        let now = Date().timeIntervalSince1970
+        // Store finalElapsed in accumulated and set started_at = ended_at so the
+        // query formula (accumulated + ended_at - started_at) = finalElapsed + 0.
+        let sql = "UPDATE timer_sessions SET ended_at = ?, completed = ?, accumulated = ?, started_at = ?, paused_elapsed = NULL WHERE id = ?"
         var stmt: OpaquePointer?
         sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
-        sqlite3_bind_double(stmt, 1, Date().timeIntervalSince1970)
+        sqlite3_bind_double(stmt, 1, now)
         sqlite3_bind_int(stmt, 2, completed ? 1 : 0)
-        sqlite3_bind_int64(stmt, 3, id)
+        sqlite3_bind_double(stmt, 3, finalElapsed)
+        sqlite3_bind_double(stmt, 4, now)
+        sqlite3_bind_int64(stmt, 5, id)
         sqlite3_step(stmt)
         sqlite3_finalize(stmt)
     }

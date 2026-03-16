@@ -3,20 +3,21 @@ import Observation
 
 /// Manages the stopwatch timer for tracking time spent on todos.
 ///
-/// Supports start, pause, resume, and complete. Persists sessions to SQLite via DatabaseService.
-/// Does NOT modify markdown files — the caller is responsible for marking todos done.
-/// Views observe properties to update the UI; hasActiveSession and isTracking()
-/// provide convenient checks without duplicating the isRunning/isPaused logic everywhere.
+/// Owns all timer state, screen routing, and compound intents (startTodo, toggleTodo,
+/// completeAndMarkDone). Views should be dumb — read state and call intent methods.
+/// Persists sessions to SQLite via DatabaseService. Side-effects on markdown files
+/// happen here so behavior is testable in one place.
 @Observable
 @MainActor
 final class TimerService {
+    enum Screen { case todos, home }
+
     var isRunning = false
     var isPaused = false
     var currentTodoText = ""
     var currentSourceFile = ""
     var elapsed: TimeInterval = 0
-    /// True briefly after a fresh start (not resume). Reset after observation.
-    var didFreshStart = false
+    var screen: Screen = .todos
 
     /// True when a timer session exists (running or paused)
     var hasActiveSession: Bool { isRunning || isPaused }
@@ -25,6 +26,7 @@ final class TimerService {
     @ObservationIgnored private var startedAt: Date?
     @ObservationIgnored private var pausedElapsed: TimeInterval = 0
     @ObservationIgnored private var timer: Timer?
+    @ObservationIgnored private var currentLineIndex: Int?
     @ObservationIgnored private let db = DatabaseService.shared
 
     init() {
@@ -37,29 +39,30 @@ final class TimerService {
             currentTodoText = session.todoText
             currentSourceFile = session.sourceFile
             if let paused = session.pausedElapsed {
-                // Was paused — restore as paused with saved elapsed
                 pausedElapsed = paused
                 elapsed = paused
                 isPaused = true
             } else {
-                // Was running — resume ticking with accumulated base
                 pausedElapsed = session.accumulated
                 startedAt = session.startedAt
                 isRunning = true
                 startTicking()
             }
+            screen = .home
         }
     }
+
+    // MARK: - Primitive state transitions
 
     func start(todoText: String, sourceFile: String) {
         if hasActiveSession { stopSession() }
         sessionId = db.startSession(todoText: todoText, sourceFile: sourceFile)
         currentTodoText = todoText
         currentSourceFile = sourceFile
+        currentLineIndex = nil
         startedAt = Date()
         elapsed = 0
         pausedElapsed = 0
-        didFreshStart = true
         isRunning = true
         isPaused = false
         startTicking()
@@ -90,21 +93,10 @@ final class TimerService {
     }
 
     /// Ends the session without marking the todo done. Clears all state.
-    func stop() {
+    func clear() {
         guard hasActiveSession, let id = sessionId else { return }
-        db.endSession(id: id, completed: false)
+        db.endSession(id: id, completed: false, finalElapsed: elapsed)
         cleanup()
-    }
-
-    /// Ends the session and marks it as completed in the database.
-    /// Returns the (todoText, sourceFile) so the caller can mark the todo done in the markdown.
-    @discardableResult
-    func complete() -> (todoText: String, sourceFile: String)? {
-        guard hasActiveSession, let id = sessionId else { return nil }
-        let result = (todoText: currentTodoText, sourceFile: currentSourceFile)
-        db.endSession(id: id, completed: true)
-        cleanup()
-        return result
     }
 
     /// Check if a specific todo is being tracked (running or paused)
@@ -112,8 +104,63 @@ final class TimerService {
         hasActiveSession && currentTodoText == todoText && currentSourceFile == sourceFile
     }
 
+    func toggleScreen() {
+        screen = (screen == .todos) ? .home : .todos
+    }
+
+    /// Ends the session as completed in the database and clears state.
+    /// For completing AND marking the todo done in markdown, use completeAndMarkDone instead.
+    @discardableResult
+    func complete() -> (todoText: String, sourceFile: String)? {
+        guard hasActiveSession, let id = sessionId else { return nil }
+        let result = (todoText: currentTodoText, sourceFile: currentSourceFile)
+        db.endSession(id: id, completed: true, finalElapsed: elapsed)
+        cleanup()
+        return result
+    }
+
+    // MARK: - Compound intents (absorb view-layer business logic)
+
+    /// Start tracking a todo. If already tracking this one, toggle play/pause.
+    /// If the todo is done, un-mark it first.
+    func startTodo(_ todo: TodoItem) {
+        if isTracking(todoText: todo.text, sourceFile: todo.sourceFile.id) {
+            togglePlayPause()
+        } else {
+            if todo.isDone {
+                _ = MarkdownParser.toggleTodo(at: todo.lineIndex, in: todo.sourceFile.url)
+            }
+            start(todoText: todo.text, sourceFile: todo.sourceFile.id)
+            currentLineIndex = todo.lineIndex
+        }
+    }
+
+    /// Toggle a todo's checkbox. If toggling off the currently tracked todo, stop the timer.
+    func toggleTodo(_ todo: TodoItem) {
+        if !todo.isDone && isTracking(todoText: todo.text, sourceFile: todo.sourceFile.id) {
+            clear()
+        }
+        _ = MarkdownParser.toggleTodo(at: todo.lineIndex, in: todo.sourceFile.url)
+    }
+
+    /// Complete the active session, mark the todo done in the markdown file, and clear state.
+    func completeAndMarkDone(folderPath: String) {
+        let lineIndex = currentLineIndex
+        guard let result = complete() else { return }
+
+        let fileURL = URL(fileURLWithPath: folderPath)
+            .appendingPathComponent(result.sourceFile + ".md")
+        if let idx = lineIndex, MarkdownParser.toggleTodoIfMatches(text: result.todoText, at: idx, in: fileURL) {
+            // Done — single file read+write
+        } else {
+            MarkdownParser.markTodoDone(text: result.todoText, in: fileURL)
+        }
+    }
+
+    // MARK: - Private helpers
+
     private func stopSession() {
-        if let id = sessionId { db.endSession(id: id, completed: false) }
+        if let id = sessionId { db.endSession(id: id, completed: false, finalElapsed: elapsed) }
         timer?.invalidate()
         timer = nil
     }
@@ -129,6 +176,8 @@ final class TimerService {
         pausedElapsed = 0
         currentTodoText = ""
         currentSourceFile = ""
+        currentLineIndex = nil
+        screen = .todos
     }
 
     private func startTicking() {

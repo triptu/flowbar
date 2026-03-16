@@ -84,7 +84,7 @@ struct TimerHomeView: View {
                 }
                 .buttonStyle(.plain)
 
-                Button(action: { timerService.stop() }) {
+                Button(action: { timerService.clear() }) {
                     HStack(spacing: 8) {
                         Image(systemName: "xmark")
                             .font(.system(size: 11))
@@ -101,11 +101,7 @@ struct TimerHomeView: View {
                 .buttonStyle(.plain)
 
                 Button(action: {
-                    if let completed = timerService.complete() {
-                        let fileURL = URL(fileURLWithPath: appState.settings.folderPath)
-                            .appendingPathComponent(completed.sourceFile + ".md")
-                        MarkdownParser.markTodoDone(text: completed.todoText, in: fileURL)
-                    }
+                    timerService.completeAndMarkDone(folderPath: appState.settings.folderPath)
                 }) {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark")
