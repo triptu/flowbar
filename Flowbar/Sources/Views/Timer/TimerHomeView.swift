@@ -4,21 +4,23 @@ struct TimerHomeView: View {
     @Environment(AppState.self) var appState
     @Environment(TimerService.self) var timerService
     @State private var previousTotal: TimeInterval = 0
-    @State private var todaySessions: [(todoText: String, sourceFile: String, totalDuration: TimeInterval)] = []
+    @State private var timeline: [(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date)] = []
 
     var body: some View {
         VStack(spacing: 0) {
-            if timerService.hasActiveSession {
-                runningView
-            } else {
-                idleView
+            Group {
+                if timerService.hasActiveSession {
+                    runningView
+                } else {
+                    idleView
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            if !todaySessions.isEmpty {
-                sessionsListView
+            if !timeline.isEmpty {
+                timelineView
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .focusable()
         .focusEffectDisabled()
         .onKeyPress(.space) {
@@ -28,19 +30,19 @@ struct TimerHomeView: View {
         }
         .onAppear {
             refreshPreviousTotal()
-            refreshTodaySessions()
+            refreshTimeline()
         }
         .onChange(of: timerService.currentTodoText) { _, _ in refreshPreviousTotal() }
         .onChange(of: timerService.hasActiveSession) { _, active in
             if !active {
-                refreshTodaySessions()
+                refreshTimeline()
                 previousTotal = 0
             }
         }
     }
 
-    private func refreshTodaySessions() {
-        todaySessions = timerService.todaySessions().filter { $0.totalDuration >= 1 }
+    private func refreshTimeline() {
+        timeline = timerService.todayTimeline()
     }
 
     private func refreshPreviousTotal() {
@@ -84,7 +86,7 @@ struct TimerHomeView: View {
                 }
                 .buttonStyle(.plain)
 
-Button(action: {
+                Button(action: {
                     timerService.completeAndMarkDone(folderPath: appState.settings.folderPath)
                 }) {
                     HStack(spacing: 8) {
@@ -123,18 +125,24 @@ Button(action: {
         }
     }
 
-    private var sessionsListView: some View {
+    private static let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "h:mm a"
+        return f
+    }()
+
+    private var timelineView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("TODAY'S SESSIONS")
+            Text("TODAY'S TIMELINE")
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.tertiary)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 10)
 
-            ForEach(todaySessions, id: \.todoText) { session in
+            ForEach(timeline, id: \.startedAt) { entry in
                 HStack(spacing: 8) {
                     Button(action: {
-                        timerService.start(todoText: session.todoText, sourceFile: session.sourceFile)
+                        timerService.start(todoText: entry.todoText, sourceFile: entry.sourceFile)
                     }) {
                         Image(systemName: "play.fill")
                             .font(.system(size: 9))
@@ -147,11 +155,14 @@ Button(action: {
                     }
                     .buttonStyle(.plain)
 
-                    Text(session.todoText)
+                    Text(entry.todoText)
                         .font(.system(size: 13))
                         .lineLimit(1)
                     Spacer()
-                    Text(TimerService.formatTime(session.totalDuration))
+                    Text("\(Self.timeFormatter.string(from: entry.startedAt)) – \(Self.timeFormatter.string(from: entry.endedAt))")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                    Text(TimerService.formatTime(entry.endedAt.timeIntervalSince(entry.startedAt)))
                         .font(.system(size: 13, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }

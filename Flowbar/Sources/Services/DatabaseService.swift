@@ -44,8 +44,16 @@ final class DatabaseService {
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS time_entries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            todo_text TEXT NOT NULL,
+            source_file TEXT NOT NULL,
+            started_at REAL NOT NULL,
+            ended_at REAL NOT NULL
+        );
         """
         sqlite3_exec(db, sql, nil, nil, nil)
+        sqlite3_exec(db, "CREATE INDEX IF NOT EXISTS idx_time_entries_started_at ON time_entries(started_at DESC)", nil, nil, nil)
         migrate()
     }
 
@@ -155,26 +163,34 @@ final class DatabaseService {
         return nil
     }
 
-    /// Returns today's sessions grouped by todo text, with total duration per todo, ordered by most recent.
-    func todaySessions() -> [(todoText: String, sourceFile: String, totalDuration: TimeInterval)] {
+    /// Record a completed work segment in the time_entries timeline.
+    func recordTimeEntry(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date) {
+        let sql = "INSERT INTO time_entries (todo_text, source_file, started_at, ended_at) VALUES (?, ?, ?, ?)"
+        var stmt: OpaquePointer?
+        sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
+        sqlite3_bind_text(stmt, 1, (todoText as NSString).utf8String, -1, nil)
+        sqlite3_bind_text(stmt, 2, (sourceFile as NSString).utf8String, -1, nil)
+        sqlite3_bind_double(stmt, 3, startedAt.timeIntervalSince1970)
+        sqlite3_bind_double(stmt, 4, endedAt.timeIntervalSince1970)
+        sqlite3_step(stmt)
+        sqlite3_finalize(stmt)
+    }
+
+    /// Today's time entries as a timeline, most recent first.
+    func todayTimeline() -> [(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date)] {
         let startOfDay = Calendar.current.startOfDay(for: Date()).timeIntervalSince1970
-        let sql = """
-        SELECT todo_text, source_file, SUM(COALESCE(accumulated, 0) + ended_at - started_at) as total
-        FROM timer_sessions
-        WHERE started_at >= ? AND ended_at IS NOT NULL AND ended_at > started_at
-        GROUP BY todo_text, source_file
-        ORDER BY MAX(ended_at) DESC
-        """
+        let sql = "SELECT todo_text, source_file, started_at, ended_at FROM time_entries WHERE started_at >= ? ORDER BY started_at DESC"
         var stmt: OpaquePointer?
         sqlite3_prepare_v2(db, sql, -1, &stmt, nil)
         sqlite3_bind_double(stmt, 1, startOfDay)
         defer { sqlite3_finalize(stmt) }
-        var results: [(String, String, TimeInterval)] = []
+        var results: [(String, String, Date, Date)] = []
         while sqlite3_step(stmt) == SQLITE_ROW {
             let text = String(cString: sqlite3_column_text(stmt, 0))
             let file = String(cString: sqlite3_column_text(stmt, 1))
-            let total = sqlite3_column_double(stmt, 2)
-            results.append((text, file, total))
+            let started = Date(timeIntervalSince1970: sqlite3_column_double(stmt, 2))
+            let ended = Date(timeIntervalSince1970: sqlite3_column_double(stmt, 3))
+            results.append((text, file, started, ended))
         }
         return results
     }

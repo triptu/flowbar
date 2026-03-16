@@ -62,6 +62,7 @@ final class TimerService {
         guard isRunning, let id = sessionId else { return }
         timer?.invalidate()
         timer = nil
+        flushRunningSegment()
         pausedElapsed = elapsed
         isRunning = false
         isPaused = true
@@ -85,6 +86,7 @@ final class TimerService {
     /// Ends the session without marking the todo done. Clears all state.
     func clear() {
         guard hasActiveSession, let id = sessionId else { return }
+        flushRunningSegment()
         db.endSession(id: id, completed: false, finalElapsed: elapsed)
         cleanup()
     }
@@ -103,6 +105,7 @@ final class TimerService {
     @discardableResult
     func complete() -> (todoText: String, sourceFile: String)? {
         guard hasActiveSession, let id = sessionId else { return nil }
+        flushRunningSegment()
         let result = (todoText: currentTodoText, sourceFile: currentSourceFile)
         db.endSession(id: id, completed: true, finalElapsed: elapsed)
         cleanup()
@@ -150,9 +153,18 @@ final class TimerService {
     // MARK: - Private helpers
 
     private func stopSession() {
+        flushRunningSegment()
         if let id = sessionId { db.endSession(id: id, completed: false, finalElapsed: elapsed) }
         timer?.invalidate()
         timer = nil
+    }
+
+    /// If the timer is running, record the current segment to time_entries and reset startedAt.
+    private func flushRunningSegment() {
+        guard isRunning, let start = startedAt else { return }
+        let now = Date()
+        guard now.timeIntervalSince(start) >= 1 else { return }
+        db.recordTimeEntry(todoText: currentTodoText, sourceFile: currentSourceFile, startedAt: start, endedAt: now)
     }
 
     private func cleanup() {
@@ -192,9 +204,9 @@ final class TimerService {
         db.allTotalTimes()
     }
 
-    /// Today's completed sessions grouped by todo, most recent first
-    func todaySessions() -> [(todoText: String, sourceFile: String, totalDuration: TimeInterval)] {
-        db.todaySessions()
+    /// Today's time entries as a timeline, most recent first
+    func todayTimeline() -> [(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date)] {
+        db.todayTimeline()
     }
 
     nonisolated static func formatTime(_ seconds: TimeInterval) -> String {
