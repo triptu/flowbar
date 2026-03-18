@@ -51,18 +51,39 @@ html {
 }
 
 /* Syntax highlighting classes */
-.kw { color: var(--color-sage); }
-.ty { color: var(--color-orange); }
-.pw { color: var(--color-purple); }
-.str { color: var(--color-yellow); }
-.cmt { color: var(--color-text-muted); font-style: italic; }
-.num { color: var(--color-blue); }
-.fn { color: #c9c1b8; }
+.kw {
+    color: var(--color-sage);
+}
+.ty {
+    color: var(--color-orange);
+}
+.pw {
+    color: var(--color-purple);
+}
+.str {
+    color: var(--color-yellow);
+}
+.cmt {
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+.num {
+    color: var(--color-blue);
+}
+.fn {
+    color: #c9c1b8;
+}
 
 /* Animation */
 @keyframes popIn {
-    0% { opacity: 0; transform: translateY(4px) scale(0.97); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
+    0% {
+        opacity: 0;
+        transform: translateY(4px) scale(0.97);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 .animate-pop-in {
     animation: popIn 0.2s ease;

@@ -18,8 +18,6 @@ Update the interactive learning guide at `Flowbar/docs/learn-swift.html` to refl
 
    - **Architecture "Why it's built this way"** (~line 990) — Prose explaining design decisions. Update if the rationale changed.
 
-   - **Data Flow diagrams** (~line 1594) — Step-by-step flow descriptions. Update terminology if the mechanism changed.
-
    - **Syntax highlighter** (~line 2789) — Property wrapper regex, keyword list, and type list. Add any new keywords/types introduced.
 
 4. **Make targeted edits** — Only change what's needed. Don't rewrite the whole file. Use the Edit tool for each change.

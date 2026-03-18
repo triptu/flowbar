@@ -1,5 +1,5 @@
 export const FILES: Record<string, string> = {
-    "App/FlowbarApp.swift": `import SwiftUI
+  "App/FlowbarApp.swift": `import SwiftUI
 
 @main
 struct FlowbarApp: App {
@@ -12,7 +12,7 @@ struct FlowbarApp: App {
     }
 }`,
 
-    "App/AppDelegate.swift": `import AppKit
+  "App/AppDelegate.swift": `import AppKit
 import SwiftUI
 
 /// App entry point that wires together the core services and the menu bar item.
@@ -65,7 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }`,
 
-    "App/AppState.swift": `import SwiftUI
+  "App/AppState.swift": `import SwiftUI
 import Observation
 
 enum AppTheme: String, CaseIterable {
@@ -174,7 +174,7 @@ final class AppState {
     }
 }`,
 
-    "App/SettingsState.swift": `import SwiftUI
+  "App/SettingsState.swift": `import SwiftUI
 import Observation
 
 /// Persisted user preferences — theme, typography, accent color, folder path, window frames.
@@ -242,7 +242,7 @@ final class SettingsState {
     }
 }`,
 
-    "App/EditorState.swift": `import SwiftUI
+  "App/EditorState.swift": `import SwiftUI
 import Observation
 
 /// Manages the active file's text content, debounced saving, and file watchers.
@@ -332,7 +332,7 @@ final class EditorState {
     }
 }`,
 
-    "App/SidebarState.swift": `import SwiftUI
+  "App/SidebarState.swift": `import SwiftUI
 import Observation
 
 /// UI navigation, sidebar layout, file list, and rename state.
@@ -404,7 +404,7 @@ final class SidebarState {
     }
 }`,
 
-    "Models/NoteFile.swift": `import Foundation
+  "Models/NoteFile.swift": `import Foundation
 
 /// Represents a single markdown file in the configured folder.
 /// Used throughout the app for sidebar listing, note editing, and todo source tracking.
@@ -419,7 +419,7 @@ struct NoteFile: Identifiable, Hashable {
     }
 }`,
 
-    "Services/FileWatcher.swift": `import Foundation
+  "Services/FileWatcher.swift": `import Foundation
 
 /// Watches a single file or directory for filesystem changes using GCD dispatch sources.
 ///
@@ -469,7 +469,7 @@ final class FileWatcher {
     }
 }`,
 
-    "Services/MarkdownParser.swift": `import Foundation
+  "Services/MarkdownParser.swift": `import Foundation
 
 /// A parsed markdown block for rendering in the preview.
 enum MarkdownBlock: Equatable {
@@ -650,7 +650,7 @@ enum MarkdownParser {
     }
 }`,
 
-    "Services/TimerService.swift": `import Foundation
+  "Services/TimerService.swift": `import Foundation
 import Observation
 
 /// Manages the stopwatch timer for tracking time spent on todos.
@@ -871,7 +871,7 @@ final class TimerService {
     }
 }`,
 
-    "Views/MainView.swift": `import SwiftUI
+  "Views/MainView.swift": `import SwiftUI
 
 /// Root view that combines the sidebar and content area.
 ///
@@ -942,7 +942,7 @@ struct MainView: View {
     }
 }`,
 
-    "Views/NoteContentView.swift": `import SwiftUI
+  "Views/NoteContentView.swift": `import SwiftUI
 
 struct NoteContentView: View {
     @Environment(AppState.self) var appState
@@ -1011,7 +1011,7 @@ struct NoteContentView: View {
     }
 }`,
 
-    "Views/MarkdownEditorView.swift": `import SwiftUI
+  "Views/MarkdownEditorView.swift": `import SwiftUI
 import AppKit
 
 /// NSTextView wrapper that auto-continues bullets and todos on Enter.
@@ -1141,7 +1141,7 @@ struct MarkdownEditorView: NSViewRepresentable {
     }
 }`,
 
-    "Views/MarkdownPreviewView.swift": `import SwiftUI
+  "Views/MarkdownPreviewView.swift": `import SwiftUI
 
 /// Renders markdown content as native SwiftUI views with clickable checkboxes and styled headings.
 struct MarkdownPreviewView: View {
@@ -1259,7 +1259,7 @@ struct MarkdownPreviewView: View {
     }
 }`,
 
-    "Views/TitleBarView.swift": `import SwiftUI
+  "Views/TitleBarView.swift": `import SwiftUI
 
 /// Active task label displayed centered in the native title bar.
 /// Hosted as an NSHostingView added to the title bar view hierarchy by FloatingPanel.
@@ -1321,7 +1321,7 @@ struct TitleBarLabel: View {
     }
 }`,
 
-    "Window/WindowManager.swift": `import AppKit
+  "Window/WindowManager.swift": `import AppKit
 import SwiftUI
 import Observation
 
@@ -1529,7 +1529,7 @@ extension WindowManager: NSWindowDelegate {
     }
 }`,
 
-    "Window/FloatingPanel.swift": `import AppKit
+  "Window/FloatingPanel.swift": `import AppKit
 import SwiftUI
 
 /// The overlay window shown when the user clicks the menu bar icon or presses double-Fn.

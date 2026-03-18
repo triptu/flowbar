@@ -394,12 +394,16 @@
                 text-align: center;
             }
             .screenshots .grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 40px;
             }
             .screenshots .grid figure {
                 margin: 0;
+                max-width: 520px;
+                margin-left: auto;
+                margin-right: auto;
+                width: 100%;
             }
             .screenshots .grid img {
                 width: 100%;
@@ -409,16 +413,18 @@
             }
             .screenshots .grid figcaption {
                 color: var(--muted);
-                font-size: 13px;
+                font-size: 14px;
                 text-align: center;
-                margin-top: 8px;
+                margin-top: 10px;
+                line-height: 1.5;
+            }
+            .screenshots .grid figcaption strong {
+                color: var(--text);
+                font-weight: 500;
             }
 
             @media (max-width: 640px) {
                 .features {
-                    grid-template-columns: 1fr;
-                }
-                .screenshots .grid {
                     grid-template-columns: 1fr;
                 }
                 .dialog {
@@ -549,27 +555,27 @@
             <div class="grid">
                 <figure>
                     <img src="./assets/note.png" alt="Notes view" />
-                    <figcaption>Notes</figcaption>
+                    <figcaption><strong>Notes</strong> — Browse and search all your markdown notes in one place</figcaption>
                 </figure>
                 <figure>
                     <img src="./assets/note-todo.png" alt="Notes with todos" />
-                    <figcaption>Notes + Todos</figcaption>
+                    <figcaption><strong>Notes + Todos</strong> — Inline todos right inside your notes</figcaption>
                 </figure>
                 <figure>
                     <img src="./assets/note-edit.png" alt="Note editing" />
-                    <figcaption>Note Editing</figcaption>
+                    <figcaption><strong>Editing</strong> — Distraction-free markdown editing with live preview</figcaption>
                 </figure>
                 <figure>
                     <img src="./assets/todolist.png" alt="Todo list" />
-                    <figcaption>Todo List</figcaption>
+                    <figcaption><strong>Todo List</strong> — All your todos from every note, in a single view</figcaption>
                 </figure>
                 <figure>
                     <img src="./assets/timer-home.png" alt="Timer" />
-                    <figcaption>Timer</figcaption>
+                    <figcaption><strong>Timer</strong> — Track time on any task with a built-in stopwatch</figcaption>
                 </figure>
                 <figure>
                     <img src="./assets/settings.png" alt="Settings" />
-                    <figcaption>Settings</figcaption>
+                    <figcaption><strong>Settings</strong> — Point to any folder, customize shortcuts and appearance</figcaption>
                 </figure>
             </div>
         </div>
