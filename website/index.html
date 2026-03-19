@@ -16,15 +16,15 @@
                 box-sizing: border-box;
             }
             :root {
-                --bg: #111311;
-                --bg2: #181a18;
-                --bg3: #1e211e;
-                --text: #e0ddd4;
-                --muted: #8a8880;
-                --dim: #5a5850;
-                --accent: #8b9a6b;
-                --accent2: #a3b283;
-                --radius: 12px;
+                --bg: #0c0f0d;
+                --bg2: #131714;
+                --bg3: #1a1e1b;
+                --text: #ede9df;
+                --muted: #9a9488;
+                --dim: #5e5a52;
+                --accent: #c99b6d;
+                --accent2: #ddb88a;
+                --radius: 14px;
             }
             html {
                 scroll-behavior: smooth;
@@ -44,54 +44,84 @@
                 text-decoration: underline;
             }
 
+            /* ── Hero with video background ── */
             .hero {
-                padding: 80px 24px 60px;
+                position: relative;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+            .hero-video {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                z-index: 0;
+            }
+            .hero-overlay {
+                position: absolute;
+                inset: 0;
+                z-index: 1;
+                background:
+                    radial-gradient(ellipse 80% 60% at 50% 40%, transparent 30%, rgba(12, 15, 13, 0.55) 100%),
+                    linear-gradient(to bottom, rgba(12, 15, 13, 0.15) 0%, rgba(12, 15, 13, 0.1) 50%, rgba(12, 15, 13, 0.85) 85%, var(--bg) 100%);
+            }
+            .hero-content {
+                position: relative;
+                z-index: 2;
                 text-align: center;
-                max-width: 640px;
-                margin: 0 auto;
+                padding: 0 24px;
+                max-width: 620px;
             }
             .hero .logo {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 14px;
-                margin-bottom: 40px;
+                gap: 12px;
+                margin-bottom: 32px;
                 font-family: "Instrument Serif", serif;
-                font-size: 36px;
+                font-size: 28px;
                 color: var(--text);
-                letter-spacing: -0.5px;
+                letter-spacing: -0.3px;
+                opacity: 0.9;
             }
             .hero .logo svg {
-                width: 36px;
-                height: 36px;
+                width: 30px;
+                height: 30px;
                 color: var(--accent);
             }
             .hero h1 {
                 font-family: "Instrument Serif", serif;
-                font-size: clamp(28px, 5vw, 42px);
-                line-height: 1.2;
-                margin-bottom: 20px;
-                color: var(--text);
+                font-size: clamp(32px, 6vw, 52px);
+                line-height: 1.15;
+                margin-bottom: 18px;
+                color: #fff;
                 font-weight: 400;
+                text-shadow: 0 2px 30px rgba(0, 0, 0, 0.4);
             }
             .hero h1 em {
                 font-style: italic;
                 color: var(--accent2);
             }
             .hero p {
-                color: var(--muted);
+                color: rgba(237, 233, 223, 0.8);
                 font-size: 17px;
                 line-height: 1.7;
-                max-width: 480px;
-                margin: 0 auto 12px;
+                margin-bottom: 28px;
+                text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5);
             }
             .hero .shortcut {
                 color: var(--accent2);
-                background: rgba(139, 154, 107, 0.15);
+                background: rgba(201, 155, 109, 0.2);
                 padding: 2px 8px;
                 border-radius: 4px;
                 font-size: 15px;
                 font-weight: 500;
+                backdrop-filter: blur(4px);
             }
             .hero .ctas {
                 display: flex;
@@ -101,7 +131,7 @@
             }
             .hero .ctas a,
             .hero .ctas button {
-                padding: 10px 24px;
+                padding: 11px 28px;
                 border-radius: 8px;
                 font-size: 14px;
                 font-weight: 500;
@@ -119,61 +149,103 @@
                 text-decoration: none;
             }
             .hero .ctas .secondary {
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                color: var(--muted);
-                background: none;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                color: rgba(255, 255, 255, 0.75);
+                background: rgba(255, 255, 255, 0.06);
+                backdrop-filter: blur(8px);
             }
             .hero .ctas .secondary:hover {
                 border-color: var(--accent);
-                color: var(--text);
+                color: #fff;
                 text-decoration: none;
             }
+            .hero .scroll-hint {
+                position: absolute;
+                bottom: 32px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 2;
+                color: rgba(255, 255, 255, 0.3);
+                animation: bob 2.5s ease-in-out infinite;
+            }
+            @keyframes bob {
+                0%, 100% { transform: translateX(-50%) translateY(0); }
+                50% { transform: translateX(-50%) translateY(6px); }
+            }
 
-            .video-section {
+            /* ── Screenshots ── */
+            .screenshots {
                 max-width: 800px;
-                margin: 0 auto 64px;
-                padding: 0 24px;
+                margin: 0 auto;
+                padding: 80px 24px;
             }
-            .video-section .frame {
-                background: var(--bg2);
-                border: 1px solid rgba(255, 255, 255, 0.06);
-                border-radius: var(--radius);
-                overflow: hidden;
-            }
-            .video-section .frame video {
-                width: 100%;
-                display: block;
-            }
-            .video-section .img-slot {
-                aspect-ratio: 16/10;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: var(--dim);
-                font-size: 14px;
-                padding: 20px;
+            .screenshots h2 {
+                font-family: "Instrument Serif", serif;
+                font-size: clamp(28px, 4vw, 38px);
+                margin-bottom: 8px;
                 text-align: center;
             }
-
-            section {
-                padding: 48px 24px;
-                max-width: 640px;
-                margin: 0 auto;
-            }
-            section h2 {
-                font-family: "Instrument Serif", serif;
-                font-size: 34px;
-                margin-bottom: 8px;
-            }
-            section h2 span {
+            .screenshots h2 span {
                 color: var(--accent2);
             }
-            section .subtitle {
+            .screenshots .subtitle {
                 color: var(--muted);
                 font-size: 15px;
-                margin-bottom: 36px;
+                margin-bottom: 48px;
+                text-align: center;
+            }
+            .screenshots .grid {
+                display: flex;
+                flex-direction: column;
+                gap: 48px;
+            }
+            .screenshots .grid figure {
+                margin: 0;
+                max-width: 520px;
+                margin-left: auto;
+                margin-right: auto;
+                width: 100%;
+            }
+            .screenshots .grid img {
+                width: 100%;
+                border-radius: var(--radius);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                display: block;
+                box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+            }
+            .screenshots .grid figcaption {
+                color: var(--muted);
+                font-size: 14px;
+                text-align: center;
+                margin-top: 12px;
+                line-height: 1.5;
+            }
+            .screenshots .grid figcaption strong {
+                color: var(--text);
+                font-weight: 500;
             }
 
+            /* ── Features ── */
+            section.features-section {
+                padding: 48px 24px 80px;
+                max-width: 720px;
+                margin: 0 auto;
+            }
+            section.features-section h2 {
+                font-family: "Instrument Serif", serif;
+                font-size: clamp(28px, 4vw, 38px);
+                margin-bottom: 8px;
+                text-align: center;
+            }
+            section.features-section h2 span {
+                color: var(--accent2);
+            }
+            section.features-section .subtitle {
+                color: var(--muted);
+                font-size: 15px;
+                margin-bottom: 40px;
+                text-align: center;
+            }
             .features {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
@@ -181,7 +253,7 @@
             }
             .feature {
                 background: var(--bg2);
-                border: 1px solid rgba(255, 255, 255, 0.06);
+                border: 1px solid rgba(255, 255, 255, 0.05);
                 border-radius: var(--radius);
                 padding: 24px;
             }
@@ -194,45 +266,40 @@
                 justify-content: center;
                 margin-bottom: 12px;
                 font-size: 18px;
-                background: rgba(139, 154, 107, 0.15);
+                background: rgba(201, 155, 109, 0.12);
                 color: var(--accent);
             }
             .feature h3 {
-                font-size: 16px;
+                font-size: 15px;
                 font-weight: 600;
                 margin-bottom: 6px;
             }
             .feature p {
                 color: var(--muted);
                 font-size: 13px;
-                line-height: 1.5;
+                line-height: 1.55;
             }
 
+            /* ── Footer ── */
             footer {
-                border-top: 1px solid rgba(255, 255, 255, 0.06);
+                border-top: 1px solid rgba(255, 255, 255, 0.05);
                 padding: 40px 24px;
                 text-align: center;
                 color: var(--dim);
                 font-size: 13px;
-                margin-top: 40px;
+                margin-top: 20px;
             }
             footer a {
                 color: var(--muted);
             }
-            footer .links {
-                display: flex;
-                gap: 16px;
-                justify-content: center;
-                margin-top: 8px;
-            }
 
-            /* Download dialog */
+            /* ── Download dialog ── */
             .dialog-overlay {
                 display: none;
                 position: fixed;
                 inset: 0;
-                background: rgba(0, 0, 0, 0.6);
-                backdrop-filter: blur(6px);
+                background: rgba(0, 0, 0, 0.65);
+                backdrop-filter: blur(8px);
                 z-index: 100;
                 align-items: center;
                 justify-content: center;
@@ -243,9 +310,9 @@
             }
             .dialog {
                 background: var(--bg2);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 16px;
-                max-width: 520px;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 18px;
+                max-width: 500px;
                 width: 100%;
                 padding: 36px 32px 32px;
                 position: relative;
@@ -326,7 +393,7 @@
                 counter-increment: steps;
                 position: relative;
                 padding-left: 36px;
-                margin-bottom: 16px;
+                margin-bottom: 14px;
                 font-size: 14px;
                 line-height: 1.6;
                 color: var(--muted);
@@ -339,7 +406,7 @@
                 width: 24px;
                 height: 24px;
                 border-radius: 50%;
-                background: rgba(139, 154, 107, 0.18);
+                background: rgba(201, 155, 109, 0.15);
                 color: var(--accent2);
                 font-size: 12px;
                 font-weight: 600;
@@ -361,64 +428,14 @@
             .dialog .trust {
                 margin-top: 8px;
                 padding: 16px;
-                background: rgba(139, 154, 107, 0.08);
-                border: 1px solid rgba(139, 154, 107, 0.15);
+                background: rgba(201, 155, 109, 0.06);
+                border: 1px solid rgba(201, 155, 109, 0.12);
                 border-radius: 10px;
                 font-size: 13px;
                 color: var(--muted);
                 line-height: 1.6;
             }
             .dialog .trust strong {
-                color: var(--text);
-                font-weight: 500;
-            }
-
-            .screenshots {
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 0 24px 64px;
-            }
-            .screenshots h2 {
-                font-family: "Instrument Serif", serif;
-                font-size: 34px;
-                margin-bottom: 8px;
-                text-align: center;
-            }
-            .screenshots h2 span {
-                color: var(--accent2);
-            }
-            .screenshots .subtitle {
-                color: var(--muted);
-                font-size: 15px;
-                margin-bottom: 36px;
-                text-align: center;
-            }
-            .screenshots .grid {
-                display: flex;
-                flex-direction: column;
-                gap: 40px;
-            }
-            .screenshots .grid figure {
-                margin: 0;
-                max-width: 520px;
-                margin-left: auto;
-                margin-right: auto;
-                width: 100%;
-            }
-            .screenshots .grid img {
-                width: 100%;
-                border-radius: var(--radius);
-                border: 1px solid rgba(255, 255, 255, 0.06);
-                display: block;
-            }
-            .screenshots .grid figcaption {
-                color: var(--muted);
-                font-size: 14px;
-                text-align: center;
-                margin-top: 10px;
-                line-height: 1.5;
-            }
-            .screenshots .grid figcaption strong {
                 color: var(--text);
                 font-weight: 500;
             }
@@ -435,39 +452,57 @@
         </style>
     </head>
     <body>
+        <!-- ── Hero ── -->
         <div class="hero">
-            <div class="logo">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M12 2.5C7 2.5 2.5 7 2.5 12C2.5 17 7 21.5 12 21.5C17 21.5 21.5 17 21.5 12C21.5 7 17 2.5 12 2.5ZM3.8 11.2Q7 8.8 10.5 10.8Q12 11.8 13.5 12.2Q17 13 20.2 10.8L20.2 12.8Q17 15 13.5 14.2Q12 13.8 10.5 12.8Q7 10.8 3.8 13.2Z"
-                    />
-                </svg>
-                Flowbar
+            <video
+                class="hero-video"
+                src="./assets/nature-loop.mp4"
+                autoplay
+                loop
+                muted
+                playsinline
+            ></video>
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <div class="logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            fill-rule="evenodd"
+                            clip-rule="evenodd"
+                            d="M12 2.5C7 2.5 2.5 7 2.5 12C2.5 17 7 21.5 12 21.5C17 21.5 21.5 17 21.5 12C21.5 7 17 2.5 12 2.5ZM3.8 11.2Q7 8.8 10.5 10.8Q12 11.8 13.5 12.2Q17 13 20.2 10.8L20.2 12.8Q17 15 13.5 14.2Q12 13.8 10.5 12.8Q7 10.8 3.8 13.2Z"
+                        />
+                    </svg>
+                    Flowbar
+                </div>
+                <h1>Notes, todos, timer &mdash;<br /><em>one tap away</em></h1>
+                <p>
+                    Double-tap <span class="shortcut">Fn</span> from anywhere. Jot notes, check
+                    todos, track your time &mdash; without breaking flow.
+                </p>
+                <div class="ctas">
+                    <a
+                        href="https://github.com/triptu/flowbar"
+                        class="secondary"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >GitHub</a
+                    >
+                    <button
+                        class="primary"
+                        onclick="document.getElementById('dl-dialog').classList.add('open')"
+                    >
+                        Download for Mac
+                    </button>
+                </div>
             </div>
-            <h1>Notes, todos, timer - <em>one tap away</em></h1>
-            <p>
-                Double-tap <span class="shortcut">Fn</span> from anywhere, jot notes, check todos,
-                track your tasks, without breaking flow.
-            </p>
-            <div class="ctas">
-                <a
-                    href="https://github.com/triptu/flowbar"
-                    class="secondary"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >GitHub</a
-                >
-                <button
-                    class="primary"
-                    onclick="document.getElementById('dl-dialog').classList.add('open')"
-                >
-                    Download
-                </button>
+            <div class="scroll-hint">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9" />
+                </svg>
             </div>
         </div>
 
+        <!-- ── Download dialog ── -->
         <div
             class="dialog-overlay"
             id="dl-dialog"
@@ -508,79 +543,84 @@
                         <strong>Flowbar</strong> into your <strong>Applications</strong> folder.
                     </li>
                     <li>
-                        Launch Flowbar. macOS will show a warning — this is normal for apps that
-                        aren't notarized (signing certificates cost money!).
+                        Launch Flowbar. macOS will show a warning &mdash; this is normal for apps
+                        that aren't notarized.
                     </li>
                     <li>
-                        Open <strong>System Settings → Privacy &amp; Security</strong>, scroll down,
-                        and click <strong>"Open Anyway"</strong>. You only need to do this once.
+                        Open <strong>System Settings &rarr; Privacy &amp; Security</strong>, scroll
+                        down, and click <strong>"Open Anyway"</strong>. You only need to do this
+                        once.
                     </li>
-                    <li>That's it! Double-tap <code>Fn</code> to open Flowbar from anywhere.</li>
+                    <li>
+                        That's it! Double-tap <code>Fn</code> to open Flowbar from anywhere.
+                    </li>
                 </ol>
                 <div class="trust">
-                    <strong>Why the security warning?</strong> Apple charges money for a developer
-                    certificate to skip this prompt. Flowbar is a free, open-source side project —
-                    so it's not notarized. But you can verify everything: the DMG is built
-                    automatically by
+                    <strong>Why the security warning?</strong> Apple charges for a developer
+                    certificate to skip this prompt. Flowbar is free and open source &mdash; so
+                    it's not notarized. The DMG is built automatically by
                     <a
                         href="https://github.com/triptu/flowbar/actions"
                         target="_blank"
                         rel="noopener noreferrer"
                         >GitHub Actions</a
                     >
-                    from the public source code. You can also
-                    <a
-                        href="https://github.com/triptu/flowbar"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        >build it yourself</a
-                    >
-                    if you prefer.
+                    from the public source code.
                 </div>
             </div>
         </div>
 
-        <div class="video-section">
-            <div class="frame">
-                <div class="img-slot">
-                    <!-- TODO: Replace with <video src="demo.mp4" autoplay loop muted playsinline></video> -->
-                    Demo video
-                </div>
-            </div>
-        </div>
-
+        <!-- ── Screenshots ── -->
         <div class="screenshots">
             <h2>See it in <span>action</span></h2>
             <p class="subtitle">A quick look at what Flowbar can do.</p>
             <div class="grid">
                 <figure>
                     <img src="./assets/note.png" alt="Notes view" />
-                    <figcaption><strong>Notes</strong> — Browse and search all your markdown notes in one place</figcaption>
+                    <figcaption>
+                        <strong>Notes</strong> &mdash; Browse and search all your markdown notes in
+                        one place
+                    </figcaption>
                 </figure>
                 <figure>
                     <img src="./assets/note-todo.png" alt="Notes with todos" />
-                    <figcaption><strong>Notes + Todos</strong> — Inline todos right inside your notes</figcaption>
+                    <figcaption>
+                        <strong>Notes + Todos</strong> &mdash; Inline todos right inside your notes
+                    </figcaption>
                 </figure>
                 <figure>
                     <img src="./assets/note-edit.png" alt="Note editing" />
-                    <figcaption><strong>Editing</strong> — Distraction-free markdown editing with live preview</figcaption>
+                    <figcaption>
+                        <strong>Editing</strong> &mdash; Distraction-free markdown editing with live
+                        preview
+                    </figcaption>
                 </figure>
                 <figure>
                     <img src="./assets/todolist.png" alt="Todo list" />
-                    <figcaption><strong>Todo List</strong> — All your todos from every note, in a single view</figcaption>
+                    <figcaption>
+                        <strong>Todo List</strong> &mdash; All your todos from every note, in a
+                        single view
+                    </figcaption>
                 </figure>
                 <figure>
                     <img src="./assets/timer-home.png" alt="Timer" />
-                    <figcaption><strong>Timer</strong> — Track time on any task with a built-in stopwatch</figcaption>
+                    <figcaption>
+                        <strong>Timer</strong> &mdash; Track time on any task with a built-in
+                        stopwatch
+                    </figcaption>
                 </figure>
                 <figure>
                     <img src="./assets/settings.png" alt="Settings" />
-                    <figcaption><strong>Settings</strong> — Point to any folder, customize shortcuts and appearance</figcaption>
+                    <figcaption>
+                        <strong>Settings</strong> &mdash; Point to any folder, customize shortcuts
+                        and appearance
+                    </figcaption>
                 </figure>
             </div>
         </div>
 
-        <section>
+        <!-- ── Features ── -->
+        <section class="features-section">
             <h2>Why you'll <span>like it</span></h2>
             <p class="subtitle">It stays out of your way until you need it.</p>
             <div class="features">
@@ -588,66 +628,54 @@
                     <div class="icon">&#9998;</div>
                     <h3>Quick capture</h3>
                     <p>
-                        Click the menu bar icon or double-tap Fn. Start typing. Your notes save
-                        automatically — no "save" button, no popups.
+                        Click the menu bar icon or double-tap Fn. Start typing. Notes save
+                        automatically.
                     </p>
                 </div>
                 <div class="feature">
                     <div class="icon">&#9745;</div>
-                    <h3>All your tasks, one place</h3>
+                    <h3>All tasks, one place</h3>
                     <p>
-                        Scatter to-dos across any of your notes — Flowbar finds them all and shows
-                        them in a single list. Nothing falls through the cracks.
+                        Scatter to-dos across any note &mdash; Flowbar collects them all into a
+                        single list.
                     </p>
                 </div>
                 <div class="feature">
                     <div class="icon">&#9202;</div>
-                    <h3>Focus and keep track</h3>
+                    <h3>Focus timer</h3>
                     <p>
-                        When you're juggling ten things, it's easy to lose track of what you were
-                        working on. Pick a task to focus on and stay anchored.
+                        Pick a task to focus on. Start a timer. Stay anchored when juggling ten
+                        things.
                     </p>
                 </div>
                 <div class="feature">
                     <div class="icon">&#9826;</div>
-                    <h3>Everything is Markdown</h3>
+                    <h3>Plain Markdown</h3>
                     <p>
-                        Plain text files you can open anywhere. No lock-in, no proprietary format —
-                        your notes are always yours.
-                    </p>
-                </div>
-                <div class="feature">
-                    <div class="icon">&#9201;</div>
-                    <h3>Built-in stopwatch</h3>
-                    <p>
-                        Start a timer on any task. See how long things actually take — great for
-                        staying honest with your time and building better habits.
+                        No lock-in, no proprietary format. Your notes are plain text files you can
+                        open anywhere.
                     </p>
                 </div>
                 <div class="feature">
                     <div class="icon">&#128274;</div>
-                    <h3>Private and offline</h3>
+                    <h3>Private &amp; offline</h3>
                     <p>
-                        No account, no login, no cloud. Everything stays on your Mac. It just works,
-                        even without the internet.
+                        No account, no cloud. Everything stays on your Mac. Works without the
+                        internet.
+                    </p>
+                </div>
+                <div class="feature">
+                    <div class="icon">&#128218;</div>
+                    <h3>Obsidian-friendly</h3>
+                    <p>
+                        Point Flowbar to a folder in your vault. Quick access to important notes
+                        without opening Obsidian.
                     </p>
                 </div>
             </div>
         </section>
 
-        <p
-            style="
-                color: var(--muted);
-                font-size: 14px;
-                max-width: 480px;
-                margin: 0 auto 20px;
-                padding: 0 24px;
-            "
-        >
-            Tip: If you use Obsidian, create a folder in your vault and point Flowbar to it. Quick
-            access to your most important notes without opening Obsidian.
-        </p>
-
+        <!-- ── Footer ── -->
         <footer>
             <p>Made by <a href="https://tushar.ai">Tushar</a>. Free and open source.</p>
         </footer>
