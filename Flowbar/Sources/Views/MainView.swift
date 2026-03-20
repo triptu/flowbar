@@ -6,6 +6,7 @@ import SwiftUI
 /// by FloatingPanel. This view just manages the sidebar and content panels.
 struct MainView: View {
     @Environment(AppState.self) var appState
+    @Environment(WindowManager.self) var windowManager
 
     var body: some View {
         HStack(spacing: 0) {
@@ -43,6 +44,9 @@ struct MainView: View {
             Rectangle().fill(.ultraThickMaterial).ignoresSafeArea(.all, edges: .top)
         }
         .preferredColorScheme(appState.settings.preferredColorScheme)
+        .onChange(of: appState.settings.theme) {
+            windowManager.syncPanelAppearance()
+        }
         .background(keyboardShortcuts)
     }
 

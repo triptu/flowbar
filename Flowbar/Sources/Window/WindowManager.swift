@@ -26,6 +26,8 @@ final class WindowManager: NSObject {
     @ObservationIgnored private var timerService: TimerService
     @ObservationIgnored private var statusMenu: NSMenu
     @ObservationIgnored private var rightClickMonitor: Any?
+    @ObservationIgnored private var appearanceObserver: NSKeyValueObservation?
+    @ObservationIgnored private var themeObservation: Any?
     @ObservationIgnored private var isHiding = false
 
     init(appState: AppState, timerService: TimerService) {
@@ -47,6 +49,13 @@ final class WindowManager: NSObject {
             button.image = Self.makeMenuBarIcon()
             button.action = #selector(statusItemClicked(_:))
             button.target = self
+        }
+
+        // Sync panel appearance when system theme changes
+        appearanceObserver = NSApp.observe(\.effectiveAppearance) { [weak self] _, _ in
+            MainActor.assumeIsolated {
+                self?.syncPanelAppearance()
+            }
         }
 
         // Handle right-click separately via event monitor
@@ -129,6 +138,24 @@ final class WindowManager: NSObject {
         NSApp.activate(ignoringOtherApps: true)
 
         panel = newPanel
+        syncPanelAppearance()
+    }
+
+    /// Sets the panel's NSAppearance to match the current theme setting.
+    /// When theme is `.system`, sets appearance to `nil` so the panel inherits the
+    /// system appearance (and forces an invalidation so it takes effect immediately).
+    func syncPanelAppearance() {
+        guard let panel else { return }
+        switch appState.settings.theme {
+        case .light:
+            panel.appearance = NSAppearance(named: .aqua)
+        case .dark:
+            panel.appearance = NSAppearance(named: .darkAqua)
+        case .system:
+            panel.appearance = nil
+            // Force the panel to pick up the current system appearance immediately
+            panel.invalidateShadow()
+        }
     }
 
     func hidePanel() {
