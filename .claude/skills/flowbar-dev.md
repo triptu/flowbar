@@ -12,9 +12,25 @@ You're working on Flowbar, a native macOS menu bar app (Swift/SwiftUI/AppKit) fo
 
 - Doesn't know Swift deeply — keep code readable with clear module-level comments
 - Obsessed with minimalism and consistency — every pixel, every color, every state matters
-- Accent color is configurable (Settings → Appearance) with 7 earthy presets, each with light/dark variants. Default is sage green. No system blue.
 - Treats this as a self-improving product — always think about what's reusable and extensible
 - Believes that every change should be simple and if it's not, the code should be refactored until it is. Avoid complexity. Refactor first and then do the simple change.
+
+## Coding Rules
+
+- write extremely simple code, it should be "skimmable" and you should still be able to understand it
+- minimize possible states by reducing number of arguments, remove or narrow any state
+- use discriminated unions to reduce number of states the code can be in
+- exhaustively handle any objects with multiple different types, fail on unknown type 
+- don't write defensive code, assume the values are always what types tell you they are
+- use asserts when loading data, and always be highly opinionated about the parameters you pass around. don't let things be optional if not strictly required
+- remove any changes that are not strictly required
+- bias for fewer lines of code
+- no complex or clever code
+- don't break out into too many function, that's hard to read
+- early returns are great
+- pure functions are great
+- never pass overrides except strictly necessary, keep argument count low
+- don't make arguments optional if they are actually required
 
 ## Build & Test Workflow
 
@@ -71,7 +87,7 @@ UITests/
 xcodebuild -scheme FlowbarUITests -destination 'platform=macOS' test 2>&1 | grep -E '(passed|failed|Executed|SUCCEEDED|FAILED)'
 ```
 
-### Running
+### Running the app
 ```bash
 open ~/Library/Developer/Xcode/DerivedData/Flowbar-*/Build/Products/Debug/Flowbar.app
 ```
@@ -102,6 +118,7 @@ defaults write com.flowbar.app accentColor ocean  # sage, ocean, lavender, amber
 ## Architecture Rules
 
 ### State Management
+- central global AppState
 - **Single `ActivePanel` enum** for navigation — never use separate booleans for "which view is showing"
 - **`@Observable` + `@Environment`** (Swift 6 / macOS 15+ pattern, NOT the older `ObservableObject` + `@EnvironmentObject`)
 - AppState uses `@Observable` with manual `UserDefaults` persistence via `didSet` (not `@AppStorage` which requires `ObservableObject`). The `defaults` instance is injectable — `init(defaults:)` defaults to `.standard` but tests pass a throwaway suite.
