@@ -21,7 +21,7 @@ struct TimerTodosView: View {
         if !searchText.isEmpty {
             items = items.filter { $0.text.localizedCaseInsensitiveContains(searchText) }
         }
-        return items
+        return items.sorted { !$0.isDone && $1.isDone }
     }
 
     var body: some View {
