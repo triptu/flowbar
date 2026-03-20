@@ -64,7 +64,7 @@ final class SettingsState {
         self.folderPath = defaults.string(forKey: "folderPath") ?? ""
         self.theme = AppTheme(rawValue: defaults.string(forKey: "theme") ?? "") ?? .dark
         self.typography = TypographySize(rawValue: defaults.string(forKey: "typography") ?? "") ?? .default
-        self.accentColor = AccentColor(rawValue: defaults.string(forKey: "accentColor") ?? "") ?? .sage
+        self.accentColor = AccentColor(rawValue: defaults.string(forKey: "accentColor") ?? "") ?? .amber
         self.windowFrames = defaults.object(forKey: "windowFrames") as? [String: [Double]] ?? [:]
         self.launchAtLogin = SMAppService.mainApp.status == .enabled
     }
