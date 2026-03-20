@@ -5,7 +5,10 @@ Flowbar is a macOS menu bar app for browsing and editing markdown notes in a dir
 ```
 Flowbar/Sources/
 ├── App/            AppDelegate (creates singletons, Fn-key listener),
-│                   AppState (folder, file list, editor text, navigation),
+│                   AppState (folder, file list, navigation),
+│                   EditorState (editor text, auto-save debounce),
+│                   SidebarState (selection, file list, rename),
+│                   SettingsState (user preferences),
 │                   FlowbarApp (SwiftUI @main entry point)
 │
 ├── Models/         NoteFile, TodoItem — immutable value types
@@ -23,6 +26,7 @@ Flowbar/Sources/
 │                   NoteContentView (preview/edit toggle),
 │                   MarkdownPreviewView (rendered markdown with clickable todos),
 │                   MarkdownEditorView (NSTextView with bullet auto-continuation),
+│                   TitleBarView (active-task label + elapsed time in title bar),
 │                   SettingsView,
 │                   Timer/ (TimerContainerView, TimerHomeView, TimerTodosView),
 │                   Components/ (TodoRow, SidebarFooter, SidebarToggleButton)
@@ -32,9 +36,9 @@ Flowbar/Sources/
 
 ## How things connect
 
-**AppDelegate** creates three `@Observable` singletons on launch — `AppState`, `TimerService`, `WindowManager` — and injects them via `.environment()` into the SwiftUI view tree. `DatabaseService` is a fourth singleton (static `shared`) used by TimerService for persistence.
+**AppDelegate** creates three `@Observable` singletons on launch — `AppState`, `TimerService`, `WindowManager`. `WindowManager.showPanel()` injects them into the SwiftUI view tree via `.environment()`. AppState owns three sub-states: `EditorState`, `SidebarState`, `SettingsState`. `DatabaseService` is a fourth singleton (static `shared`) used by TimerService for persistence.
 
-**Notes data flow:** AppState watches the folder → builds `[NoteFile]` → sidebar displays them → user selects one → AppState loads content into `editorContent` → MarkdownPreviewView renders it with clickable checkboxes (default) or MarkdownEditorView for raw editing (⌘E toggle) → edits auto-save with 500ms debounce → FileWatcher detects external changes and reloads.
+**Notes data flow:** AppState loads the folder and builds `[NoteFile]` → FileWatcher monitors the directory for external changes → sidebar displays files → user selects one → EditorState loads content → MarkdownPreviewView renders it with clickable checkboxes (default) or MarkdownEditorView for raw editing (⌘E toggle) → edits auto-save with 500ms debounce → FileWatcher detects external changes and reloads.
 
 **Timer data flow:** User picks a todo → TimerService.start() creates a DB session → timer ticks update `elapsed` → user hits Complete → view calls MarkdownParser to check it off in the .md file.
 
