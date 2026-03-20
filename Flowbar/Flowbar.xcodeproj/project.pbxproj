@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		02809DCA65555BE65F063A9F /* NoteContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BE9090CD422B39C22928F8C /* NoteContentView.swift */; };
 		0355283C9CFC77C39858F458 /* TimerServiceIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0A0AFB96F9D551689167D3 /* TimerServiceIntentTests.swift */; };
+		09487C36AEA44DEB3EEF97D0 /* MarkdownEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E24C83A4A1DC47A34546EA3 /* MarkdownEditorView.swift */; };
 		13B7ED8967A1A4B824777752 /* TodoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E055DC9A0DE8A87522720A1 /* TodoItem.swift */; };
 		146F4D72B3489682B628BED5 /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EACC84A08EAE2C331909302 /* ModelTests.swift */; };
 		1D2BB381AFCD98E4DF91EC57 /* TimerServiceLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34CB4C7549D4E83A19F5FF43 /* TimerServiceLifecycleTests.swift */; };
@@ -16,6 +17,7 @@
 		33F5E63DCB5F9DD94C47FD32 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4709745944EB39D269992BF /* Typography.swift */; };
 		35D71C71BBC19C145CA3A4B1 /* MarkdownParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A002EBBE343A998F6AD2374 /* MarkdownParserTests.swift */; };
 		3984983E23990B8B93A672AC /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FE4FC5C82B7F98DA55EA658 /* WindowManager.swift */; };
+		3B64C287DD55F36CB6A1C692 /* MarkdownBlockParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FFA9B476EBA20F346ECA6F7 /* MarkdownBlockParserTests.swift */; };
 		42A5459E77ED6745E1DBCD43 /* NoteFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 635F72DDE09908762049B42B /* NoteFile.swift */; };
 		42DD96B155C593078565CF7D /* FileOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17BB2C6C1AB7D078E4FD1381 /* FileOperationsTests.swift */; };
 		4F139AF375C4FA41F292C0E7 /* MarkdownParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1B419B41DBE32FBEC53E7E /* MarkdownParser.swift */; };
@@ -31,6 +33,7 @@
 		A0595C51DB1C1D18D3C64375 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2938A16169339850B84E63 /* AppState.swift */; };
 		A1C37D455CD1DEEE92C0F49F /* FloatingPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19927FCA0D6E052D93303A86 /* FloatingPanel.swift */; };
 		A34CDF3EB4CF83E179BEF2BA /* TimerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39083BC43A019B06241FB227 /* TimerService.swift */; };
+		AB59DF582AD4C507CCF793E1 /* MarkdownPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CD749B6DD3D3CE8D8305A1 /* MarkdownPreviewView.swift */; };
 		B09973A5834843B57F506206 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 679770A71B494E81BD99BB16 /* SettingsView.swift */; };
 		B212B9071DB0D2B27E7D5334 /* TitleBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0BF69A8C9E2C43EC6598948 /* TitleBarView.swift */; };
 		BC6659874A56FF8D6E7F4268 /* SidebarToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F835D11B53685F85D8EF57A /* SidebarToggleButton.swift */; };
@@ -43,9 +46,6 @@
 		E037448B11CE5D13C85FF32F /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F0362096FD8D2B22AA6247 /* FileWatcher.swift */; };
 		F6A2FCC540B165487531BA6C /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA28AD0B52FFBD4002D7108F /* MainView.swift */; };
 		F87CF5317C3FC2FF9D17983D /* EditorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D9EFAC3B9D3F56345305475 /* EditorState.swift */; };
-		A1B2C3D4E5F60001ABCDEF01 /* MarkdownPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60002ABCDEF01 /* MarkdownPreviewView.swift */; };
-		A1B2C3D4E5F60003ABCDEF01 /* MarkdownEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60004ABCDEF01 /* MarkdownEditorView.swift */; };
-		A1B2C3D4E5F60005ABCDEF01 /* MarkdownBlockParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60006ABCDEF01 /* MarkdownBlockParserTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,6 +67,7 @@
 
 /* Begin PBXFileReference section */
 		06DABC3A9E8EB88A3D9F59F2 /* TimerHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerHomeView.swift; sourceTree = "<group>"; };
+		0E24C83A4A1DC47A34546EA3 /* MarkdownEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownEditorView.swift; sourceTree = "<group>"; };
 		0EACC84A08EAE2C331909302 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
 		0FE4FC5C82B7F98DA55EA658 /* WindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManager.swift; sourceTree = "<group>"; };
 		169227FE96874503D7ED8D2D /* FlowbarTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlowbarTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -85,6 +86,7 @@
 		4DAC8FE70A4CC25EFC1101BE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4E055DC9A0DE8A87522720A1 /* TodoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItem.swift; sourceTree = "<group>"; };
 		542C5A78074B276391DA809D /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		54CD749B6DD3D3CE8D8305A1 /* MarkdownPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPreviewView.swift; sourceTree = "<group>"; };
 		635F72DDE09908762049B42B /* NoteFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteFile.swift; sourceTree = "<group>"; };
 		679770A71B494E81BD99BB16 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6D2938A16169339850B84E63 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
@@ -92,6 +94,7 @@
 		7A266BA9229D8B4FF01FD473 /* FlowbarUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlowbarUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7D9EFAC3B9D3F56345305475 /* EditorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorState.swift; sourceTree = "<group>"; };
 		8510A28B4BDA11F845C2A2F0 /* SidebarFooter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarFooter.swift; sourceTree = "<group>"; };
+		8FFA9B476EBA20F346ECA6F7 /* MarkdownBlockParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownBlockParserTests.swift; sourceTree = "<group>"; };
 		90E92AC056D0D1D801EA2F5A /* AppStateNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateNavigationTests.swift; sourceTree = "<group>"; };
 		9429D1FCA615F8FF6BA06083 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		968FA0A43E76B9C67650651E /* TimerServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerServiceTests.swift; sourceTree = "<group>"; };
@@ -104,9 +107,6 @@
 		CB2D31A2E469ADB3AE12A356 /* FlowbarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowbarApp.swift; sourceTree = "<group>"; };
 		D6ED3E33C94F635C05FDAE36 /* SettingsState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsState.swift; sourceTree = "<group>"; };
 		ED1B419B41DBE32FBEC53E7E /* MarkdownParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownParser.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60002ABCDEF01 /* MarkdownPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPreviewView.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60004ABCDEF01 /* MarkdownEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownEditorView.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60006ABCDEF01 /* MarkdownBlockParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownBlockParserTests.swift; sourceTree = "<group>"; };
 		F6B0E80A3C0E7534674FD493 /* Flowbar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flowbar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -161,8 +161,8 @@
 			isa = PBXGroup;
 			children = (
 				AA28AD0B52FFBD4002D7108F /* MainView.swift */,
-				A1B2C3D4E5F60004ABCDEF01 /* MarkdownEditorView.swift */,
-				A1B2C3D4E5F60002ABCDEF01 /* MarkdownPreviewView.swift */,
+				0E24C83A4A1DC47A34546EA3 /* MarkdownEditorView.swift */,
+				54CD749B6DD3D3CE8D8305A1 /* MarkdownPreviewView.swift */,
 				3BE9090CD422B39C22928F8C /* NoteContentView.swift */,
 				679770A71B494E81BD99BB16 /* SettingsView.swift */,
 				9429D1FCA615F8FF6BA06083 /* SidebarView.swift */,
@@ -236,7 +236,7 @@
 		DC572085BD760192EA0B1954 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				A1B2C3D4E5F60006ABCDEF01 /* MarkdownBlockParserTests.swift */,
+				8FFA9B476EBA20F346ECA6F7 /* MarkdownBlockParserTests.swift */,
 				4A002EBBE343A998F6AD2374 /* MarkdownParserTests.swift */,
 				3C0A0AFB96F9D551689167D3 /* TimerServiceIntentTests.swift */,
 				34CB4C7549D4E83A19F5FF43 /* TimerServiceLifecycleTests.swift */,
@@ -381,7 +381,7 @@
 				C746A5D814A657E0B9D744A4 /* AppStateNavigationTests.swift in Sources */,
 				1F5459341A5FC4B65113F386 /* AppStateTests.swift in Sources */,
 				42DD96B155C593078565CF7D /* FileOperationsTests.swift in Sources */,
-				A1B2C3D4E5F60005ABCDEF01 /* MarkdownBlockParserTests.swift in Sources */,
+				3B64C287DD55F36CB6A1C692 /* MarkdownBlockParserTests.swift in Sources */,
 				35D71C71BBC19C145CA3A4B1 /* MarkdownParserTests.swift in Sources */,
 				146F4D72B3489682B628BED5 /* ModelTests.swift in Sources */,
 				0355283C9CFC77C39858F458 /* TimerServiceIntentTests.swift in Sources */,
@@ -403,9 +403,9 @@
 				A1C37D455CD1DEEE92C0F49F /* FloatingPanel.swift in Sources */,
 				BE8CACC0DB336F9249758FD2 /* FlowbarApp.swift in Sources */,
 				F6A2FCC540B165487531BA6C /* MainView.swift in Sources */,
+				09487C36AEA44DEB3EEF97D0 /* MarkdownEditorView.swift in Sources */,
 				4F139AF375C4FA41F292C0E7 /* MarkdownParser.swift in Sources */,
-				A1B2C3D4E5F60003ABCDEF01 /* MarkdownEditorView.swift in Sources */,
-				A1B2C3D4E5F60001ABCDEF01 /* MarkdownPreviewView.swift in Sources */,
+				AB59DF582AD4C507CCF793E1 /* MarkdownPreviewView.swift in Sources */,
 				02809DCA65555BE65F063A9F /* NoteContentView.swift in Sources */,
 				42A5459E77ED6745E1DBCD43 /* NoteFile.swift in Sources */,
 				C895F36D66E375625C22A858 /* SettingsState.swift in Sources */,
