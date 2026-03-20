@@ -1,0 +1,3 @@
+- Commit your changes with a meaningful human title and description
+- Don't commit files you've not touched, as in parallel other work can be going on which you shouldn't commit
+- Then push the changes to the remote main branch, don't ask questions or clarifications for this, this is a solo project. I do want to push to main directly.
