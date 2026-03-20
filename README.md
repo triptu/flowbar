@@ -40,7 +40,7 @@ Click the Flowbar icon in your menu bar or double press `Fn` key and a floating 
 
 Checkout [learn-swift](https://flowbar.tushar.ai/learn-swift) for a guide to the Swift concepts and patterns used in Flowbar.
 
-You need Xcode installed (tested on Xcode 16+, macOS 14+).
+You need Xcode installed (tested on Xcode 16+, macOS 15+).
 
 ```bash
 # Generate the Xcode project (only needed once, or after changing project.yml)

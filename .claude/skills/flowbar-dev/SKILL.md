@@ -39,7 +39,7 @@ Use /run-tests skill for tests. You can run unit tests, ui tests or both.
 ### Run
 
 
-Use /local-rebuild skill for building andn running locally.
+Use /local-rebuild skill for building and running locally.
 
 ### Visual verification
 Use the `/screenshot` skill to capture and inspect the running app.
@@ -83,13 +83,13 @@ Must be added to both filesystem AND pbxproj (PBXFileReference, PBXGroup childre
 
 ### Views
 - Read state from `@Environment(AppState.self)`
-- `.regularMaterial` for backgrounds (not `.ultraThinMaterial`)
+- `.ultraThickMaterial` for backgrounds (not `.regularMaterial` or `.ultraThinMaterial`)
 - Preview is default, edit is opt-in — `EditorState.isEditing` toggles to MarkdownEditorView (⌘E), resets on file switch
 - `MarkdownEditorView` is NSViewRepresentable wrapping NSTextView for bullet/todo auto-continuation on Enter
 
 ## Design Preferences (non-negotiable)
 
-1. **One accent, user's choice.** `appState.accent` for SwiftUI, `appState.accentColor.nsColor` for AppKit. Never hardcode colors — it's reactive via `@Observable`.
+1. **One accent, user's choice.** `appState.settings.accentColor` for SwiftUI, `appState.settings.accentColor.nsColor` for AppKit. Never hardcode colors — it's reactive via `@Observable`.
 2. **No system blue.** Custom controls everywhere. Replace any system control that sneaks in blue.
 3. **Earthy, calm, minimal.** Glassmorphic but not washed out.
 4. **Light AND dark must look good.** `preferredColorScheme` from settings. Test both.
