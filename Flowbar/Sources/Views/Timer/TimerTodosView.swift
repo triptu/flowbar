@@ -6,6 +6,7 @@ struct TimerTodosView: View {
     @State private var searchText = ""
     @AppStorage("todoFilter.showDone") private var showDone = false
     @AppStorage("todoFilter.sourceFile") private var sourceFilter: String = ""
+    @AppStorage("todoFilter.groupByFile") private var groupByFile = false
     @State private var showSourcePicker = false
     @State private var todos: [TodoItem] = []
     @State private var totalTimes: [String: TimeInterval] = [:]
@@ -22,6 +23,13 @@ struct TimerTodosView: View {
             items = items.filter { $0.text.localizedCaseInsensitiveContains(searchText) }
         }
         return items.sorted { !$0.isDone && $1.isDone }
+    }
+
+    private var groupedTodos: [(file: String, todos: [TodoItem])] {
+        let grouped = Dictionary(grouping: filteredTodos) { $0.sourceFile.id }
+        return grouped.keys.sorted().map { key in
+            (file: key, todos: grouped[key]!)
+        }
     }
 
     var body: some View {
@@ -64,6 +72,13 @@ struct TimerTodosView: View {
                 .help("Filter by file")
                 .accessibilityIdentifier("todos-filter-file")
 
+                Button(action: { groupByFile.toggle() }) {
+                    toolbarIcon("list.bullet.indent", isActive: groupByFile)
+                }
+                .buttonStyle(.plain)
+                .help(groupByFile ? "Flat list" : "Group by file")
+                .accessibilityIdentifier("todos-group-by-file")
+
                 Button(action: { showDone.toggle() }) {
                     toolbarIcon("checkmark", isActive: showDone, weight: .semibold)
                 }
@@ -77,18 +92,32 @@ struct TimerTodosView: View {
 
             ScrollView {
                 LazyVStack(spacing: 1) {
-                    ForEach(filteredTodos) { todo in
-                        let key = "\(todo.text)|\(todo.sourceFile.id)"
-                        TodoRow(
-                            todo: todo,
-                            totalSeconds: totalTimes[key] ?? 0,
-                            timerService: timerService
-                        ) {
-                            toggleTodo(todo)
-                        } onStart: {
-                            startTimer(for: todo)
-                        } onNavigate: {
-                            navigateToFile(todo)
+                    if groupByFile {
+                        ForEach(groupedTodos, id: \.file) { group in
+                            Section {
+                                ForEach(group.todos) { todo in
+                                    todoRow(for: todo)
+                                }
+                            } header: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "doc.text")
+                                        .font(.system(size: 10))
+                                    Text(group.file)
+                                        .font(.system(size: 11, weight: .medium))
+                                    Spacer()
+                                    Text("\(group.todos.count)")
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(.tertiary)
+                                }
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 4)
+                                .padding(.top, 10)
+                                .padding(.bottom, 2)
+                            }
+                        }
+                    } else {
+                        ForEach(filteredTodos) { todo in
+                            todoRow(for: todo)
                         }
                     }
                 }
@@ -99,6 +128,21 @@ struct TimerTodosView: View {
         .onAppear { loadTodos() }
         .onChange(of: appState.sidebar.noteFiles) { _, _ in loadTodos() }
         .onChange(of: timerService.isRunning) { _, _ in refreshTimes() }
+    }
+
+    private func todoRow(for todo: TodoItem) -> some View {
+        let key = "\(todo.text)|\(todo.sourceFile.id)"
+        return TodoRow(
+            todo: todo,
+            totalSeconds: totalTimes[key] ?? 0,
+            timerService: timerService
+        ) {
+            toggleTodo(todo)
+        } onStart: {
+            startTimer(for: todo)
+        } onNavigate: {
+            navigateToFile(todo)
+        }
     }
 
     private func loadTodos() {
