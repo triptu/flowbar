@@ -19,6 +19,7 @@ The user doesn't know Swift deeply — keep code readable with clear module-leve
 - No defensive code — trust the types
 - Early returns, pure functions, don't over-extract into tiny functions
 - Remove anything not strictly required by the change
+- Every change should be simple, if it's not propose and do a proper refactor first and then do the simple change. Don't create and patch on house of cards
 
 ## Build & Test
 
