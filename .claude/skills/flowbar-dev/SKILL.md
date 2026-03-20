@@ -56,17 +56,7 @@ xcodebuild test -scheme Flowbar -destination 'platform=macOS' 2>&1 | grep -E '(e
 - Unit and integration tests - Swift Testing (`import Testing`, `@Test`, `@Suite`, `#expect`) for, as it's more lightweight and flexible than XCTest and is a modern replacement for it.
 - UI Tests - XCTest with XCUIAutomation, as Swift Testing doesn't support UI testing and XCTest is the standard for that.
 
-**Test directory mirrors source:**
-```
-Tests/
-  App/        AppStateNavigationTests, AppStateTests, FileOperationsTests
-  Models/     ModelTests
-  Services/   MarkdownParserTests, TimerServiceTests, TimerServiceLifecycleTests
-UITests/
-  SidebarUITests  (selection, rename flows, context menu, edge cases)
-```
-
-**Adding new test files:** Must be added to both the filesystem AND the pbxproj (PBXFileReference, PBXGroup children, PBXBuildFile, and the FlowbarTests Sources build phase).
+**Adding new test files:** Must be added to both the filesystem AND the pbxproj (PBXFileReference, PBXGroup children, PBXBuildFile, and the FlowbarTests Sources build phase). Test directory mirrors source structure (`Tests/App/`, `Tests/Models/`, `Tests/Services/`, `UITests/`).
 
 **Unit test style rules:**
 - No mocks, stubs, or fakes. Tests hit real code e2e.
@@ -117,13 +107,11 @@ Use the `/screenshot` skill for capturing and inspecting the running app visuall
 
 ### Views
 - Every view reads state from `@Environment(AppState.self)` etc.
-- Accent color via `appState.accent` (computed from `appState.accentColor.color`) — reactive, updates all views immediately when changed. 7 presets (sage, ocean, lavender, amber, clay, slate, rose) with adaptive light/dark variants in `AccentColor` enum. Always use `appState.accent` in views, never a static.
-- Custom `FlowbarSegmentedControl` instead of system Picker (which uses blue)
 - `.regularMaterial` for backgrounds (not `.ultraThinMaterial` which is too translucent)
 
 ## Design Preferences (non-negotiable)
 
-1. **One accent, user's choice.** `appState.accent` for all selection, active, checkmark, toggle states. The user picks from 7 earthy presets in Settings → Appearance. Each preset has light/dark adaptive variants. Default is sage. Never hardcode a specific color for accent purposes — always use `appState.accent` (reactive) or `appState.accentColor.nsColor` for AppKit contexts.
+1. **One accent, user's choice.** `appState.accent` (computed from `accentColor.color`) for all accent purposes in SwiftUI. `appState.accentColor.nsColor` for AppKit. Never hardcode colors or use statics — it's reactive via `@Observable`.
 2. **No system blue.** Custom controls everywhere. If a system control sneaks in blue, replace it.
 3. **Earthy, calm, minimal.** Glassmorphic but not washed out. `.regularMaterial` not `.ultraThinMaterial`.
 4. **Light AND dark must both look good.** `preferredColorScheme` from settings. Test both.
@@ -134,22 +122,17 @@ Use the `/screenshot` skill for capturing and inspecting the running app visuall
 
 ## Common Pitfalls
 
-1. **`xcodebuild -runFirstLaunch`** may be needed on fresh Xcode installs — run it if you get plugin loading errors.
-2. **SourceKit errors in tool output** are cross-file resolution issues — they resolve on actual build. Don't chase them.
-3. **`Color` vs `ShapeStyle` in ternaries** — `FlowbarColors.accent : .tertiary` won't compile because they're different types. Use `FlowbarColors.accent : Color.secondary.opacity(0.5)` instead.
-4. **`@AppStorage` doesn't work with `@Observable`** — use manual `UserDefaults` with `didSet`.
-5. **Newline splitting** — always use `"\n"`, never `.newlines` (which splits on `\r\n`, `\r`, etc. and causes mismatches on write-back).
-6. **FileWatcher feedback loop** — saving a file triggers the watcher which reloads content. Use an `isWriting` flag to break the cycle.
-7. **N+1 database queries** — use `allTotalTimes()` batch query, not per-item `totalTime()`.
-8. **Double `loadFiles()`** — if an `onChange` handler calls `loadFiles()`, don't also call it explicitly after setting a value.
-9. **Always use modern Swift** — prefer `@Observable` over `ObservableObject`, `@Environment` over `@EnvironmentObject`, `some View` over `AnyView`. Check the Swift and macOS versions in project.yml and use the latest available patterns.
-10. **AppState in tests must use isolated UserDefaults** — use `AppState(defaults: UserDefaults(suiteName: "com.flowbar.tests-\(UUID().uuidString)")!)` so tests don't read or pollute the app's real settings. Never use `AppState()` (bare) in tests.
-11. **Accent color must go through `appState.accent`** — never use a static for accent color. `appState.accent` is a computed property (`accentColor.color`) on `@Observable AppState`, so all views reactively update when the user changes their color. For AppKit contexts (e.g. `NSViewRepresentable`), use `appState.accentColor.nsColor` and pass it as a parameter.
-12. **Swift Testing `#expect(try ...)` needs `throws`** — if a `#expect` contains a `try` expression, the test function must be marked `throws`. Otherwise extract the `try` to a `let` before the `#expect`.
-13. **NSViewRepresentable reuse across state toggles** — if a view goes `visible → hidden → visible`, SwiftUI may reuse the old `NSView` and `Coordinator` with stale state. Use `.id(sessionCounter)` to force fresh creation each time.
-14. **Double-click fires single-tap too** — SwiftUI's `onTapGesture(count: 2)` and `onTapGesture(count: 1)` both fire on a double-click. Guard the single-tap handler to skip when the double-tap action is active.
-15. **Preview is default, edit is opt-in** — NoteContentView shows MarkdownPreviewView by default. `EditorState.isEditing` toggles to MarkdownEditorView (⌘E). Resets to preview on file switch. Checkbox toggles in preview modify `editorContent` directly and trigger save — no file I/O round-trip.
-16. **MarkdownEditorView is NSViewRepresentable** — wraps NSTextView for bullet/todo auto-continuation on Enter. The Coordinator intercepts `insertNewline:` via `doCommandBy:`. When updating text from SwiftUI→NSTextView, guard with `isUpdating` flag to avoid feedback loops (similar to FileWatcher's `isWriting` pattern).
+1. **SourceKit errors in tool output** are cross-file resolution issues — they resolve on actual build. Don't chase them.
+2. **Newline splitting** — always use `"\n"`, never `.newlines` (which splits on `\r\n`, `\r`, etc. and causes mismatches on write-back).
+3. **FileWatcher feedback loop** — saving a file triggers the watcher which reloads content. Use an `isWriting` flag to break the cycle.
+4. **N+1 database queries** — use `allTotalTimes()` batch query, not per-item `totalTime()`.
+5. **Double `loadFiles()`** — if an `onChange` handler calls `loadFiles()`, don't also call it explicitly after setting a value.
+6. **AppState in tests must use isolated UserDefaults** — use `AppState(defaults: UserDefaults(suiteName: "com.flowbar.tests-\(UUID().uuidString)")!)` so tests don't read or pollute the app's real settings. Never use `AppState()` (bare) in tests.
+7. **Swift Testing `#expect(try ...)` needs `throws`** — if a `#expect` contains a `try` expression, the test function must be marked `throws`. Otherwise extract the `try` to a `let` before the `#expect`.
+8. **NSViewRepresentable reuse across state toggles** — if a view goes `visible → hidden → visible`, SwiftUI may reuse the old `NSView` and `Coordinator` with stale state. Use `.id(sessionCounter)` to force fresh creation each time.
+9. **Double-click fires single-tap too** — SwiftUI's `onTapGesture(count: 2)` and `onTapGesture(count: 1)` both fire on a double-click. Guard the single-tap handler to skip when the double-tap action is active.
+10. **Preview is default, edit is opt-in** — NoteContentView shows MarkdownPreviewView by default. `EditorState.isEditing` toggles to MarkdownEditorView (⌘E). Resets to preview on file switch.
+11. **MarkdownEditorView is NSViewRepresentable** — wraps NSTextView for bullet/todo auto-continuation on Enter. Guard SwiftUI→NSTextView updates with `isUpdating` flag to avoid feedback loops.
 
 ## After Making Changes
 
@@ -159,27 +142,7 @@ Use the `/screenshot` skill for capturing and inspecting the running app visuall
 4. **Run /simplify**: Use the simplify skill to review code quality, reuse, and efficiency
 5. **Commit with context**: Describe what changed AND why
 
-## Extending the App
-
-When adding new features:
-1. Read `ARCHITECTURE.md` for the full design spec
-2. Add new views under the appropriate `Views/` subdirectory
-3. If adding new state, prefer extending `AppState` or creating a focused `@Observable` service
-4. If adding persistence, extend `DatabaseService` with new tables/queries
-
-## Meta: Updating This Skill
-
-This skill should evolve as the project evolves. Update it when:
-- A new pitfall is discovered (add to Common Pitfalls)
-- The architecture changes (update Architecture Rules)
-- A new design preference emerges from user feedback (add to Design Preferences)
-- The build/test workflow changes (update Build & Test Workflow)
-- Swift/SwiftUI best practices change (e.g. migration from ObservableObject to @Observable)
-
-To update: edit `.claude/skills/flowbar-dev.md`
-
-When making a significant change to the codebase which warrants updates, always end with:
-"Consider updating /flowbar-dev if this introduces new patterns or pitfalls.", Followed by your suggestions for what to add or change in this guide. Explain why the update is needed and how it helps future development. And propose to do it.
+After significant codebase changes, consider whether `/flowbar-dev` needs updating with new patterns or pitfalls.
 
 ---
 
