@@ -7,6 +7,7 @@ import SwiftUI
 struct MainView: View {
     @Environment(AppState.self) var appState
     @Environment(WindowManager.self) var windowManager
+    @Environment(TimerService.self) var timerService
 
     var body: some View {
         HStack(spacing: 0) {
@@ -76,6 +77,13 @@ struct MainView: View {
             // Open timer
             Button("") { appState.showTimer() }
                 .keyboardShortcut("t", modifiers: [.option, .command])
+
+            // Open todo list
+            Button("") {
+                appState.showTimer()
+                timerService.screen = .todos
+            }
+                .keyboardShortcut("l", modifiers: [.option, .command])
         }
         .hidden()
     }

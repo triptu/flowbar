@@ -39,6 +39,7 @@ struct TimerTodosView: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 5)
                 .background(RoundedRectangle(cornerRadius: 6).fill(Color.primary.opacity(0.06)))
+                .accessibilityIdentifier("todos-search")
 
                 Menu {
                     Button("All Files") { sourceFilter = "" }
@@ -61,12 +62,14 @@ struct TimerTodosView: View {
                 .menuStyle(.borderlessButton)
                 .fixedSize()
                 .help("Filter by file")
+                .accessibilityIdentifier("todos-filter-file")
 
                 Button(action: { showDone.toggle() }) {
                     toolbarIcon("checkmark", isActive: showDone, weight: .semibold)
                 }
                 .buttonStyle(.plain)
                 .help(showDone ? "Hide completed" : "Show completed")
+                .accessibilityIdentifier("todos-toggle-completed")
             }
             .padding(.horizontal, 14)
             .padding(.top, 10)

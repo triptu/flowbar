@@ -39,6 +39,8 @@ struct TodoRow: View {
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("todo-toggle-\(todo.text)")
+            .accessibilityLabel(todo.isDone ? "Mark incomplete" : "Mark complete")
 
             VStack(spacing: 3) {
                 HStack(spacing: 0) {
@@ -58,6 +60,8 @@ struct TodoRow: View {
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("todo-play-\(todo.text)")
+                    .accessibilityLabel(isRunning ? "Pause timer" : "Start timer")
                 }
 
                 HStack(spacing: 0) {
@@ -67,6 +71,7 @@ struct TodoRow: View {
                             .foregroundStyle(.tertiary)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("todo-navigate-\(todo.sourceFile.id)")
 
                     Spacer()
 
@@ -88,5 +93,7 @@ struct TodoRow: View {
             RoundedRectangle(cornerRadius: 6)
                 .fill(isTracked ? appState.settings.accent.opacity(0.08) : Color.clear)
         )
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("todo-row-\(todo.text)")
     }
 }

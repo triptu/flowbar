@@ -11,9 +11,11 @@ struct TimerContainerView: View {
         VStack(spacing: 0) {
             if timerService.screen == .todos {
                 TimerTodosView()
+                    .accessibilityIdentifier("timer-todos-view")
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             } else {
                 TimerHomeView()
+                    .accessibilityIdentifier("timer-home-view")
                     .transition(.opacity)
             }
         }

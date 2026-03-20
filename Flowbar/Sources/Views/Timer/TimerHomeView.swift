@@ -85,6 +85,8 @@ struct TimerHomeView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("timer-pause-resume")
+                .accessibilityLabel(timerService.isRunning ? "Pause" : "Resume")
 
                 Button(action: {
                     timerService.completeAndMarkDone(folderPath: appState.settings.folderPath)
@@ -103,6 +105,8 @@ struct TimerHomeView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("timer-complete")
+                .accessibilityLabel("Complete")
             }
 
             Spacer()
@@ -154,6 +158,8 @@ struct TimerHomeView: View {
                             )
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("timeline-play-\(entry.todoText)")
+                    .accessibilityLabel("Start \(entry.todoText)")
 
                     Text(entry.todoText)
                         .font(.system(size: 13))

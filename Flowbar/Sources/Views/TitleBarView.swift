@@ -31,6 +31,7 @@ struct TitleBarLabel: View {
             .font(.system(size: 13))
             .contentShape(Rectangle())
             .onTapGesture { appState.showTimer() }
+            .accessibilityIdentifier("titlebar-task-label")
             .frame(maxWidth: .infinity)
 
             if isTimerPanel {
@@ -45,6 +46,8 @@ struct TitleBarLabel: View {
                         .frame(width: 20, height: 20)
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("titlebar-toggle-timeline")
+                .accessibilityLabel("Toggle timeline")
                 .padding(.trailing, 16)
             }
         }

@@ -56,6 +56,8 @@ struct NoteContentView: View {
             }
             .buttonStyle(.plain)
             .help(appState.editor.isEditing ? "Preview (\u{2318}E)" : "Edit (\u{2318}E)")
+            .accessibilityIdentifier("note-edit-preview")
+            .accessibilityLabel(appState.editor.isEditing ? "Preview" : "Edit")
 
             Button(action: { appState.openInObsidian() }) {
                 ObsidianIcon()
@@ -63,6 +65,8 @@ struct NoteContentView: View {
             }
             .buttonStyle(.plain)
             .help("Open in Obsidian")
+            .accessibilityIdentifier("note-open-obsidian")
+            .accessibilityLabel("Open in Obsidian")
         }
         .padding(.leading, 20)
         .padding(.trailing, 20)
