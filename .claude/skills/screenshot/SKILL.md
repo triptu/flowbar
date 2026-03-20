@@ -45,42 +45,78 @@ bash .claude/skills/screenshot/scripts/screenshot.sh /tmp/flowbar-light.png --sh
 bash .claude/skills/screenshot/scripts/screenshot.sh /tmp/flowbar-dark.png --dark
 ```
 
-## Interacting with UI before capturing
+## Navigating to specific views
 
-Sometimes you need the app in a specific state (a particular tab, a modal open, text selected) before screenshotting.
+Use keyboard shortcuts to navigate reliably — this is the preferred method over clicking UI elements.
 
-**Click the menu bar icon** (to toggle the panel):
+| Shortcut | Action |
+|----------|--------|
+| `⌘B` | Toggle sidebar |
+| `⌘,` | Open Settings |
+| `⌥⌘T` | Open Timer |
+| `⌥⌘L` | Open Todo List |
+| `⌘E` | Toggle Edit/Preview mode |
+| `⌥⌘←` | Previous file |
+| `⌥⌘→` | Next file |
+| `Space` | Pause/Resume timer (when timer view is active) |
+
 ```bash
-osascript -e 'tell application "System Events" to tell process "Flowbar" to click menu bar item 1 of menu bar 2'
-```
+# Open settings
+osascript -e 'tell application "System Events" to keystroke "," using command down'
 
-**Discover UI elements** in the panel:
-```bash
-osascript -e 'tell application "System Events" to tell process "Flowbar" to tell window 1 to entire contents'
-```
+# Open todo list
+osascript -e 'tell application "System Events" to keystroke "l" using {option down, command down}'
 
-**Click a specific button or element** by name:
-```bash
-osascript -e 'tell application "System Events" to tell process "Flowbar" to tell window 1 to click button "Settings"'
-```
+# Open timer
+osascript -e 'tell application "System Events" to keystroke "t" using {option down, command down}'
 
-**Coordinate-based clicks** with `cliclick` (install via `brew install cliclick`):
-```bash
-# Get window position first
-osascript -e 'tell application "System Events" to tell process "Flowbar" to get position of window 1'
-# Then click at offset from window origin
-cliclick c:500,300
-```
-
-**Type text** into a focused field:
-```bash
-osascript -e 'tell application "System Events" to keystroke "hello world"'
-```
-
-**Keyboard shortcuts** (e.g. ⌘E to toggle editor):
-```bash
+# Toggle edit/preview
 osascript -e 'tell application "System Events" to keystroke "e" using command down'
+
+# Navigate to next file
+osascript -e 'tell application "System Events" to key code 124 using {option down, command down}'
 ```
+
+## Interacting with UI elements
+
+All interactive elements have accessibility identifiers for reliable targeting via AppleScript.
+
+### Key accessibility identifiers
+
+**Content area:**
+- `content-area` — main content panel
+- `note-edit-preview` — edit/preview toggle button
+- `note-open-obsidian` — open in Obsidian button
+
+**Timer:**
+- `timer-home-view` / `timer-todos-view` — timer sub-views
+- `timer-pause-resume` — pause/resume button
+- `timer-complete` — complete button
+- `timeline-play-{todoText}` — play button per timeline entry
+
+**Todo list:**
+- `todo-row-{text}` — individual todo row
+- `todo-toggle-{text}` — checkbox toggle
+- `todo-play-{text}` — play/pause timer for a todo
+- `todo-navigate-{fileId}` — source file link
+- `todos-search` — search field
+- `todos-filter-file` — file filter menu
+- `todos-toggle-completed` — show/hide completed toggle
+
+**Title bar:**
+- `titlebar-task-label` — active task label
+- `titlebar-toggle-timeline` — timeline toggle button
+
+### Targeting elements by accessibility identifier
+
+```bash
+# Click the edit/preview button
+osascript -e 'tell application "System Events" to tell process "Flowbar" to tell window 1 to click button "note-edit-preview"'
+
+# Click the timer pause/resume button
+osascript -e 'tell application "System Events" to tell process "Flowbar" to tell window 1 to click button "timer-pause-resume"'
+```
+
 
 ## Setting app state via defaults
 
@@ -99,3 +135,6 @@ Then relaunch the app to pick up the changes.
 - The panel stays visible across screenshots, so subsequent captures don't need `--show-panel`
 - Sleep briefly (`sleep 0.3`) after AppleScript interactions before capturing, to let animations settle
 - If Flowbar isn't running, build it first with `/local-rebuild`
+- **Prefer keyboard shortcuts** over clicking — they're faster and never break due to layout changes
+- **Use accessibility identifiers** when you need to click a specific button — never rely on positional paths like `group 4 of UI element 1`
+- **If you can't reach an element by shortcut or accessibility ID, fix the app** — add a `.accessibilityIdentifier()` or a keyboard shortcut to the SwiftUI view instead of hacking around with positional AppleScript paths or coordinate clicks. Fragile workarounds will just break again next time the layout changes. The fix belongs in the source code, not in the automation script.

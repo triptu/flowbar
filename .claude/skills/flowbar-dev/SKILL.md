@@ -81,6 +81,11 @@ Must be added to both filesystem AND pbxproj (PBXFileReference, PBXGroup childre
 - `DatabaseService` is a singleton, accessed only by `TimerService`
 - `MarkdownParser` is a static enum (no instance state)
 
+### Accessibility & Automation
+- Every interactive element (buttons, toggles, rows) must have `.accessibilityIdentifier()` — this is how `/screenshot` targets elements. If you add a new button or view, add an identifier.
+- Every new view/panel should have a keyboard shortcut in `MainView.keyboardShortcuts` if it's a top-level destination.
+- After adding/changing identifiers or shortcuts, update `.claude/skills/screenshot/SKILL.md` to keep the reference table in sync.
+
 ### Views
 - Read state from `@Environment(AppState.self)`
 - `.ultraThickMaterial` for backgrounds (not `.regularMaterial` or `.ultraThinMaterial`)
