@@ -42,7 +42,11 @@ struct MainView: View {
             }
         }
         .background {
-            Rectangle().fill(.ultraThickMaterial).ignoresSafeArea(.all, edges: .top)
+            ZStack {
+                Rectangle().fill(.ultraThickMaterial)
+                Rectangle().fill(FlowbarColors.warmTint)
+            }
+            .ignoresSafeArea(.all, edges: .top)
         }
         .preferredColorScheme(appState.settings.preferredColorScheme)
         .onChange(of: appState.settings.theme) {

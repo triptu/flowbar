@@ -53,6 +53,21 @@ enum FlowbarColors {
     static var sidebarBg: Color {
         Color.primary.opacity(0.04)
     }
+
+    /// Very subtle warm tint overlaid on the material background in light mode.
+    /// Gives the light theme texture and warmth instead of flat white.
+    /// Invisible in dark mode so the glass-like depth is preserved.
+    static var warmTint: Color {
+        Color(nsColor: NSColor(name: nil) { appearance in
+            let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            if isDark {
+                return .clear
+            } else {
+                // Warm cream tint (~#FDFBF8) — just enough to break the sterile white
+                return NSColor(displayP3Red: 0.94, green: 0.88, blue: 0.78, alpha: 0.07)
+            }
+        })
+    }
 }
 
 // MARK: - Hex color initializer (Display P3, kept for one-off colors outside the palette)
