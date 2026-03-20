@@ -1,3 +1,4 @@
+import ServiceManagement
 import SwiftUI
 import Observation
 
@@ -26,6 +27,22 @@ final class SettingsState {
     /// Reactive accent color — views should use this instead of reading from a static.
     var accent: Color { accentColor.color }
 
+    var launchAtLogin: Bool {
+        didSet {
+            guard launchAtLogin != oldValue else { return }
+            do {
+                if launchAtLogin {
+                    try SMAppService.mainApp.register()
+                } else {
+                    try SMAppService.mainApp.unregister()
+                }
+            } catch {
+                // Revert on failure
+                launchAtLogin = oldValue
+            }
+        }
+    }
+
     /// Per-Space window frames: [SpaceID: [x, y, width, height]]
     @ObservationIgnored var windowFrames: [String: [Double]] {
         didSet { defaults.set(windowFrames, forKey: "windowFrames") }
@@ -49,6 +66,7 @@ final class SettingsState {
         self.typography = TypographySize(rawValue: defaults.string(forKey: "typography") ?? "") ?? .default
         self.accentColor = AccentColor(rawValue: defaults.string(forKey: "accentColor") ?? "") ?? .sage
         self.windowFrames = defaults.object(forKey: "windowFrames") as? [String: [Double]] ?? [:]
+        self.launchAtLogin = SMAppService.mainApp.status == .enabled
     }
 
     // MARK: - Per-Space window frame

@@ -36,6 +36,13 @@ struct SettingsView: View {
                     accentColorRow
                 }
 
+                settingsSection("General") {
+                    Toggle("Launch at Login", isOn: $settings.launchAtLogin)
+                        .font(.system(size: 13))
+                        .toggleStyle(.switch)
+                        .tint(appState.settings.accent)
+                }
+
                 settingsSection("Keyboard Shortcuts") {
                     VStack(alignment: .leading, spacing: 6) {
                         shortcutRow("Toggle Flowbar", "Double-tap Fn")

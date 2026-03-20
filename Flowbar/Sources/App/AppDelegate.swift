@@ -1,4 +1,5 @@
 import AppKit
+import ServiceManagement
 import SwiftUI
 
 /// App entry point that wires together the core services and the menu bar item.
@@ -30,6 +31,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         timerService = TimerService()
         windowManager = WindowManager(appState: appState, timerService: timerService)
+        enableLaunchAtLoginOnFirstRun()
         setupDoubleFnShortcut()
 
         if uitestFolder != nil {
@@ -51,6 +53,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             } else {
                 lastFnPress = now
             }
+        }
+    }
+
+    private func enableLaunchAtLoginOnFirstRun() {
+        let key = "hasRegisteredLaunchAtLogin"
+        guard !appState.settings.defaults.bool(forKey: key) else { return }
+        appState.settings.defaults.set(true, forKey: key)
+        if SMAppService.mainApp.status != .enabled {
+            appState.settings.launchAtLogin = true
         }
     }
 
