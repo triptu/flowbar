@@ -92,28 +92,9 @@ xcodebuild -scheme FlowbarUITests -destination 'platform=macOS' test 2>&1 | grep
 open ~/Library/Developer/Xcode/DerivedData/Flowbar-*/Build/Products/Debug/Flowbar.app
 ```
 
-### Taking Screenshots
+### Taking Screenshots & Visual Verification
 
-The overlay panel has `hidesOnDeactivate = false`, so it stays visible when `screencapture` runs:
-
-```bash
-# Click menu bar icon to show the overlay, then capture
-osascript -e 'tell application "System Events" to tell process "Flowbar" to click menu bar item 1 of menu bar 2' && sleep 0.5 && screencapture -x /tmp/screenshot.png
-```
-
-You can also use AppleScript to find UI elements for clicking:
-```bash
-osascript -e 'tell application "System Events" to tell process "Flowbar" to tell window 1 to tell group 1 to set btns to every button ...'
-```
-
-Or use `cliclick` for coordinate-based clicks (install via `brew install cliclick`). Get window position first via AppleScript.
-
-### Setting defaults without UI
-```bash
-defaults write com.flowbar.app folderPath "/path/to/folder"
-defaults write com.flowbar.app theme dark  # or light, system
-defaults write com.flowbar.app accentColor ocean  # sage, ocean, lavender, amber, clay, slate, rose
-```
+Use the `/screenshot` skill for capturing and inspecting the running app visually.
 
 ## Architecture Rules
 
