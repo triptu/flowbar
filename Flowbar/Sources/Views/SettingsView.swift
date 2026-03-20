@@ -37,10 +37,17 @@ struct SettingsView: View {
                 }
 
                 settingsSection("General") {
-                    Toggle("Launch at Login", isOn: $settings.launchAtLogin)
-                        .font(.system(size: 13))
-                        .toggleStyle(.switch)
-                        .tint(appState.settings.accent)
+                    HStack {
+                        Text("Launch at Login")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Toggle("", isOn: $settings.launchAtLogin)
+                            .labelsHidden()
+                            .toggleStyle(.switch)
+                            .controlSize(.small)
+                            .tint(appState.settings.accent)
+                    }
                 }
 
                 settingsSection("Keyboard Shortcuts") {
