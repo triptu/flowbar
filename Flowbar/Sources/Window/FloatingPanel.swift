@@ -14,6 +14,8 @@ class FloatingPanel: NSPanel {
     static let trafficLightWidth: CGFloat = 80
     /// Height of the native title bar region.
     static let titleBarHeight: CGFloat = 28
+    /// Top padding from title bar to content title, shared across all content views.
+    static let contentTopPadding: CGFloat = 16
 
     /// Called with (frame, spaceID) when the panel closes, so the caller can persist the window frame.
     private let onClose: (NSRect, Int) -> Void

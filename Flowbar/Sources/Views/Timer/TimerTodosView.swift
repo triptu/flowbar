@@ -72,7 +72,7 @@ struct TimerTodosView: View {
                 .accessibilityIdentifier("todos-toggle-completed")
             }
             .padding(.horizontal, 14)
-            .padding(.top, 10)
+            .padding(.top, FloatingPanel.contentTopPadding)
             .padding(.bottom, 6)
 
             ScrollView {

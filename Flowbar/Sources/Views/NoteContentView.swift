@@ -70,7 +70,7 @@ struct NoteContentView: View {
         }
         .padding(.leading, 20)
         .padding(.trailing, 20)
-        .padding(.top, 10)
+        .padding(.top, FloatingPanel.contentTopPadding)
         .padding(.bottom, 10)
     }
 }

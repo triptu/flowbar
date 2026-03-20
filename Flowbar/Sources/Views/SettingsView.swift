@@ -64,7 +64,9 @@ struct SettingsView: View {
                     }
                 }
             }
-            .padding(24)
+            .padding(.top, FloatingPanel.contentTopPadding)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
         }
     }
 
