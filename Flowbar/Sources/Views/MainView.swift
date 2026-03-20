@@ -79,7 +79,10 @@ struct MainView: View {
                 .keyboardShortcut("e", modifiers: .command)
 
             // Open timer
-            Button("") { appState.showTimer() }
+            Button("") {
+                appState.showTimer()
+                timerService.screen = .home
+            }
                 .keyboardShortcut("t", modifiers: [.option, .command])
 
             // Open todo list

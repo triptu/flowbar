@@ -12,6 +12,7 @@ Audit the project's key documentation files against the actual codebase to find 
 1. `.claude/skills/flowbar-dev/SKILL.md` — development guide, coding rules, architecture, pitfalls
 2. `ARCHITECTURE.md` — codemap, data flows, invariants
 3. `README.md` — user-facing description, features, build instructions
+4. `.claude/skills/screenshot/SKILL.md` — screenshot skill, keyboard shortcuts, accessibility identifiers
 
 If the user specifies particular files, audit only those. Otherwise audit all three.
 
@@ -29,7 +30,8 @@ Use an Explore agent to verify claims against reality. Check:
 - **Services and their responsibilities** — is the documented behavior accurate?
 - **Build commands** — do schemes, targets, and flags match project.yml/xcodeproj?
 - **Test structure** — do documented test files/directories exist?
-- **UI element identifiers** — do accessibility IDs in docs match the views?
+- **UI element identifiers** — do accessibility IDs in docs (especially `.claude/skills/screenshot/SKILL.md`) match the actual `.accessibilityIdentifier()` calls in the SwiftUI views? Check for IDs that were added/removed/renamed in code but not updated in docs.
+- **Keyboard shortcuts** — do documented shortcuts match the actual `keyboardShortcut()` modifiers in `MainView.swift`?
 
 ### 3. Cross-check between files
 The three files describe the same project from different angles. Look for:
