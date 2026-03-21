@@ -1,5 +1,5 @@
 ---
-description: Build, test, and extend Flowbar — a macOS menu bar app for notes, todos, and stopwatch. Use this skill for any Flowbar development task including building features, fixing bugs, writing tests, or understanding the codebase. Triggers on mentions of Flowbar, the menu bar app, or Swift/SwiftUI work in this project.
+description: Build, test, and extend Flowbar — a macOS menu bar app for notes, todos, and stopwatch. Use this skill for any Flowbar development task including building features, fixing bugs, writing tests, or understanding the codebase. Triggers whenever the dev wants to build a new feature or fix a bug.
 argument-hint: [what to build or fix]
 model: opus
 ---
