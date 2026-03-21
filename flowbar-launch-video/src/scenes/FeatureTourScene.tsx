@@ -24,10 +24,13 @@ import { FONT_SERIF } from "../fonts";
  */
 
 const LABELS = [
-  { text: "Write in markdown. Preview instantly.", startSec: 0 },
-  { text: "All your todos, pulled from every note.", startSec: 3.5 },
-  { text: "Track time against any task.", startSec: 7 },
-  { text: "Find anything with \u2318K.", startSec: 10.5 },
+  { text: "Write in markdown. Your files stay yours.", startSec: 0 },
+  {
+    text: "Todos from every note. One place to check them off.",
+    startSec: 3.5,
+  },
+  { text: "Start a timer. Know where your day went.", startSec: 7 },
+  { text: "⌘K to find anything. Instantly.", startSec: 10.5 },
   { text: "Always there. Never in the way.", startSec: 13 },
 ];
 
@@ -68,7 +71,6 @@ export const FeatureTourScene: React.FC = () => {
           <Video
             src={staticFile("product-tour.mp4")}
             muted
-
             style={{
               width: "100%",
               height: "100%",
@@ -107,7 +109,10 @@ export const FeatureTourScene: React.FC = () => {
   );
 };
 
-const LabelCard: React.FC<{ text: string; isLast?: boolean }> = ({ text, isLast }) => {
+const LabelCard: React.FC<{ text: string; isLast?: boolean }> = ({
+  text,
+  isLast,
+}) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
@@ -115,12 +120,10 @@ const LabelCard: React.FC<{ text: string; isLast?: boolean }> = ({ text, isLast 
   const exitStart = durationInFrames - 5;
   const exitOpacity = isLast
     ? 1
-    : interpolate(
-        frame,
-        [exitStart, durationInFrames],
-        [1, 0],
-        { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-      );
+    : interpolate(frame, [exitStart, durationInFrames], [1, 0], {
+        extrapolateLeft: "clamp",
+        extrapolateRight: "clamp",
+      });
 
   return (
     <AbsoluteFill

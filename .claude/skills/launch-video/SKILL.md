@@ -141,8 +141,8 @@ Transitions between acts use `scaleBlur()` with `springTiming({ damping: 18, sti
 Edit the `LABELS` array in `FeatureTourScene.tsx`:
 ```tsx
 const LABELS = [
-  { text: "Write in markdown. Preview instantly.", startSec: 0 },
-  { text: "All your todos, pulled from every note.", startSec: 3.5 },
+  { text: "Write in markdown. Your files stay yours.", startSec: 0 },
+  { text: "Todos from every note. One place to check them off.", startSec: 3.5 },
   // ...
 ];
 ```
