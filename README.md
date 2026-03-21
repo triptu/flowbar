@@ -25,6 +25,7 @@ Click the Flowbar icon in your menu bar or double press `Fn` key and a floating 
 - **Todo list** — aggregated view of all todos across your markdown files and ability to check them off, which updates the source file
 - **Timer** — stopwatch to track time on todos, extracted from all your markdown files
 - **Timeline** - timeline of the day showing time spent on each todo
+- **Quick search** — hit ⌘F or ⌘K to search across all notes by filename and content, Spotlight-style
 - **Smart editor** — auto-continues bullets, todos, and numbered lists on Enter; preserves indentation
 
 ## Download & Install

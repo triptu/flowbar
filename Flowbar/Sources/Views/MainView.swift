@@ -52,6 +52,19 @@ struct MainView: View {
         .onChange(of: appState.settings.theme) {
             windowManager.syncPanelAppearance()
         }
+        .overlay {
+            if appState.search.isOpen {
+                Color.black.opacity(0.001)
+                    .ignoresSafeArea()
+                    .onTapGesture { appState.search.close() }
+                    .accessibilityIdentifier("search-backdrop")
+            }
+        }
+        .overlay(alignment: .top) {
+            if appState.search.isOpen {
+                SearchOverlayView()
+            }
+        }
         .background(keyboardShortcuts)
     }
 
@@ -91,6 +104,12 @@ struct MainView: View {
                 timerService.screen = .todos
             }
                 .keyboardShortcut("l", modifiers: [.option, .command])
+
+            // Toggle search
+            Button("") { appState.search.toggle(files: appState.sidebar.noteFiles) }
+                .keyboardShortcut("f", modifiers: .command)
+            Button("") { appState.search.toggle(files: appState.sidebar.noteFiles) }
+                .keyboardShortcut("k", modifiers: .command)
         }
         .hidden()
     }

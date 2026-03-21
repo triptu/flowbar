@@ -56,6 +56,7 @@ Use keyboard shortcuts to navigate reliably — this is the preferred method ove
 | `⌥⌘T` | Open Timer |
 | `⌥⌘L` | Open Todo List |
 | `⌘E` | Toggle Edit/Preview mode |
+| `⌘F` / `⌘K` | Toggle search |
 | `⌥⌘←` | Previous file |
 | `⌥⌘→` | Next file |
 | `Space` | Pause/Resume timer (when timer view is active) |
@@ -82,6 +83,11 @@ osascript -e 'tell application "System Events" to key code 124 using {option dow
 All interactive elements have accessibility identifiers for reliable targeting via AppleScript.
 
 ### Key accessibility identifiers
+
+**Search:**
+- `search-overlay` — search overlay container
+- `search-field` — search text field
+- `search-backdrop` — transparent backdrop (click to dismiss)
 
 **Content area:**
 - `content-area` — main content panel

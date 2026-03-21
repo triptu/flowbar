@@ -22,11 +22,13 @@ final class AppState {
     let settings: SettingsState
     let sidebar: SidebarState
     let editor: EditorState
+    let search: SearchState
 
     init(defaults: UserDefaults = .standard) {
         self.settings = SettingsState(defaults: defaults)
         self.sidebar = SidebarState(defaults: defaults)
         self.editor = EditorState()
+        self.search = SearchState()
         loadFiles()
     }
 
