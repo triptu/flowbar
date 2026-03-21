@@ -191,6 +191,49 @@
                 }
             }
 
+            /* ── Video section ── */
+            .video-section {
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 80px 24px 0;
+                text-align: center;
+                position: relative;
+            }
+            .video-section::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 600px;
+                height: 400px;
+                background: radial-gradient(circle, rgba(201, 155, 109, 0.06) 0%, transparent 70%);
+                pointer-events: none;
+            }
+            .video-section h2 {
+                font-family: "Instrument Serif", serif;
+                font-size: clamp(28px, 4vw, 38px);
+                margin-bottom: 8px;
+                position: relative;
+            }
+            .video-section h2 span {
+                color: var(--accent2);
+            }
+            .video-section .video-subtitle {
+                color: var(--muted);
+                font-size: 15px;
+                margin-bottom: 32px;
+                position: relative;
+            }
+            .video-section video {
+                width: 100%;
+                border-radius: var(--radius);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
+                display: block;
+                position: relative;
+            }
+
             /* ── Showcase (alternating image + text rows) ── */
             .showcase {
                 position: relative;
@@ -643,6 +686,18 @@
                     from the public source code.
                 </div>
             </div>
+        </div>
+
+        <!-- ── Product video ── -->
+        <div class="video-section">
+            <h2>See it in <span>action</span></h2>
+            <p class="video-subtitle">A quick look at how Flowbar fits into your workflow.</p>
+            <video
+                src="./assets/flowbar-launch-hq.mp4"
+                controls
+                playsinline
+                preload="metadata"
+            ></video>
         </div>
 
         <!-- ── Showcase ── -->
