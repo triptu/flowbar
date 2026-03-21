@@ -104,13 +104,13 @@ struct TimerTodosView: View {
                                         .font(.system(size: 10))
                                     Text(group.file)
                                         .font(.system(size: 11, weight: .medium))
-                                    Spacer()
                                     Text("\(group.todos.count)")
                                         .font(.system(size: 10))
                                         .foregroundStyle(.tertiary)
+                                    Spacer()
                                 }
                                 .foregroundStyle(.secondary)
-                                .padding(.horizontal, 4)
+                                .padding(.horizontal, 10)
                                 .padding(.top, 10)
                                 .padding(.bottom, 2)
                             }
