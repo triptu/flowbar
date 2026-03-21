@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-/// The overlay window shown when the user clicks the menu bar icon or presses double-Fn.
+/// The overlay window shown when the user clicks the menu bar icon or presses the global shortcut.
 ///
 /// Configured as an always-on-top utility panel that joins all Spaces. Saves its
 /// size back via an onClose callback so dimensions persist across sessions.

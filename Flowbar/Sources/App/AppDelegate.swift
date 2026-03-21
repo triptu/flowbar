@@ -5,14 +5,14 @@ import SwiftUI
 /// App entry point that wires together the core services and the menu bar item.
 ///
 /// Creates AppState, TimerService, and WindowManager on launch, then sets up
-/// the double-Fn global keyboard shortcut to toggle the overlay from anywhere.
+/// a configurable global keyboard shortcut to toggle the overlay from anywhere.
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     var windowManager: WindowManager!
     var appState: AppState!
     var timerService: TimerService!
-    private var globalFnMonitor: Any?
-    private var localFnMonitor: Any?
+    private var globalMonitor: Any?
+    private var localMonitor: Any?
     private var lastFnPress: Date?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -32,7 +32,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         timerService = TimerService()
         windowManager = WindowManager(appState: appState, timerService: timerService)
         enableLaunchAtLoginOnFirstRun()
-        setupDoubleFnShortcut()
+        installShortcut()
+
+        appState.settings.onShortcutChanged = { [weak self] in self?.installShortcut() }
 
         if uitestFolder != nil {
             // If running UI tests, show the panel immediately. Otherwise, rely on the user to click the menu bar icon or use the shortcut.
@@ -40,10 +42,42 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    // MARK: - Shortcut installation
+
+    /// Tears down any existing monitors and installs new ones matching the current setting.
+    private func installShortcut() {
+        removeMonitors()
+        lastFnPress = nil
+
+        let shortcut = appState.settings.globalShortcut
+        if shortcut.isDoubleTap {
+            installDoubleFnMonitors()
+        } else {
+            installHotkeyMonitors(shortcut: shortcut)
+        }
+    }
+
+    private func removeMonitors() {
+        if let m = globalMonitor { NSEvent.removeMonitor(m); globalMonitor = nil }
+        if let m = localMonitor { NSEvent.removeMonitor(m); localMonitor = nil }
+    }
+
+    // MARK: - Double-Fn
+
+    private func installDoubleFnMonitors() {
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            guard let self else { return }
+            DispatchQueue.main.async { self.handleFnEvent(event) }
+        }
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            self?.handleFnEvent(event)
+            return event
+        }
+    }
+
     private func handleFnEvent(_ event: NSEvent) {
         let fnPressed = event.modifierFlags.contains(.function)
-        let otherMods: NSEvent.ModifierFlags = [.shift, .control, .option, .command]
-        guard event.modifierFlags.intersection(otherMods).isEmpty else { return }
+        guard event.modifierFlags.intersection(GlobalShortcut.relevantModifiers).isEmpty else { return }
 
         if fnPressed {
             let now = Date()
@@ -56,25 +90,45 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    // MARK: - Hotkey (single combo)
+
+    private func installHotkeyMonitors(shortcut: GlobalShortcut) {
+        guard let targetKeyCode = shortcut.keyCode else { return }
+        let targetMods = shortcut.requiredModifiers
+
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self else { return }
+            if Self.eventMatches(event, keyCode: targetKeyCode, modifiers: targetMods) {
+                DispatchQueue.main.async { self.windowManager.togglePanel() }
+            }
+        }
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self else { return event }
+            if Self.eventMatches(event, keyCode: targetKeyCode, modifiers: targetMods) {
+                self.windowManager.togglePanel()
+                return nil // consume the event
+            }
+            return event
+        }
+    }
+
+    /// Check if an event's key code and modifier flags match the target.
+    private static func eventMatches(
+        _ event: NSEvent, keyCode: UInt16, modifiers: NSEvent.ModifierFlags
+    ) -> Bool {
+        guard event.keyCode == keyCode else { return false }
+        let mask = GlobalShortcut.relevantModifiers
+        return event.modifierFlags.intersection(mask) == modifiers.intersection(mask)
+    }
+
+    // MARK: - Launch at login
+
     private func enableLaunchAtLoginOnFirstRun() {
         let key = "hasRegisteredLaunchAtLogin"
         guard !appState.settings.defaults.bool(forKey: key) else { return }
         appState.settings.defaults.set(true, forKey: key)
         if SMAppService.mainApp.status != .enabled {
             appState.settings.launchAtLogin = true
-        }
-    }
-
-    private func setupDoubleFnShortcut() {
-        // Global monitor fires when another app is focused
-        globalFnMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
-            guard let self else { return }
-            DispatchQueue.main.async { self.handleFnEvent(event) }
-        }
-        // Local monitor fires when Flowbar itself is focused
-        localFnMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
-            self?.handleFnEvent(event)
-            return event
         }
     }
 }

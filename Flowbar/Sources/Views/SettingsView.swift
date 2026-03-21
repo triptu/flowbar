@@ -125,11 +125,6 @@ struct SettingsView: View {
         }
     }
 
-    /// Whether the current shortcut is one of the presets (for picker selection).
-    private var selectedPresetIndex: Int? {
-        GlobalShortcut.presets.firstIndex(where: { $0 == appState.settings.globalShortcut })
-    }
-
     private var isCustomShortcut: Bool {
         if case .custom = appState.settings.globalShortcut { return true }
         return false

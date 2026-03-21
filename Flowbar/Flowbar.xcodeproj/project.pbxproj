@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA1111111111111111111111 /* GlobalShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1111111111111111111111 /* GlobalShortcut.swift */; };
+		AA2222222222222222222222 /* ShortcutRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB2222222222222222222222 /* ShortcutRecorderView.swift */; };
+		AA3333333333333333333333 /* GlobalShortcutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3333333333333333333333 /* GlobalShortcutTests.swift */; };
 		02809DCA65555BE65F063A9F /* NoteContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BE9090CD422B39C22928F8C /* NoteContentView.swift */; };
 		0355283C9CFC77C39858F458 /* TimerServiceIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0A0AFB96F9D551689167D3 /* TimerServiceIntentTests.swift */; };
 		09487C36AEA44DEB3EEF97D0 /* MarkdownEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E24C83A4A1DC47A34546EA3 /* MarkdownEditorView.swift */; };
@@ -69,6 +72,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BB1111111111111111111111 /* GlobalShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalShortcut.swift; sourceTree = "<group>"; };
+		BB2222222222222222222222 /* ShortcutRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorderView.swift; sourceTree = "<group>"; };
+		BB3333333333333333333333 /* GlobalShortcutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalShortcutTests.swift; sourceTree = "<group>"; };
 		06DABC3A9E8EB88A3D9F59F2 /* TimerHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerHomeView.swift; sourceTree = "<group>"; };
 		0E24C83A4A1DC47A34546EA3 /* MarkdownEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownEditorView.swift; sourceTree = "<group>"; };
 		0EACC84A08EAE2C331909302 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
@@ -142,6 +148,7 @@
 				90E92AC056D0D1D801EA2F5A /* AppStateNavigationTests.swift */,
 				AEF20A10743ADB27EC3D5761 /* AppStateTests.swift */,
 				17BB2C6C1AB7D078E4FD1381 /* FileOperationsTests.swift */,
+				BB3333333333333333333333 /* GlobalShortcutTests.swift */,
 				A7C86951E8C0ECA5E746AD0B /* SearchStateTests.swift */,
 			);
 			path = App;
@@ -184,6 +191,7 @@
 		A227C786E98033FCCA2597B3 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				BB2222222222222222222222 /* ShortcutRecorderView.swift */,
 				8510A28B4BDA11F845C2A2F0 /* SidebarFooter.swift */,
 				6F835D11B53685F85D8EF57A /* SidebarToggleButton.swift */,
 				4437CE287B73D4B42D2A7488 /* TodoRow.swift */,
@@ -198,6 +206,7 @@
 				6D2938A16169339850B84E63 /* AppState.swift */,
 				7D9EFAC3B9D3F56345305475 /* EditorState.swift */,
 				CB2D31A2E469ADB3AE12A356 /* FlowbarApp.swift */,
+				BB1111111111111111111111 /* GlobalShortcut.swift */,
 				C570552BF163D208240E5F0F /* SearchState.swift */,
 				D6ED3E33C94F635C05FDAE36 /* SettingsState.swift */,
 				270E141D1C4D7BA89319620F /* SidebarState.swift */,
@@ -390,6 +399,7 @@
 				C746A5D814A657E0B9D744A4 /* AppStateNavigationTests.swift in Sources */,
 				1F5459341A5FC4B65113F386 /* AppStateTests.swift in Sources */,
 				42DD96B155C593078565CF7D /* FileOperationsTests.swift in Sources */,
+				AA3333333333333333333333 /* GlobalShortcutTests.swift in Sources */,
 				3B64C287DD55F36CB6A1C692 /* MarkdownBlockParserTests.swift in Sources */,
 				35D71C71BBC19C145CA3A4B1 /* MarkdownParserTests.swift in Sources */,
 				146F4D72B3489682B628BED5 /* ModelTests.swift in Sources */,
@@ -412,6 +422,7 @@
 				E037448B11CE5D13C85FF32F /* FileWatcher.swift in Sources */,
 				A1C37D455CD1DEEE92C0F49F /* FloatingPanel.swift in Sources */,
 				BE8CACC0DB336F9249758FD2 /* FlowbarApp.swift in Sources */,
+				AA1111111111111111111111 /* GlobalShortcut.swift in Sources */,
 				F6A2FCC540B165487531BA6C /* MainView.swift in Sources */,
 				09487C36AEA44DEB3EEF97D0 /* MarkdownEditorView.swift in Sources */,
 				4F139AF375C4FA41F292C0E7 /* MarkdownParser.swift in Sources */,
@@ -422,6 +433,7 @@
 				355C6AD435E81701E806ABB6 /* SearchState.swift in Sources */,
 				C895F36D66E375625C22A858 /* SettingsState.swift in Sources */,
 				B09973A5834843B57F506206 /* SettingsView.swift in Sources */,
+				AA2222222222222222222222 /* ShortcutRecorderView.swift in Sources */,
 				56FDF78959DAAC5E59386E6F /* SidebarFooter.swift in Sources */,
 				D086C43C3929EF6052A89C94 /* SidebarState.swift in Sources */,
 				BC6659874A56FF8D6E7F4268 /* SidebarToggleButton.swift in Sources */,

@@ -5,16 +5,16 @@
 | ![Flowbar light theme screenshot](assets/readme-light.png) | ![Flowbar dark theme screenshot](assets/readme-dark.png) |
 
 
-A native macOS menubar app for quick access to a folder of markdown notes and todos with integrated time tracking to help you focus. Opens as a window overlay on top of whatever else you're doing with the shortcut double Fn. 
+A native macOS menubar app for quick access to a folder of markdown notes and todos with integrated time tracking to help you focus. Opens as a window overlay on top of whatever else you're doing with the shortcut double Fn(configurable). 
 
 I use Obsidian but wanted something lighter so I can check/edit todos and notes without opening the full app. I built this app which is pointed to a directory in my Obsidian vault.
 
-Click the Flowbar icon in your menubar or double press `Fn` key and a floating overlay appears with your notes right there. Edit them, check off todos, track time on tasks. Click the icon again or double-tap Fn to toggle it from anywhere.
+Click the Flowbar icon in your menubar or press the global shortcut (double-tap `Fn` by default) and a floating overlay appears with your notes right there. Edit them, check off todos, track time on tasks. Click the icon again or double-tap Fn to toggle it from anywhere.
 
 ## Features
 
 - **Clean Minimal Interface** - well thought UX, built with taste
-- **Floating overlay panel** — toggle the app overlay with double-tap Fn, or from menubar
+- **Floating overlay panel** — toggle the app overlay with double-tap Fn, or from menubar(the keyboard shortcut is configurable)
 - **Resizable window** - with dimensions remembered across invocations
 - **Keyboard Controlled** - check settings for the keyboard shortcuts to navigate around the app.
 - **Smart editor** — auto-continues bullets, todos, and numbered lists on Enter; preserves indentation

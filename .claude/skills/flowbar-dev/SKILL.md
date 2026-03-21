@@ -99,7 +99,7 @@ Must be added to both filesystem AND pbxproj (PBXFileReference, PBXGroup childre
 2. **No system blue.** Custom controls everywhere. Replace any system control that sneaks in blue.
 3. **Earthy, calm, minimal.** Glassmorphic but not washed out.
 4. **Light AND dark must look good.** `preferredColorScheme` from settings. Test both.
-5. **Overlay architecture.** Single floating panel from menu bar icon or double-Fn.
+5. **Overlay architecture.** Single floating panel from menu bar icon or configurable global shortcut (default: double-Fn).
 6. **Sidebar toggle next to title** when sidebar is hidden.
 7. **Todo row**: source file name below title, aligned with title start (not under checkbox).
 8. **Timer**: PAUSE preserves state, COMPLETE clears and marks done. Pause stays on timer view, complete switches to todos.

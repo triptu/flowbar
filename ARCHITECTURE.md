@@ -4,9 +4,10 @@ Flowbar is a macOS menu bar app for browsing and editing markdown notes in a dir
 
 ```
 Flowbar/Sources/
-├── App/            AppDelegate (creates singletons, Fn-key listener),
+├── App/            AppDelegate (creates singletons, configurable global shortcut listener),
 │                   AppState (folder, file list, navigation),
 │                   EditorState (editor text, auto-save debounce),
+│                   GlobalShortcut (shortcut model — presets + custom, persistence, display),
 │                   SearchState (search query, cached file contents, results),
 │                   SidebarState (selection, file list, rename),
 │                   SettingsState (user preferences),
@@ -31,14 +32,15 @@ Flowbar/Sources/
 │                   TitleBarView (active-task label + elapsed time in title bar),
 │                   SettingsView,
 │                   Timer/ (TimerContainerView, TimerHomeView, TimerTodosView),
-│                   Components/ (TodoRow, SidebarFooter, SidebarToggleButton)
+│                   Components/ (TodoRow, SidebarFooter, SidebarToggleButton,
+│                               ShortcutRecorderView)
 │
 └── Theme/          Colors (AccentColor presets + FlowbarColors), Typography — design tokens
 ```
 
 ## How things connect
 
-**AppDelegate** creates three `@Observable` singletons on launch — `AppState`, `TimerService`, `WindowManager`. `WindowManager.showPanel()` injects them into the SwiftUI view tree via `.environment()`. AppState owns four sub-states: `EditorState`, `SearchState`, `SidebarState`, `SettingsState`. `DatabaseService` is a fourth singleton (static `shared`) used by TimerService for persistence.
+**AppDelegate** creates three `@Observable` singletons on launch — `AppState`, `TimerService`, `WindowManager` — and installs the global shortcut listener. The shortcut is configurable via `SettingsState.globalShortcut`. When the setting changes, `onShortcutChanged` callback tears down and rebuilds the event monitors. `WindowManager.showPanel()` injects singletons into the SwiftUI view tree via `.environment()`. AppState owns four sub-states: `EditorState`, `SearchState`, `SidebarState`, `SettingsState`. `DatabaseService` is a fourth singleton (static `shared`) used by TimerService for persistence.
 
 **Notes data flow:** AppState loads the folder and builds `[NoteFile]` → FileWatcher monitors the directory for external changes → sidebar displays files → user selects one → EditorState loads content → MarkdownPreviewView renders it with clickable checkboxes (default) or MarkdownEditorView for raw editing (⌘E toggle) → edits auto-save with 500ms debounce → FileWatcher detects external changes and reloads.
 

@@ -2,10 +2,6 @@ import ServiceManagement
 import SwiftUI
 import Observation
 
-extension Notification.Name {
-    static let globalShortcutChanged = Notification.Name("globalShortcutChanged")
-}
-
 /// Persisted user preferences — theme, typography, accent color, folder path, window frames.
 ///
 /// Each property writes to UserDefaults via didSet. The `defaults` instance is injectable
@@ -14,6 +10,7 @@ extension Notification.Name {
 @MainActor
 final class SettingsState {
     @ObservationIgnored let defaults: UserDefaults
+    @ObservationIgnored var onShortcutChanged: (() -> Void)?
 
     var folderPath: String {
         didSet { defaults.set(folderPath, forKey: "folderPath") }
@@ -49,8 +46,9 @@ final class SettingsState {
 
     var globalShortcut: GlobalShortcut {
         didSet {
+            guard globalShortcut != oldValue else { return }
             defaults.set(globalShortcut.toDictionary(), forKey: "globalShortcut")
-            NotificationCenter.default.post(name: .globalShortcutChanged, object: nil)
+            onShortcutChanged?()
         }
     }
 

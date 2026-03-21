@@ -14,7 +14,7 @@ fileprivate func activeSpaceID() -> Int {
 /// Manages the menu bar status item and the floating overlay panel.
 ///
 /// Owns the NSStatusItem (menu bar icon). Clicking the icon or pressing
-/// double-Fn toggles the overlay panel on/off. Remembers window position
+/// the global shortcut toggles the overlay panel on/off. Remembers window position
 /// and size per desktop Space. Injected via .environment().
 @Observable
 @MainActor
