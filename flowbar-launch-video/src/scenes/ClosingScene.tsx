@@ -13,10 +13,9 @@ import { FONT_BODY, FONT_SERIF } from "../fonts";
 /**
  * ACT 4: THE CLOSER (5s)
  *
- * Big. Confident. Three layers:
- * 1. Logo + name (one lockup, commands the frame)
- * 2. What it is
- * 3. Where to get it
+ * Logo + name, description, URL.
+ * No opacity-based entrance animations — fade transition handles scene entrance.
+ * Only MaskReveal (clipPath-based) for text stagger.
  */
 export const ClosingScene: React.FC = () => {
   const frame = useCurrentFrame();
@@ -27,7 +26,7 @@ export const ClosingScene: React.FC = () => {
       {/* Heavy darken — push the nature bg way back */}
       <AbsoluteFill style={{ backgroundColor: "rgba(12,15,13,0.7)" }} />
 
-      {/* Warm spotlight glow */}
+      {/* Warm spotlight glow — always visible, no entrance animation */}
       <WarmGlow />
 
       <AbsoluteFill
@@ -44,7 +43,7 @@ export const ClosingScene: React.FC = () => {
             zIndex: 1,
           }}
         >
-          {/* Logo + wordmark */}
+          {/* Logo + wordmark — always visible */}
           <LogoWordmark />
 
           {/* Description */}
@@ -54,7 +53,7 @@ export const ClosingScene: React.FC = () => {
               fontSize={28}
               fontWeight="400"
               color={THEME.muted}
-              delay={Math.round(0.6 * fps)}
+              delay={Math.round(0.4 * fps)}
             />
           </div>
 
@@ -65,13 +64,19 @@ export const ClosingScene: React.FC = () => {
               fontSize={18}
               fontWeight="400"
               color={THEME.dim}
-              delay={Math.round(0.85 * fps)}
+              delay={Math.round(0.65 * fps)}
             />
           </div>
 
           {/* URL */}
           <div style={{ marginTop: 48 }}>
-            <URLReveal />
+            <MaskReveal
+              text="flowbar.tushar.ai"
+              fontSize={40}
+              fontWeight="600"
+              color={THEME.accent2}
+              delay={Math.round(0.9 * fps)}
+            />
           </div>
         </div>
       </AbsoluteFill>
@@ -80,28 +85,12 @@ export const ClosingScene: React.FC = () => {
 };
 
 const LogoWordmark: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const progress = spring({
-    frame,
-    fps,
-    config: SPRINGS.heavy,
-  });
-
-  const scale = interpolate(progress, [0, 1], [0.7, 1]);
-  const opacity = interpolate(progress, [0, 1], [0, 1]);
-  const blur = interpolate(progress, [0, 1], [12, 0]);
-
   return (
     <div
       style={{
         display: "flex",
         alignItems: "center",
         gap: 24,
-        opacity,
-        transform: `scale(${scale})`,
-        filter: `blur(${blur}px)`,
       }}
     >
       <svg
@@ -137,18 +126,6 @@ const LogoWordmark: React.FC = () => {
 };
 
 const WarmGlow: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const progress = spring({
-    frame,
-    fps,
-    config: SPRINGS.heavy,
-  });
-
-  const scale = interpolate(progress, [0, 1], [0.3, 1]);
-  const opacity = interpolate(progress, [0, 1], [0, 1]);
-
   return (
     <div
       style={{
@@ -161,42 +138,9 @@ const WarmGlow: React.FC = () => {
         marginTop: -300,
         borderRadius: "50%",
         background: `radial-gradient(ellipse, rgba(201,155,109,0.22) 0%, rgba(201,155,109,0.08) 35%, transparent 65%)`,
-        opacity,
-        transform: `scale(${scale})`,
         filter: "blur(40px)",
         pointerEvents: "none",
       }}
     />
-  );
-};
-
-const URLReveal: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const progress = spring({
-    frame: frame - Math.round(1.1 * fps),
-    fps,
-    config: SPRINGS.smooth,
-  });
-
-  const opacity = interpolate(progress, [0, 1], [0, 1]);
-  const y = interpolate(progress, [0, 1], [16, 0]);
-
-  return (
-    <div
-      style={{
-        opacity,
-        transform: `translateY(${y}px)`,
-        fontFamily: FONT_BODY,
-        fontSize: 40,
-        fontWeight: "600",
-        color: THEME.accent2,
-        letterSpacing: "-0.01em",
-        textShadow: `0 0 50px ${THEME.accentGlow}`,
-      }}
-    >
-      flowbar.tushar.ai
-    </div>
   );
 };

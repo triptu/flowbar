@@ -5,22 +5,17 @@ import {
   useCurrentFrame,
   useVideoConfig,
   interpolate,
-  spring,
   staticFile,
 } from "remotion";
 import { Video } from "@remotion/media";
 import { MaskReveal } from "../components/AnimatedText";
-import { THEME, SPRINGS } from "../theme";
-import { FONT_SERIF } from "../fonts";
+import { THEME } from "../theme";
 
 /**
- * ACT 3: FEATURE TOUR
+ * ACT 3: FEATURE TOUR (16s)
  *
- * ONE continuous screen recording plays the entire time.
- * Text labels swap at the TOP to narrate what's being shown.
- * Product floats over global nature bg.
- *
- * product-tour.mp4 = 15.6s, scene = 16s
+ * ONE continuous screen recording. Labels swap at the top.
+ * No entrance animation — fade transition handles scene entrance.
  */
 
 const LABELS = [
@@ -38,27 +33,10 @@ export const FeatureTourScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
-  // Video entrance: scale+blur on first appearance
-  const enterSpring = spring({
-    frame,
-    fps,
-    config: SPRINGS.snappy,
-  });
-  const videoScale = interpolate(enterSpring, [0, 1], [0.94, 1]);
-  const videoBlur = interpolate(enterSpring, [0, 1], [4, 0]);
-  const videoOpacity = interpolate(enterSpring, [0, 1], [0, 1]);
-
   return (
     <AbsoluteFill>
-      {/* Single continuous product recording */}
-      <AbsoluteFill
-        style={{
-          padding: "80px 24px 24px 24px",
-          opacity: videoOpacity,
-          transform: `scale(${videoScale})`,
-          filter: `blur(${videoBlur}px)`,
-        }}
-      >
+      {/* Single continuous product recording — always visible */}
+      <AbsoluteFill style={{ padding: "80px 24px 24px 24px" }}>
         <div
           style={{
             width: "100%",
@@ -81,7 +59,7 @@ export const FeatureTourScene: React.FC = () => {
         </div>
       </AbsoluteFill>
 
-      {/* Top gradient for label legibility — renders above video */}
+      {/* Top gradient for label legibility */}
       <AbsoluteFill
         style={{
           background:
@@ -90,7 +68,7 @@ export const FeatureTourScene: React.FC = () => {
         }}
       />
 
-      {/* Swapping labels at TOP — renders above everything */}
+      {/* Swapping labels at TOP */}
       {LABELS.map((label, i) => {
         const startFrame = Math.round(label.startSec * fps);
         const nextStart =
@@ -101,7 +79,7 @@ export const FeatureTourScene: React.FC = () => {
 
         return (
           <Sequence key={i} from={startFrame} durationInFrames={duration}>
-            <LabelCard text={label.text} isLast={i === LABELS.length - 1} />
+            <LabelCard text={label.text} />
           </Sequence>
         );
       })}
@@ -109,29 +87,13 @@ export const FeatureTourScene: React.FC = () => {
   );
 };
 
-const LabelCard: React.FC<{ text: string; isLast?: boolean }> = ({
-  text,
-  isLast,
-}) => {
-  const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
-
-  // Exit: quick fade (skip for last label — hold it)
-  const exitStart = durationInFrames - 5;
-  const exitOpacity = isLast
-    ? 1
-    : interpolate(frame, [exitStart, durationInFrames], [1, 0], {
-        extrapolateLeft: "clamp",
-        extrapolateRight: "clamp",
-      });
-
+const LabelCard: React.FC<{ text: string }> = ({ text }) => {
   return (
     <AbsoluteFill
       style={{
         justifyContent: "flex-start",
         alignItems: "center",
         paddingTop: 28,
-        opacity: exitOpacity,
       }}
     >
       <MaskReveal
