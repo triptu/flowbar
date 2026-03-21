@@ -13,4 +13,5 @@ xcuserdata/
 .context
 default.profraw
 node_modules
+out
 # flowbar-launch-video

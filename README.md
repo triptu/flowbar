@@ -4,7 +4,6 @@
 | --- | --- |
 | ![Flowbar light theme screenshot](assets/readme-light.png) | ![Flowbar dark theme screenshot](assets/readme-dark.png) |
 
-
 A native macOS menubar app for quick access to a folder of markdown notes and todos with integrated time tracking to help you focus. Opens as a window overlay on top of whatever else you're doing with the shortcut double Fn(configurable). 
 
 I use Obsidian but wanted something lighter so I can check/edit todos and notes without opening the full app. I built this app which is pointed to a directory in my Obsidian vault.
