@@ -110,6 +110,10 @@ struct MainView: View {
                 .keyboardShortcut("f", modifiers: .command)
             Button("") { appState.search.toggle(files: appState.sidebar.noteFiles) }
                 .keyboardShortcut("k", modifiers: .command)
+
+            // Toggle light/dark theme
+            Button("") { appState.settings.toggleTheme() }
+                .keyboardShortcut("a", modifiers: [.command, .option])
         }
         .hidden()
     }

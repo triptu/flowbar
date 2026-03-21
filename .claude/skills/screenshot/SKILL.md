@@ -59,6 +59,7 @@ Use keyboard shortcuts to navigate reliably — this is the preferred method ove
 | `⌘F` / `⌘K` | Toggle search |
 | `⌥⌘←` | Previous file |
 | `⌥⌘→` | Next file |
+| `⌥⌘A` | Toggle Light/Dark theme |
 | `Space` | Pause/Resume timer (when timer view is active) |
 
 ```bash

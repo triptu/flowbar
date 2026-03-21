@@ -2,6 +2,10 @@ import ServiceManagement
 import SwiftUI
 import Observation
 
+extension Notification.Name {
+    static let globalShortcutChanged = Notification.Name("globalShortcutChanged")
+}
+
 /// Persisted user preferences — theme, typography, accent color, folder path, window frames.
 ///
 /// Each property writes to UserDefaults via didSet. The `defaults` instance is injectable
@@ -43,6 +47,13 @@ final class SettingsState {
         }
     }
 
+    var globalShortcut: GlobalShortcut {
+        didSet {
+            defaults.set(globalShortcut.toDictionary(), forKey: "globalShortcut")
+            NotificationCenter.default.post(name: .globalShortcutChanged, object: nil)
+        }
+    }
+
     /// Per-Space window frames: [SpaceID: [x, y, width, height]]
     @ObservationIgnored var windowFrames: [String: [Double]] {
         didSet { defaults.set(windowFrames, forKey: "windowFrames") }
@@ -65,8 +76,19 @@ final class SettingsState {
         self.theme = AppTheme(rawValue: defaults.string(forKey: "theme") ?? "") ?? .dark
         self.typography = TypographySize(rawValue: defaults.string(forKey: "typography") ?? "") ?? .default
         self.accentColor = AccentColor(rawValue: defaults.string(forKey: "accentColor") ?? "") ?? .amber
+        if let dict = defaults.object(forKey: "globalShortcut") as? [String: Any],
+           let shortcut = GlobalShortcut.from(dictionary: dict) {
+            self.globalShortcut = shortcut
+        } else {
+            self.globalShortcut = .doubleFn
+        }
         self.windowFrames = defaults.object(forKey: "windowFrames") as? [String: [Double]] ?? [:]
         self.launchAtLogin = SMAppService.mainApp.status == .enabled
+    }
+
+    /// Toggle between light and dark theme.
+    func toggleTheme() {
+        theme = theme == .dark ? .light : .dark
     }
 
     // MARK: - Per-Space window frame
