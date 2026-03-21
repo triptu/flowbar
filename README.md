@@ -1,32 +1,30 @@
-# Flowbar
+# [Flowbar](https://flowbar.tushar.ai)
 
-A native macOS menu bar app for quick access to a folder of markdown notes and todos with integrated time tracking to help you focus. Opens as a window overlay on top of whatever else you're doing with the shortcut double Fn. I use Obsidian but want something lighter so I can check/edit todos and notes without opening the full app. So I built this app which is pointed to a directory in my Obsidian vault.
+| Light mode | Dark mode |
+| --- | --- |
+| ![Flowbar light theme screenshot](assets/readme-light.png) | ![Flowbar dark theme screenshot](assets/readme-dark.png) |
 
-Click the Flowbar icon in your menu bar or double press `Fn` key and a floating overlay appears with your notes right there. Edit them, check off todos, track time on tasks. Click the icon again or double-tap Fn to toggle it from anywhere.
 
-## Screenshots
+A native macOS menubar app for quick access to a folder of markdown notes and todos with integrated time tracking to help you focus. Opens as a window overlay on top of whatever else you're doing with the shortcut double Fn. 
 
-| Notes | Notes + Todos |
-|-------|---------------|
-| ![Notes](assets/note.png) | ![Notes with Todos](assets/note-todo.png) |
+I use Obsidian but wanted something lighter so I can check/edit todos and notes without opening the full app. I built this app which is pointed to a directory in my Obsidian vault.
 
-| Note Editing | Todo List |
-|--------------|-----------|
-| ![Note Editing](assets/note-edit.png) | ![Todo List](assets/todolist.png) |
+Click the Flowbar icon in your menubar or double press `Fn` key and a floating overlay appears with your notes right there. Edit them, check off todos, track time on tasks. Click the icon again or double-tap Fn to toggle it from anywhere.
 
-| Timer | Settings |
-|-------|----------|
-| ![Timer](assets/timer-home.png) | ![Settings](assets/settings.png) |
+## Features
 
-## What it does
-
-- **Floating overlay panel** — toggle from the menu bar icon or double-tap Fn
-- **Sidebar + markdown preview** — all your .md files listed on the left, rendered markdown on the right with clickable checkboxes and styled headings (⌘E to toggle edit mode)
-- **Todo list** — aggregated view of all todos across your markdown files and ability to check them off, which updates the source file
-- **Timer** — stopwatch to track time on todos, extracted from all your markdown files
-- **Timeline** - timeline of the day showing time spent on each todo
-- **Quick search** — hit ⌘F or ⌘K to search across all notes by filename and content, Spotlight-style
+- **Clean Minimal Interface** - well thought UX, built with taste
+- **Floating overlay panel** — toggle the app overlay with double-tap Fn, or from menubar
+- **Resizable window** - with dimensions remembered across invocations
+- **Keyboard Controlled** - check settings for the keyboard shortcuts to navigate around the app.
 - **Smart editor** — auto-continues bullets, todos, and numbered lists on Enter; preserves indentation
+- **Markdown Preview** - renders your checkboxes as todos, which can be toggled with ease
+- **Todo list** — aggregated view of all todos across your markdown files and ability to check them off, which updates the source file. Markdown files remain the source of truth.
+- **Timer** — stopwatch to start on any todo and track time against it
+- **Timeline** - timeline of the day showing time spent on each todo
+- **Quick search** — hit ⌘K to search across all notes by filename and content
+- **Personalization** - Theme, color and font size
+- **Open in Obsidian** - One click button to open your note in Obsidian(assuming it's part of your vault)
 
 ## Download & Install
 
