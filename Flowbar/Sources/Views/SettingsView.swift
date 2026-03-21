@@ -52,7 +52,7 @@ struct SettingsView: View {
 
                 settingsSection("Keyboard Shortcuts") {
                     VStack(alignment: .leading, spacing: 6) {
-                        shortcutRow("Toggle Flowbar", "Double-tap Fn")
+                        globalShortcutPicker
                         shortcutRow("Toggle Sidebar", "⌘ B")
                         shortcutRow("Previous File", "⌥ ⌘ ←")
                         shortcutRow("Next File", "⌥ ⌘ →")
@@ -60,6 +60,7 @@ struct SettingsView: View {
                         shortcutRow("Open Timer", "⌥ ⌘ T")
                         shortcutRow("Edit / Preview Mode", "⌘ E")
                         shortcutRow("Open Todo List", "⌥ ⌘ L")
+                        shortcutRow("Toggle Light/Dark", "⌥ ⌘ D")
                         shortcutRow("Pause / Resume Timer", "Space")
                     }
                 }
@@ -68,6 +69,7 @@ struct SettingsView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
         }
+        .clipped()
     }
 
     private func settingsSection(_ title: String, @ViewBuilder content: () -> some View) -> some View {
@@ -118,6 +120,66 @@ struct SettingsView: View {
                         .animation(.easeInOut(duration: 0.15), value: appState.settings.accentColor)
                         .onTapGesture { appState.settings.accentColor = color }
                         .help(color.displayName)
+                }
+            }
+        }
+    }
+
+    /// Whether the current shortcut is one of the presets (for picker selection).
+    private var selectedPresetIndex: Int? {
+        GlobalShortcut.presets.firstIndex(where: { $0 == appState.settings.globalShortcut })
+    }
+
+    private var isCustomShortcut: Bool {
+        if case .custom = appState.settings.globalShortcut { return true }
+        return false
+    }
+
+    private var globalShortcutPicker: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Toggle Flowbar")
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Menu {
+                    ForEach(Array(GlobalShortcut.presets.enumerated()), id: \.offset) { _, preset in
+                        Button(preset.displayName) {
+                            appState.settings.globalShortcut = preset
+                        }
+                    }
+                    Divider()
+                    Button("Custom…") {
+                        // If not already custom, switch to custom with a default
+                        if !isCustomShortcut {
+                            appState.settings.globalShortcut = .custom(keyCode: 49, modifiers: .control)
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(isCustomShortcut ? "Custom" : appState.settings.globalShortcut.displayName)
+                            .font(.system(size: 12))
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.system(size: 9))
+                    }
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 5)
+                            .fill(Color.primary.opacity(0.06))
+                    )
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+            }
+            if isCustomShortcut {
+                HStack {
+                    Spacer()
+                    ShortcutRecorderView(shortcut: Binding(
+                        get: { appState.settings.globalShortcut },
+                        set: { appState.settings.globalShortcut = $0 }
+                    ))
                 }
             }
         }
