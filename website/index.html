@@ -277,6 +277,43 @@
             .video-wrap.playing .progress-bar {
                 opacity: 1;
             }
+            .video-controls {
+                position: absolute;
+                bottom: 12px;
+                right: 12px;
+                display: flex;
+                gap: 6px;
+                z-index: 3;
+                opacity: 0;
+                transition: opacity 0.25s;
+            }
+            .video-wrap:hover .video-controls,
+            .video-wrap:not(.playing) .video-controls {
+                opacity: 1;
+            }
+            .video-controls button {
+                width: 34px;
+                height: 34px;
+                border: none;
+                border-radius: 8px;
+                background: rgba(0, 0, 0, 0.55);
+                backdrop-filter: blur(8px);
+                color: rgba(255, 255, 255, 0.8);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background 0.15s, color 0.15s;
+                padding: 0;
+            }
+            .video-controls button:hover {
+                background: rgba(0, 0, 0, 0.75);
+                color: #fff;
+            }
+            .video-controls button svg {
+                width: 16px;
+                height: 16px;
+            }
 
             /* ── Showcase (alternating image + text rows) ── */
             .showcase {
@@ -743,6 +780,20 @@
                         <path d="M8 5.14v14l11-7-11-7z" />
                     </svg>
                 </div>
+                <div class="video-controls">
+                    <button class="mute-btn" title="Mute">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                            <path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/>
+                        </svg>
+                    </button>
+                    <button class="fs-btn" title="Fullscreen">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+                            <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+                        </svg>
+                    </button>
+                </div>
                 <div class="progress-bar"></div>
             </div>
             <script>
@@ -751,7 +802,12 @@
                     const vid = wrap.querySelector("video");
                     const btn = wrap.querySelector(".play-btn");
                     const bar = wrap.querySelector(".progress-bar");
-                    wrap.addEventListener("click", function () {
+                    const muteBtn = wrap.querySelector(".mute-btn");
+                    const fsBtn = wrap.querySelector(".fs-btn");
+                    var volOn = muteBtn.innerHTML;
+                    const volOff = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+                    wrap.addEventListener("click", function (e) {
+                        if (e.target.closest(".video-controls")) return;
                         if (vid.paused) {
                             vid.play();
                             btn.classList.add("hidden");
@@ -761,6 +817,18 @@
                             btn.classList.remove("hidden");
                             wrap.classList.remove("playing");
                         }
+                    });
+                    muteBtn.addEventListener("click", function (e) {
+                        e.stopPropagation();
+                        vid.muted = !vid.muted;
+                        muteBtn.innerHTML = vid.muted ? volOff : volOn;
+                        muteBtn.title = vid.muted ? "Unmute" : "Mute";
+                    });
+                    fsBtn.addEventListener("click", function (e) {
+                        e.stopPropagation();
+                        if (vid.requestFullscreen) vid.requestFullscreen();
+                        else if (vid.webkitRequestFullscreen) vid.webkitRequestFullscreen();
+                        else if (vid.webkitEnterFullScreen) vid.webkitEnterFullScreen();
                     });
                     vid.addEventListener("timeupdate", function () {
                         if (vid.duration)
