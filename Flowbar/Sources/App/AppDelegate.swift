@@ -42,6 +42,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    /// Show the panel when the user re-launches the app (e.g. double-click in
+    /// Applications or Spotlight) while it's already running.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        windowManager.showPanel()
+        return false
+    }
+
     // MARK: - Shortcut installation
 
     /// Tears down any existing monitors and installs new ones matching the current setting.
