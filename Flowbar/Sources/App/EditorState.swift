@@ -22,11 +22,13 @@ final class EditorState {
     /// Stored so saveFileContent can re-arm the watcher with the same callback
     @ObservationIgnored private var externalChangeHandler: (() -> Void)?
 
-    func loadFileContent(_ file: NoteFile) {
+    func loadFileContent(_ file: NoteFile, resetEditing: Bool = true) {
         saveTask?.cancel()
         saveTask = nil
         isWriting = false
-        isEditing = false
+        if resetEditing {
+            isEditing = false
+        }
 
         if let content = try? String(contentsOf: file.url, encoding: .utf8) {
             editorContent = content
@@ -47,7 +49,7 @@ final class EditorState {
                     guard let self else { return }
                     // Atomic write creates a new inode — re-establish watcher, preserving the handler
                     self.rearmFileWatcher(file)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                         self?.isWriting = false
                     }
                 }

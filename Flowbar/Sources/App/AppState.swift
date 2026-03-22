@@ -84,7 +84,7 @@ final class AppState {
         editor.watchFile(file) { [weak self] in
             guard let self else { return }
             guard let current = self.sidebar.selectedFile, current.id == file.id else { return }
-            self.editor.loadFileContent(file)
+            self.editor.loadFileContent(file, resetEditing: false)
         }
     }
 
