@@ -56,6 +56,11 @@ Or just open `Flowbar.xcodeproj` in Xcode and hit Run.
 
 First launch: click the Flowbar icon in your menu bar, go to Settings, and point it at a folder with md files(you can create one inside your Obsidian vault if using Obsidian).
 
+## Limitations
+
+- **No nested folders** — Flowbar only picks up markdown files in the top-level of the selected folder. Nested subdirectories are not scanned.
+- **Obsidian users** — Don't point Flowbar at your entire Obsidian vault. Instead, create a dedicated folder inside your vault (e.g. `vault/flowbar/`) and point Flowbar at that. This keeps things fast and avoids pulling in Obsidian's internal files.
+
 ## Contributing
 
 This is a personal project, but if you find a bug or want to suggest an improvement, feel free to open an issue or submit a pull request. I'm happy to review and merge contributions that align with the minimalist design and core functionality.
