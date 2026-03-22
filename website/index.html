@@ -232,6 +232,8 @@
                 overflow: hidden;
                 border: 1px solid rgba(255, 255, 255, 0.06);
                 box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
+                aspect-ratio: 16 / 9;
+                background: var(--bg2);
             }
             .video-wrap video {
                 width: 100%;
@@ -244,7 +246,9 @@
                 align-items: center;
                 justify-content: center;
                 background: rgba(0, 0, 0, 0.35);
-                transition: opacity 0.3s, background 0.3s;
+                transition:
+                    opacity 0.3s,
+                    background 0.3s;
             }
             .video-wrap .play-btn svg {
                 width: 64px;
@@ -733,42 +737,41 @@
             <h2>See it in <span>action</span></h2>
             <p class="video-subtitle">A quick look at how Flowbar fits into your workflow.</p>
             <div class="video-wrap" id="product-video">
-                <video
-                    src="./assets/flowbar-launch-hq.mp4"
-                    playsinline
-                    preload="metadata"
-                ></video>
+                <video src="./assets/flowbar-launch-hq.mp4" playsinline preload="metadata"></video>
                 <div class="play-btn">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5.14v14l11-7-11-7z" />
+                    </svg>
                 </div>
                 <div class="progress-bar"></div>
             </div>
             <script>
-            (function() {
-                const wrap = document.getElementById('product-video');
-                const vid = wrap.querySelector('video');
-                const btn = wrap.querySelector('.play-btn');
-                const bar = wrap.querySelector('.progress-bar');
-                wrap.addEventListener('click', function() {
-                    if (vid.paused) {
-                        vid.play();
-                        btn.classList.add('hidden');
-                        wrap.classList.add('playing');
-                    } else {
-                        vid.pause();
-                        btn.classList.remove('hidden');
-                        wrap.classList.remove('playing');
-                    }
-                });
-                vid.addEventListener('timeupdate', function() {
-                    if (vid.duration) bar.style.width = (vid.currentTime / vid.duration * 100) + '%';
-                });
-                vid.addEventListener('ended', function() {
-                    btn.classList.remove('hidden');
-                    wrap.classList.remove('playing');
-                    bar.style.width = '0%';
-                });
-            })();
+                (function () {
+                    const wrap = document.getElementById("product-video");
+                    const vid = wrap.querySelector("video");
+                    const btn = wrap.querySelector(".play-btn");
+                    const bar = wrap.querySelector(".progress-bar");
+                    wrap.addEventListener("click", function () {
+                        if (vid.paused) {
+                            vid.play();
+                            btn.classList.add("hidden");
+                            wrap.classList.add("playing");
+                        } else {
+                            vid.pause();
+                            btn.classList.remove("hidden");
+                            wrap.classList.remove("playing");
+                        }
+                    });
+                    vid.addEventListener("timeupdate", function () {
+                        if (vid.duration)
+                            bar.style.width = (vid.currentTime / vid.duration) * 100 + "%";
+                    });
+                    vid.addEventListener("ended", function () {
+                        btn.classList.remove("hidden");
+                        wrap.classList.remove("playing");
+                        bar.style.width = "0%";
+                    });
+                })();
             </script>
         </div>
 
