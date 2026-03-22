@@ -1,4 +1,5 @@
 name: Build DMG
+run-name: Build DMG v${{ inputs.version }}
 
 on:
   workflow_dispatch:
