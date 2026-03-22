@@ -27,7 +27,7 @@ Click the Flowbar icon in your menubar or press the global shortcut (double-tap 
 
 ## Download & Install
 
-1. Grab the latest **Flowbar.dmg** from the [Releases page](https://github.com/triptu/flowbar/releases/latest).
+1. Grab the latest **Flowbar.dmg** from the [Releases page](https://github.com/triptu/flowbar/releases/latest). [Direct DMG link](https://github.com/triptu/flowbar/releases/latest/download/Flowbar.dmg).
 2. Open the DMG and drag **Flowbar** into your **Applications** folder.
 3. Launch Flowbar — macOS will show a security warning because the app isn't notarized (Apple charges $$ for a certificate, and this is a free side project).
 4. Open **System Settings → Privacy & Security**, scroll down, and click **"Open Anyway"**. You only need to do this once.
