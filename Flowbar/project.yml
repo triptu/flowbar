@@ -13,6 +13,18 @@ settings:
     SWIFT_VERSION: "6.0"
     MACOSX_DEPLOYMENT_TARGET: "15.0"
 
+schemes:
+  Flowbar:
+    build:
+      targets:
+        Flowbar: all
+        FlowbarTests: [test]
+        FlowbarUITests: [test]
+    test:
+      targets:
+        - FlowbarTests
+        - FlowbarUITests
+
 targets:
   Flowbar:
     type: application
@@ -34,6 +46,7 @@ targets:
       configs:
         Debug:
           PRODUCT_NAME: Flowbar Dev
+          PRODUCT_MODULE_NAME: Flowbar
           PRODUCT_BUNDLE_IDENTIFIER: com.flowbar.app.dev
     entitlements:
       path: Resources/Flowbar.entitlements
@@ -51,6 +64,9 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.flowbar.tests
         GENERATE_INFOPLIST_FILE: YES
+      configs:
+        Debug:
+          TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Flowbar Dev.app/Contents/MacOS/Flowbar Dev"
 
   FlowbarUITests:
     type: bundle.ui-testing

@@ -26,6 +26,21 @@ struct TimerServiceTests {
         #expect(TimerService.formatTime(input) == expected)
     }
 
+    // MARK: - menuBarTitle
+
+    @Test("menuBarTitle", arguments: [
+        (false, "Buy groceries", 120.0, false, ""),
+        (false, "", 0.0, false, ""),
+        (true, "Buy groceries", 65.0, false, " Buy grocerie…  01:05"),
+        (true, "Short", 5.0, false, " Short  00:05"),
+        (true, "Exactly12char", 3600.0, false, " Exactly12cha…  1:00:00"),
+        (true, "Buy groceries", 120.0, true, " Buy grocerie…  02:00 ⏸"),
+        (true, "Short", 0.0, true, " Short  00:00 ⏸"),
+    ] as [(Bool, String, TimeInterval, Bool, String)])
+    func menuBarTitle(hasActive: Bool, text: String, elapsed: TimeInterval, paused: Bool, expected: String) {
+        #expect(WindowManager.menuBarTitle(hasActiveSession: hasActive, todoText: text, elapsed: elapsed, isPaused: paused) == expected)
+    }
+
     // MARK: - mergeTimeline
 
     private typealias Entry = (todoText: String, sourceFile: String, startedAt: Date, endedAt: Date)

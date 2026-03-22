@@ -33,7 +33,7 @@ final class WindowManager: NSObject {
     init(appState: AppState, timerService: TimerService) {
         self.appState = appState
         self.timerService = timerService
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusMenu = NSMenu()
         super.init()
 
@@ -52,9 +52,12 @@ final class WindowManager: NSObject {
 
         if let button = statusItem.button {
             button.image = Self.makeMenuBarIcon()
+            button.imagePosition = .imageLeading
             button.action = #selector(statusItemClicked(_:))
             button.target = self
         }
+
+        startObservingTimer()
 
         // Sync panel appearance when system theme changes
         appearanceObserver = NSApp.observe(\.effectiveAppearance) { [weak self] _, _ in
@@ -75,6 +78,49 @@ final class WindowManager: NSObject {
             }
             return event
         }
+    }
+
+    /// Observes TimerService to update the menu bar button with active task info.
+    private func startObservingTimer() {
+        withObservationTracking {
+            // hasActiveSession is `isRunning || isPaused` — when isRunning is true,
+            // isPaused is never read due to short-circuit. Track it explicitly so
+            // onChange fires when the timer pauses (to show ⏸ indicator).
+            _ = timerService.hasActiveSession
+            _ = timerService.isPaused
+            _ = timerService.elapsed
+            _ = timerService.currentTodoText
+        } onChange: { [weak self] in
+            Task { @MainActor [weak self] in
+                self?.updateMenuBarTitle()
+                self?.startObservingTimer()
+            }
+        }
+        updateMenuBarTitle()
+    }
+
+    private func updateMenuBarTitle() {
+        guard let button = statusItem.button else { return }
+        let title = Self.menuBarTitle(
+            hasActiveSession: timerService.hasActiveSession,
+            todoText: timerService.currentTodoText,
+            elapsed: timerService.elapsed,
+            isPaused: timerService.isPaused
+        )
+        guard button.title != title else { return }
+        button.title = title
+        button.font = title.isEmpty ? nil : Self.timerFont
+    }
+
+    @ObservationIgnored
+    private static let timerFont = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize - 1, weight: .regular)
+
+    /// Pure function for testability: formats the menu bar title string.
+    nonisolated static func menuBarTitle(hasActiveSession: Bool, todoText: String, elapsed: TimeInterval, isPaused: Bool) -> String {
+        guard hasActiveSession else { return "" }
+        let time = TimerService.formatTime(elapsed)
+        let pause = isPaused ? " ⏸" : ""
+        return " \(todoText.truncated(to: 12))  \(time)\(pause)"
     }
 
     @objc private func statusItemClicked(_ sender: Any?) {

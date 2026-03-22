@@ -19,7 +19,7 @@ struct TitleBarLabel: View {
                         Text(TimerService.formatTime(timerService.elapsed))
                             .monospacedDigit()
                             .foregroundStyle(.secondary)
-                        Text(truncated(timerService.currentTodoText, limit: 25))
+                        Text(timerService.currentTodoText.truncated(to: 25))
                             .lineLimit(1)
                             .truncationMode(.tail)
                     }
@@ -54,7 +54,10 @@ struct TitleBarLabel: View {
         .padding(.leading, appState.sidebar.sidebarVisible ? CGFloat(appState.sidebar.sidebarWidth) + 5 : 0)
     }
 
-    private func truncated(_ text: String, limit: Int) -> String {
-        text.count > limit ? String(text.prefix(limit)) + "…" : text
+}
+
+extension String {
+    func truncated(to limit: Int) -> String {
+        count > limit ? String(prefix(limit)) + "…" : self
     }
 }

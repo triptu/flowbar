@@ -509,6 +509,7 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.flowbar.app.dev;
+				PRODUCT_MODULE_NAME = Flowbar;
 				PRODUCT_NAME = "Flowbar Dev";
 				SDKROOT = macosx;
 			};
@@ -527,7 +528,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.flowbar.tests;
 				SDKROOT = macosx;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Flowbar.app/Contents/MacOS/Flowbar";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Flowbar Dev.app/Contents/MacOS/Flowbar Dev";
 			};
 			name = Debug;
 		};
