@@ -37,11 +37,16 @@ final class WindowManager: NSObject {
         statusMenu = NSMenu()
         super.init()
 
-        let openItem = NSMenuItem(title: "Open Flowbar", action: #selector(openFromMenu), keyEquivalent: "")
+        #if DEBUG
+        let appName = "Flowbar Dev"
+        #else
+        let appName = "Flowbar"
+        #endif
+        let openItem = NSMenuItem(title: "Open \(appName)", action: #selector(openFromMenu), keyEquivalent: "")
         openItem.target = self
         statusMenu.addItem(openItem)
         statusMenu.addItem(.separator())
-        let quitItem = NSMenuItem(title: "Quit Flowbar", action: #selector(quitApp), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: "Quit \(appName)", action: #selector(quitApp), keyEquivalent: "q")
         quitItem.target = self
         statusMenu.addItem(quitItem)
 

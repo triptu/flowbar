@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AA1111111111111111111111 /* GlobalShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1111111111111111111111 /* GlobalShortcut.swift */; };
-		AA2222222222222222222222 /* ShortcutRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB2222222222222222222222 /* ShortcutRecorderView.swift */; };
-		AA3333333333333333333333 /* GlobalShortcutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3333333333333333333333 /* GlobalShortcutTests.swift */; };
 		02809DCA65555BE65F063A9F /* NoteContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BE9090CD422B39C22928F8C /* NoteContentView.swift */; };
 		0355283C9CFC77C39858F458 /* TimerServiceIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0A0AFB96F9D551689167D3 /* TimerServiceIntentTests.swift */; };
 		09487C36AEA44DEB3EEF97D0 /* MarkdownEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E24C83A4A1DC47A34546EA3 /* MarkdownEditorView.swift */; };
@@ -17,11 +14,13 @@
 		146F4D72B3489682B628BED5 /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EACC84A08EAE2C331909302 /* ModelTests.swift */; };
 		1D2BB381AFCD98E4DF91EC57 /* TimerServiceLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34CB4C7549D4E83A19F5FF43 /* TimerServiceLifecycleTests.swift */; };
 		1F5459341A5FC4B65113F386 /* AppStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEF20A10743ADB27EC3D5761 /* AppStateTests.swift */; };
+		264D0FD6D1EDDD539A1440FF /* GlobalShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC2122F8AA5B8B996902EB35 /* GlobalShortcut.swift */; };
 		33F5E63DCB5F9DD94C47FD32 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4709745944EB39D269992BF /* Typography.swift */; };
 		355C6AD435E81701E806ABB6 /* SearchState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C570552BF163D208240E5F0F /* SearchState.swift */; };
 		35D71C71BBC19C145CA3A4B1 /* MarkdownParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A002EBBE343A998F6AD2374 /* MarkdownParserTests.swift */; };
 		3984983E23990B8B93A672AC /* WindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FE4FC5C82B7F98DA55EA658 /* WindowManager.swift */; };
 		3B64C287DD55F36CB6A1C692 /* MarkdownBlockParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FFA9B476EBA20F346ECA6F7 /* MarkdownBlockParserTests.swift */; };
+		3CF166A148A08429BEDD69D0 /* ShortcutRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E182CA139B433EF47FE91ECA /* ShortcutRecorderView.swift */; };
 		42A5459E77ED6745E1DBCD43 /* NoteFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 635F72DDE09908762049B42B /* NoteFile.swift */; };
 		42DD96B155C593078565CF7D /* FileOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17BB2C6C1AB7D078E4FD1381 /* FileOperationsTests.swift */; };
 		4F139AF375C4FA41F292C0E7 /* MarkdownParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1B419B41DBE32FBEC53E7E /* MarkdownParser.swift */; };
@@ -42,6 +41,7 @@
 		AB59DF582AD4C507CCF793E1 /* MarkdownPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54CD749B6DD3D3CE8D8305A1 /* MarkdownPreviewView.swift */; };
 		B09973A5834843B57F506206 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 679770A71B494E81BD99BB16 /* SettingsView.swift */; };
 		B212B9071DB0D2B27E7D5334 /* TitleBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0BF69A8C9E2C43EC6598948 /* TitleBarView.swift */; };
+		B760600CF45F63CD4182C170 /* GlobalShortcutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E0B1F7BDB314EDE213A9EB6 /* GlobalShortcutTests.swift */; };
 		BC6659874A56FF8D6E7F4268 /* SidebarToggleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F835D11B53685F85D8EF57A /* SidebarToggleButton.swift */; };
 		BE8CACC0DB336F9249758FD2 /* FlowbarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB2D31A2E469ADB3AE12A356 /* FlowbarApp.swift */; };
 		C746A5D814A657E0B9D744A4 /* AppStateNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E92AC056D0D1D801EA2F5A /* AppStateNavigationTests.swift */; };
@@ -72,9 +72,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		BB1111111111111111111111 /* GlobalShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalShortcut.swift; sourceTree = "<group>"; };
-		BB2222222222222222222222 /* ShortcutRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorderView.swift; sourceTree = "<group>"; };
-		BB3333333333333333333333 /* GlobalShortcutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalShortcutTests.swift; sourceTree = "<group>"; };
 		06DABC3A9E8EB88A3D9F59F2 /* TimerHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerHomeView.swift; sourceTree = "<group>"; };
 		0E24C83A4A1DC47A34546EA3 /* MarkdownEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownEditorView.swift; sourceTree = "<group>"; };
 		0EACC84A08EAE2C331909302 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
@@ -99,6 +96,7 @@
 		635F72DDE09908762049B42B /* NoteFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteFile.swift; sourceTree = "<group>"; };
 		679770A71B494E81BD99BB16 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6D2938A16169339850B84E63 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		6E0B1F7BDB314EDE213A9EB6 /* GlobalShortcutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalShortcutTests.swift; sourceTree = "<group>"; };
 		6F835D11B53685F85D8EF57A /* SidebarToggleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarToggleButton.swift; sourceTree = "<group>"; };
 		7A266BA9229D8B4FF01FD473 /* FlowbarUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlowbarUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7D9EFAC3B9D3F56345305475 /* EditorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorState.swift; sourceTree = "<group>"; };
@@ -118,6 +116,8 @@
 		C570552BF163D208240E5F0F /* SearchState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchState.swift; sourceTree = "<group>"; };
 		CB2D31A2E469ADB3AE12A356 /* FlowbarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowbarApp.swift; sourceTree = "<group>"; };
 		D6ED3E33C94F635C05FDAE36 /* SettingsState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsState.swift; sourceTree = "<group>"; };
+		E182CA139B433EF47FE91ECA /* ShortcutRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorderView.swift; sourceTree = "<group>"; };
+		EC2122F8AA5B8B996902EB35 /* GlobalShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalShortcut.swift; sourceTree = "<group>"; };
 		ED1B419B41DBE32FBEC53E7E /* MarkdownParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownParser.swift; sourceTree = "<group>"; };
 		F6B0E80A3C0E7534674FD493 /* Flowbar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flowbar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -148,7 +148,7 @@
 				90E92AC056D0D1D801EA2F5A /* AppStateNavigationTests.swift */,
 				AEF20A10743ADB27EC3D5761 /* AppStateTests.swift */,
 				17BB2C6C1AB7D078E4FD1381 /* FileOperationsTests.swift */,
-				BB3333333333333333333333 /* GlobalShortcutTests.swift */,
+				6E0B1F7BDB314EDE213A9EB6 /* GlobalShortcutTests.swift */,
 				A7C86951E8C0ECA5E746AD0B /* SearchStateTests.swift */,
 			);
 			path = App;
@@ -191,7 +191,7 @@
 		A227C786E98033FCCA2597B3 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				BB2222222222222222222222 /* ShortcutRecorderView.swift */,
+				E182CA139B433EF47FE91ECA /* ShortcutRecorderView.swift */,
 				8510A28B4BDA11F845C2A2F0 /* SidebarFooter.swift */,
 				6F835D11B53685F85D8EF57A /* SidebarToggleButton.swift */,
 				4437CE287B73D4B42D2A7488 /* TodoRow.swift */,
@@ -206,7 +206,7 @@
 				6D2938A16169339850B84E63 /* AppState.swift */,
 				7D9EFAC3B9D3F56345305475 /* EditorState.swift */,
 				CB2D31A2E469ADB3AE12A356 /* FlowbarApp.swift */,
-				BB1111111111111111111111 /* GlobalShortcut.swift */,
+				EC2122F8AA5B8B996902EB35 /* GlobalShortcut.swift */,
 				C570552BF163D208240E5F0F /* SearchState.swift */,
 				D6ED3E33C94F635C05FDAE36 /* SettingsState.swift */,
 				270E141D1C4D7BA89319620F /* SidebarState.swift */,
@@ -399,7 +399,7 @@
 				C746A5D814A657E0B9D744A4 /* AppStateNavigationTests.swift in Sources */,
 				1F5459341A5FC4B65113F386 /* AppStateTests.swift in Sources */,
 				42DD96B155C593078565CF7D /* FileOperationsTests.swift in Sources */,
-				AA3333333333333333333333 /* GlobalShortcutTests.swift in Sources */,
+				B760600CF45F63CD4182C170 /* GlobalShortcutTests.swift in Sources */,
 				3B64C287DD55F36CB6A1C692 /* MarkdownBlockParserTests.swift in Sources */,
 				35D71C71BBC19C145CA3A4B1 /* MarkdownParserTests.swift in Sources */,
 				146F4D72B3489682B628BED5 /* ModelTests.swift in Sources */,
@@ -422,7 +422,7 @@
 				E037448B11CE5D13C85FF32F /* FileWatcher.swift in Sources */,
 				A1C37D455CD1DEEE92C0F49F /* FloatingPanel.swift in Sources */,
 				BE8CACC0DB336F9249758FD2 /* FlowbarApp.swift in Sources */,
-				AA1111111111111111111111 /* GlobalShortcut.swift in Sources */,
+				264D0FD6D1EDDD539A1440FF /* GlobalShortcut.swift in Sources */,
 				F6A2FCC540B165487531BA6C /* MainView.swift in Sources */,
 				09487C36AEA44DEB3EEF97D0 /* MarkdownEditorView.swift in Sources */,
 				4F139AF375C4FA41F292C0E7 /* MarkdownParser.swift in Sources */,
@@ -433,7 +433,7 @@
 				355C6AD435E81701E806ABB6 /* SearchState.swift in Sources */,
 				C895F36D66E375625C22A858 /* SettingsState.swift in Sources */,
 				B09973A5834843B57F506206 /* SettingsView.swift in Sources */,
-				AA2222222222222222222222 /* ShortcutRecorderView.swift in Sources */,
+				3CF166A148A08429BEDD69D0 /* ShortcutRecorderView.swift in Sources */,
 				56FDF78959DAAC5E59386E6F /* SidebarFooter.swift in Sources */,
 				D086C43C3929EF6052A89C94 /* SidebarState.swift in Sources */,
 				BC6659874A56FF8D6E7F4268 /* SidebarToggleButton.swift in Sources */,
@@ -489,6 +489,7 @@
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.flowbar.app;
+				PRODUCT_NAME = Flowbar;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -507,7 +508,8 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.flowbar.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.flowbar.app.dev;
+				PRODUCT_NAME = "Flowbar Dev";
 				SDKROOT = macosx;
 			};
 			name = Debug;

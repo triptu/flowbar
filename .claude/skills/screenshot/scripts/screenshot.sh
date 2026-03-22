@@ -24,8 +24,12 @@ for arg in "$@"; do
   esac
 done
 
-# Check Flowbar is running
-if ! pgrep -x Flowbar > /dev/null; then
+# Check Flowbar is running (support both release "Flowbar" and dev "Flowbar Dev")
+if pgrep -x "Flowbar Dev" > /dev/null; then
+  PROCESS_NAME="Flowbar Dev"
+elif pgrep -x Flowbar > /dev/null; then
+  PROCESS_NAME="Flowbar"
+else
   echo "ERROR: Flowbar is not running. Build and launch it first." >&2
   exit 1
 fi
@@ -42,7 +46,7 @@ fi
 
 # Show the panel if requested
 if [ "$SHOW_PANEL" = true ]; then
-  osascript -e 'tell application "System Events" to tell process "Flowbar" to click menu bar item 1 of menu bar 2'
+  osascript -e "tell application \"System Events\" to tell process \"$PROCESS_NAME\" to click menu bar item 1 of menu bar 2"
   sleep 0.5
 fi
 

@@ -16,6 +16,7 @@ done
 
 echo "==> Killing existing Flowbar instance..."
 pkill -x Flowbar 2>/dev/null || true
+pkill -x "Flowbar Dev" 2>/dev/null || true
 
 if [ "$SKIP_XCODEGEN" = false ]; then
   echo "==> Generating Xcode project..."
@@ -32,6 +33,8 @@ xcodebuild build \
   2>&1 | tail -20
 
 echo "==> Launching Flowbar..."
-open build/DerivedData/Build/Products/Debug/Flowbar.app
+APP_PATH="build/DerivedData/Build/Products/Debug/Flowbar Dev.app"
+[ -d "$APP_PATH" ] || APP_PATH="build/DerivedData/Build/Products/Debug/Flowbar.app"
+open "$APP_PATH"
 
 echo "==> Done! Flowbar is running."
