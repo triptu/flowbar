@@ -7,18 +7,20 @@ struct TimerHomeView: View {
     @State private var timeline: [(todoText: String, sourceFile: String, startedAt: Date, endedAt: Date, duration: TimeInterval)] = []
 
     var body: some View {
-        VStack(spacing: 0) {
-            Group {
-                if timerService.hasActiveSession {
-                    runningView
-                } else {
-                    idleView
+        ScrollView {
+            VStack(spacing: 0) {
+                Group {
+                    if timerService.hasActiveSession {
+                        runningView
+                    } else {
+                        idleView
+                    }
                 }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity, minHeight: 250)
 
-            if !timeline.isEmpty {
-                timelineView
+                if !timeline.isEmpty {
+                    timelineView
+                }
             }
         }
         .focusable()
