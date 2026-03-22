@@ -37,6 +37,19 @@ struct SidebarView: View {
             .contextMenu {
                 Button("New File") { appState.createNewFile() }
             }
+            .overlay {
+                if appState.sidebar.noteFiles.isEmpty {
+                    VStack(spacing: 8) {
+                        Text("No files yet")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.secondary)
+                        Text("Right-click to create one")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
 
             Spacer()
             SidebarFooter()
