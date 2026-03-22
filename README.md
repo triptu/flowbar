@@ -20,6 +20,7 @@ Click the Flowbar icon in your menubar or press the global shortcut (double-tap 
 - **Markdown Preview** - renders your checkboxes as todos, which can be toggled with ease
 - **Todo list** — aggregated view of all todos across your markdown files and ability to check them off, which updates the source file. Markdown files remain the source of truth.
 - **Timer** — stopwatch to start on any todo and track time against it
+- **Menu bar timer** — active task name and elapsed time shown right in the menu bar so you always know what you're working on
 - **Timeline** - timeline of the day showing time spent on each todo
 - **Quick search** — hit ⌘K to search across all notes by filename and content
 - **Personalization** - Theme, color and font size
