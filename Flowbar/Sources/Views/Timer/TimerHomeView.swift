@@ -39,6 +39,7 @@ struct TimerHomeView: View {
                 previousTotal = 0
             }
         }
+        .clipped()
     }
 
     private func refreshTimeline() {
