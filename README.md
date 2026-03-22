@@ -6,7 +6,7 @@
 
 A native macOS menubar app for quick access to a folder of markdown notes and todos with integrated time tracking to help you focus. Opens as a window overlay on top of whatever else you're doing with the shortcut double Fn(configurable). 
 
-I use Obsidian but wanted something lighter so I can check/edit todos and notes without opening the full app. I built this app which is pointed to a directory in my Obsidian vault.
+I use Obsidian but wanted something lighter so I can check/edit todos and notes without opening the full app. I built this app which is pointed to a directory in my Obsidian vault. Read the [blog post](https://tushar.ai/posts/flowbar/) for the full story.
 
 Click the Flowbar icon in your menubar or press the global shortcut (double-tap `Fn` by default) and a floating overlay appears with your notes right there. Edit them, check off todos, track time on tasks. Click the icon again or double-tap Fn to toggle it from anywhere.
 
