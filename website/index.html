@@ -303,7 +303,9 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                transition: background 0.15s, color 0.15s;
+                transition:
+                    background 0.15s,
+                    color 0.15s;
                 padding: 0;
             }
             .video-controls button:hover {
@@ -770,7 +772,7 @@
         </div>
 
         <!-- ── Product video ── -->
-        <div class="video-section">
+        <div id="video-section" class="video-section">
             <h2>See it in <span>action</span></h2>
             <p class="video-subtitle">A quick look at how Flowbar fits into your workflow.</p>
             <div class="video-wrap" id="product-video">
@@ -782,15 +784,32 @@
                 </div>
                 <div class="video-controls">
                     <button class="mute-btn" title="Mute">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-                            <path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07"/>
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                            <path d="M19.07 4.93a10 10 0 010 14.14" />
+                            <path d="M15.54 8.46a5 5 0 010 7.07" />
                         </svg>
                     </button>
                     <button class="fs-btn" title="Fullscreen">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-                            <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <polyline points="15 3 21 3 21 9" />
+                            <polyline points="9 21 3 21 3 15" />
+                            <line x1="21" y1="3" x2="14" y2="10" />
+                            <line x1="3" y1="21" x2="10" y2="14" />
                         </svg>
                     </button>
                 </div>
@@ -805,7 +824,8 @@
                     const muteBtn = wrap.querySelector(".mute-btn");
                     const fsBtn = wrap.querySelector(".fs-btn");
                     var volOn = muteBtn.innerHTML;
-                    const volOff = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+                    const volOff =
+                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
                     wrap.addEventListener("click", function (e) {
                         if (e.target.closest(".video-controls")) return;
                         if (vid.paused) {
