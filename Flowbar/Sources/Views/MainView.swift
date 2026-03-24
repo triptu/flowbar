@@ -25,6 +25,8 @@ struct MainView: View {
                     SettingsView()
                 case .timer:
                     TimerContainerView()
+                case .dailyNote:
+                    DailyNoteContentView()
                 case .file:
                     NoteContentView()
                 case .empty:
@@ -104,6 +106,10 @@ struct MainView: View {
                 timerService.screen = .todos
             }
                 .keyboardShortcut("l", modifiers: [.option, .command])
+
+            // Open daily note
+            Button("") { appState.showDailyNote() }
+                .keyboardShortcut("d", modifiers: [.option, .command])
 
             // Toggle search
             Button("") { appState.search.toggle(files: appState.sidebar.noteFiles) }
