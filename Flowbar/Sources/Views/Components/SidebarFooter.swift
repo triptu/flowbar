@@ -5,9 +5,13 @@ struct SidebarFooter: View {
 
     private var isSettings: Bool { appState.sidebar.activePanel == .settings }
     private var isTimer: Bool { appState.sidebar.activePanel == .timer }
+    private var isDailyNote: Bool { appState.sidebar.activePanel == .dailyNote }
 
     var body: some View {
         HStack(spacing: 4) {
+            footerButton(icon: "calendar", label: "Today", isActive: isDailyNote) {
+                isDailyNote ? appState.returnToFiles() : appState.showDailyNote()
+            }
             footerButton(icon: "gearshape", label: "Settings", isActive: isSettings) {
                 isSettings ? appState.returnToFiles() : appState.showSettings()
             }

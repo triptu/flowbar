@@ -99,6 +99,45 @@ enum MarkdownParser {
             && Set(stripped).count == 1
     }
 
+    // MARK: - Heading extraction
+
+    /// Extract all headings from markdown content as (level, text) pairs.
+    static func extractHeadings(from content: String) -> [(level: Int, text: String)] {
+        content.components(separatedBy: "\n").compactMap { line in
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard let (level, text) = parseHeading(trimmed) else { return nil }
+            return (level, text)
+        }
+    }
+
+    /// Extract the content under a specific heading (until the next heading of same or higher level).
+    static func sectionContent(for headingText: String, in content: String) -> String {
+        let lines = content.components(separatedBy: "\n")
+        var collecting = false
+        var headingLevel = 0
+        var result: [String] = []
+
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if let (level, text) = parseHeading(trimmed) {
+                if collecting {
+                    // Stop at same or higher level heading
+                    if level <= headingLevel { break }
+                }
+                if text == headingText && !collecting {
+                    collecting = true
+                    headingLevel = level
+                    result.append(line)
+                    continue
+                }
+            }
+            if collecting {
+                result.append(line)
+            }
+        }
+        return result.joined(separator: "\n")
+    }
+
     // MARK: - Line-level todo toggle
 
     /// Toggles a single line between `- [ ]` and `- [x]`. Returns the toggled line, or nil if not a todo.

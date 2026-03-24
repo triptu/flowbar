@@ -7,6 +7,7 @@ enum AppTheme: String, CaseIterable {
 
 enum ActivePanel: Equatable {
     case file(NoteFile)
+    case dailyNote
     case settings
     case timer
     case empty
@@ -23,6 +24,19 @@ final class AppState {
     let sidebar: SidebarState
     let editor: EditorState
     let search: SearchState
+
+    // MARK: - Daily Note
+
+    var dailyNoteContent: String = ""
+    var dailyNoteHeadings: [(level: Int, text: String)] = []
+    var dailyNoteSelectedHeading: String?
+    @ObservationIgnored private var dailyNoteWatcher: FileWatcher?
+
+    /// The filtered content to display — full note or just the selected heading's section.
+    var dailyNoteDisplayContent: String {
+        guard let heading = dailyNoteSelectedHeading else { return dailyNoteContent }
+        return MarkdownParser.sectionContent(for: heading, in: dailyNoteContent)
+    }
 
     init(defaults: UserDefaults = .standard) {
         self.settings = SettingsState(defaults: defaults)
@@ -200,6 +214,86 @@ final class AppState {
                 sidebar.activePanel = .empty
             }
         }
+    }
+
+    // MARK: - Daily Note
+
+    var dailyNoteExists: Bool = false
+
+    var dailyNoteURL: URL? {
+        guard !settings.folderPath.isEmpty else { return nil }
+        let filename = settings.dailyNoteFilename()
+        return URL(fileURLWithPath: settings.folderPath).appendingPathComponent("\(filename).md")
+    }
+
+    func showDailyNote() {
+        guard !settings.folderPath.isEmpty else { return }
+        dailyNoteSelectedHeading = nil
+        sidebar.activePanel = .dailyNote
+        guard let fileURL = dailyNoteURL else { return }
+        dailyNoteExists = FileManager.default.fileExists(atPath: fileURL.path)
+        guard dailyNoteExists else { return }
+        loadDailyNoteContent(from: fileURL)
+        watchDailyNote(at: fileURL)
+    }
+
+    func createDailyNote() {
+        guard let fileURL = dailyNoteURL else { return }
+        let content = resolveTemplate(for: fileURL)
+        try? content.write(to: fileURL, atomically: true, encoding: .utf8)
+        dailyNoteExists = true
+        loadDailyNoteContent(from: fileURL)
+        watchDailyNote(at: fileURL)
+    }
+
+    private func resolveTemplate(for fileURL: URL) -> String {
+        let templatePath = settings.dailyNoteTemplatePath
+        guard !templatePath.isEmpty,
+              let raw = try? String(contentsOfFile: templatePath, encoding: .utf8) else {
+            return ""
+        }
+        let title = fileURL.deletingPathExtension().lastPathComponent
+        let now = Date()
+        // Substitute Obsidian template tokens
+        var result = raw
+            .replacingOccurrences(of: "{{title}}", with: title)
+            .replacingOccurrences(of: "{{date}}", with: settings.dailyNoteFilename(for: now))
+            .replacingOccurrences(of: "{{time}}", with: formatTime(now))
+        // {{date:FORMAT}} — replace each occurrence
+        if let regex = try? NSRegularExpression(pattern: #"\{\{date:(.+?)\}\}"#) {
+            let nsResult = result as NSString
+            let matches = regex.matches(in: result, range: NSRange(location: 0, length: nsResult.length))
+            for match in matches.reversed() {
+                let fmtRange = match.range(at: 1)
+                let fmt = nsResult.substring(with: fmtRange)
+                let replacement = settings.dailyNoteFilename(for: now, format: fmt)
+                result = (result as NSString).replacingCharacters(in: match.range, with: replacement)
+            }
+        }
+        return result
+    }
+
+    private func formatTime(_ date: Date) -> String {
+        let fmt = DateFormatter()
+        fmt.dateFormat = "HH:mm"
+        return fmt.string(from: date)
+    }
+
+    private func watchDailyNote(at fileURL: URL) {
+        dailyNoteWatcher = FileWatcher(url: fileURL) { [weak self] in
+            Task { @MainActor in
+                self?.loadDailyNoteContent(from: fileURL)
+            }
+        }
+    }
+
+    private func loadDailyNoteContent(from url: URL) {
+        dailyNoteContent = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
+        dailyNoteHeadings = MarkdownParser.extractHeadings(from: dailyNoteContent)
+    }
+
+    func selectDailyNoteHeading(_ heading: String?) {
+        dailyNoteSelectedHeading = heading
     }
 
     // MARK: - External app integration

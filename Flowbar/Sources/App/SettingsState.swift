@@ -44,6 +44,13 @@ final class SettingsState {
         }
     }
 
+    var dailyNoteFormat: String {
+        didSet { defaults.set(dailyNoteFormat, forKey: "dailyNoteFormat") }
+    }
+    var dailyNoteTemplatePath: String {
+        didSet { defaults.set(dailyNoteTemplatePath, forKey: "dailyNoteTemplatePath") }
+    }
+
     var globalShortcut: GlobalShortcut {
         didSet {
             guard globalShortcut != oldValue else { return }
@@ -70,6 +77,8 @@ final class SettingsState {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        self.dailyNoteFormat = defaults.string(forKey: "dailyNoteFormat") ?? "YYYY-MM-DD"
+        self.dailyNoteTemplatePath = defaults.string(forKey: "dailyNoteTemplatePath") ?? ""
         self.folderPath = defaults.string(forKey: "folderPath") ?? ""
         self.theme = AppTheme(rawValue: defaults.string(forKey: "theme") ?? "") ?? .dark
         self.typography = TypographySize(rawValue: defaults.string(forKey: "typography") ?? "") ?? .default
@@ -82,6 +91,19 @@ final class SettingsState {
         }
         self.windowFrames = defaults.object(forKey: "windowFrames") as? [String: [Double]] ?? [:]
         self.launchAtLogin = SMAppService.mainApp.status == .enabled
+    }
+
+    /// Resolve a date string from an Obsidian-style format (e.g. "YYYY-MM-DD" → "2026-03-24").
+    /// Uses `dailyNoteFormat` by default; pass a custom `format` for `{{date:FORMAT}}` tokens.
+    func dailyNoteFilename(for date: Date = Date(), format: String? = nil) -> String {
+        let fmt = DateFormatter()
+        let swift = (format ?? dailyNoteFormat)
+            .replacingOccurrences(of: "YYYY", with: "yyyy")
+            .replacingOccurrences(of: "dddd", with: "EEEE")
+            .replacingOccurrences(of: "ddd", with: "EEE")
+            .replacingOccurrences(of: "DD", with: "dd")
+        fmt.dateFormat = swift
+        return fmt.string(from: date)
     }
 
     /// Toggle between light and dark theme.

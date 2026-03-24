@@ -3,52 +3,14 @@ import SwiftUI
 struct SidebarView: View {
     @Environment(AppState.self) var appState
 
+    private var isDailyNote: Bool { appState.sidebar.activePanel == .dailyNote }
+
     var body: some View {
         VStack(spacing: 0) {
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 2) {
-                    ForEach(appState.sidebar.noteFiles) { file in
-                        SidebarFileRow(
-                            file: file,
-                            isSelected: appState.sidebar.selectedFile?.id == file.id,
-                            isRenaming: appState.sidebar.renamingFileID == file.id
-                        )
-                        .onTapGesture {
-                            guard appState.sidebar.renamingFileID != file.id else { return }
-                            appState.selectFile(file)
-                        }
-                        .accessibilityElement(children: .contain)
-                        .accessibilityIdentifier("sidebar-row-\(file.id)")
-                        .contextMenu {
-                            Button("New File") { appState.createNewFile() }
-                            Divider()
-                            Button("Reveal in Finder") { appState.revealInFinder(file) }
-                            Button("Open in Obsidian") { appState.openInObsidian(file) }
-                            Divider()
-                            Button("Rename") { appState.startRename(file) }
-                            Divider()
-                            Button("Move to Trash", role: .destructive) { appState.trashFile(file) }
-                        }
-                    }
-                }
-                .padding(.vertical, 4)
-                .padding(.horizontal, 8)
-            }
-            .contextMenu {
-                Button("New File") { appState.createNewFile() }
-            }
-            .overlay {
-                if appState.sidebar.noteFiles.isEmpty {
-                    VStack(spacing: 8) {
-                        Text("No files yet")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(.secondary)
-                        Text("Right-click to create one")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.tertiary)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
+            if isDailyNote {
+                dailyNoteSidebar
+            } else {
+                fileListSidebar
             }
 
             Spacer()
@@ -56,6 +18,120 @@ struct SidebarView: View {
         }
         .frame(maxHeight: .infinity)
         .background(FlowbarColors.sidebarBg)
+    }
+
+    // MARK: - Daily Note Sidebar
+
+    private var dailyNoteSidebar: some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 2) {
+                // "All" row — shows full daily note
+                DailyNoteHeadingRow(
+                    text: appState.settings.dailyNoteFilename(),
+                    icon: "doc.text",
+                    isSelected: appState.dailyNoteSelectedHeading == nil,
+                    indent: 0
+                )
+                .onTapGesture { appState.selectDailyNoteHeading(nil) }
+                .accessibilityIdentifier("daily-note-all")
+
+                // Heading rows
+                ForEach(Array(appState.dailyNoteHeadings.enumerated()), id: \.offset) { _, heading in
+                    DailyNoteHeadingRow(
+                        text: heading.text,
+                        icon: nil,
+                        isSelected: appState.dailyNoteSelectedHeading == heading.text,
+                        indent: heading.level - 1
+                    )
+                    .onTapGesture { appState.selectDailyNoteHeading(heading.text) }
+                    .accessibilityIdentifier("daily-note-heading-\(heading.text)")
+                }
+            }
+            .padding(.vertical, 4)
+            .padding(.horizontal, 8)
+        }
+    }
+
+    // MARK: - File List Sidebar
+
+    private var fileListSidebar: some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 2) {
+                ForEach(appState.sidebar.noteFiles) { file in
+                    SidebarFileRow(
+                        file: file,
+                        isSelected: appState.sidebar.selectedFile?.id == file.id,
+                        isRenaming: appState.sidebar.renamingFileID == file.id
+                    )
+                    .onTapGesture {
+                        guard appState.sidebar.renamingFileID != file.id else { return }
+                        appState.selectFile(file)
+                    }
+                    .accessibilityElement(children: .contain)
+                    .accessibilityIdentifier("sidebar-row-\(file.id)")
+                    .contextMenu {
+                        Button("New File") { appState.createNewFile() }
+                        Divider()
+                        Button("Reveal in Finder") { appState.revealInFinder(file) }
+                        Button("Open in Obsidian") { appState.openInObsidian(file) }
+                        Divider()
+                        Button("Rename") { appState.startRename(file) }
+                        Divider()
+                        Button("Move to Trash", role: .destructive) { appState.trashFile(file) }
+                    }
+                }
+            }
+            .padding(.vertical, 4)
+            .padding(.horizontal, 8)
+        }
+        .contextMenu {
+            Button("New File") { appState.createNewFile() }
+        }
+        .overlay {
+            if appState.sidebar.noteFiles.isEmpty {
+                VStack(spacing: 8) {
+                    Text("No files yet")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.secondary)
+                    Text("Right-click to create one")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+    }
+}
+
+/// A sidebar row for daily note headings.
+struct DailyNoteHeadingRow: View {
+    @Environment(AppState.self) var appState
+    let text: String
+    let icon: String?
+    let isSelected: Bool
+    let indent: Int
+
+    var body: some View {
+        HStack(spacing: 6) {
+            if let icon {
+                Image(systemName: icon)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
+            Text(text)
+                .font(.system(size: appState.settings.typography.sidebarSize))
+                .foregroundStyle(isSelected ? .primary : .secondary)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.leading, 12 + CGFloat(indent) * 12)
+        .padding(.trailing, 12)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(isSelected ? appState.settings.accent.opacity(0.4) : Color.clear)
+        )
+        .contentShape(Rectangle())
     }
 }
 

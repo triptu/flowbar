@@ -30,6 +30,44 @@ struct SettingsView: View {
                     }
                 }
 
+                settingsSection("Daily Note") {
+                    HStack {
+                        Text("Filename Format")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        TextField("YYYY-MM-DD", text: Binding(
+                            get: { appState.settings.dailyNoteFormat },
+                            set: { appState.settings.dailyNoteFormat = $0 }
+                        ))
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 160)
+                        .font(.system(size: 12, design: .monospaced))
+                    }
+                    Text("Obsidian format: YYYY, MM, DD (e.g. YYYY-MM-DD → \(appState.settings.dailyNoteFilename()))")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+
+                    HStack {
+                        Text("Template File")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        TextField("Path to template .md file", text: Binding(
+                            get: { appState.settings.dailyNoteTemplatePath },
+                            set: { appState.settings.dailyNoteTemplatePath = $0 }
+                        ))
+                        .textFieldStyle(.roundedBorder)
+                        .font(.system(size: 11))
+                        Button("Browse...") { browseTemplate() }
+                            .buttonStyle(.bordered)
+                            .tint(appState.settings.accent)
+                    }
+                    Text("Supports: {{title}}, {{date}}, {{date:FORMAT}}, {{time}}")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                }
+
                 settingsSection("Appearance") {
                     settingsPickerRow("Theme", selection: $settings.theme, options: AppTheme.allCases) { $0.rawValue.capitalized }
                     settingsPickerRow("Text Size", selection: $settings.typography, options: TypographySize.allCases) { $0.rawValue.capitalized }
@@ -195,6 +233,17 @@ struct SettingsView: View {
                     RoundedRectangle(cornerRadius: 5)
                         .fill(Color.primary.opacity(0.06))
                 )
+        }
+    }
+
+    private func browseTemplate() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowedContentTypes = [.init(filenameExtension: "md")!]
+        panel.message = "Select your daily note template file"
+        if panel.runModal() == .OK, let url = panel.url {
+            appState.settings.dailyNoteTemplatePath = url.path
         }
     }
 
