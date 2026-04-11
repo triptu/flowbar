@@ -17,6 +17,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Show Xcode version
         run: xcodebuild -version
@@ -63,21 +65,39 @@ jobs:
           path: build/Flowbar.dmg
           retention-days: 30
 
+      - name: Generate release notes
+        run: |
+          PREV_TAG=$(git tag --sort=-v:refname | grep '^v' | head -1 || true)
+          if [ -n "$PREV_TAG" ]; then
+            echo "Previous release: $PREV_TAG"
+            RANGE_LABEL="Changes since $PREV_TAG"
+            COMMITS=$(git log --pretty=format:"- %s (%h)" "$PREV_TAG"..HEAD)
+          else
+            echo "No previous release tag found"
+            RANGE_LABEL="Recent changes"
+            COMMITS=$(git log --pretty=format:"- %s (%h)" -20)
+          fi
+          {
+            echo "## Flowbar v${{ inputs.version }}"
+            echo ""
+            echo "### $RANGE_LABEL"
+            echo "$COMMITS"
+            echo ""
+            echo "### Installation"
+            echo "1. Download \`Flowbar.dmg\` below"
+            echo "2. Open the DMG and drag Flowbar to your Applications folder"
+            echo "3. Launch Flowbar — macOS will show a security warning since the app isn't notarized"
+            echo "4. Go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**"
+            echo ""
+            echo "Built from commit ${{ github.sha }}."
+          } > /tmp/release-body.md
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ inputs.version }}
           name: Flowbar v${{ inputs.version }}
-          body: |
-            ## Flowbar v${{ inputs.version }}
-
-            ### Installation
-            1. Download `Flowbar.dmg` below
-            2. Open the DMG and drag Flowbar to your Applications folder
-            3. Launch Flowbar — macOS will show a security warning since the app isn't notarized
-            4. Go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**
-
-            Built from commit ${{ github.sha }}.
+          body_path: /tmp/release-body.md
           files: build/Flowbar.dmg
           draft: false
           prerelease: false
