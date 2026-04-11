@@ -100,6 +100,177 @@ struct AppStateFileLifecycleTests {
     }
 }
 
+@Suite("AppState subfolder support")
+@MainActor
+struct AppStateSubfolderTests {
+
+    private var tempDir: URL
+    private var state: AppState
+
+    init() throws {
+        tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("flowbar-subfolder-test-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+
+        // Root files
+        try "# Root Note".write(to: tempDir.appendingPathComponent("root.md"), atomically: true, encoding: .utf8)
+
+        // Subfolder with files
+        let sub = tempDir.appendingPathComponent("sub")
+        try FileManager.default.createDirectory(at: sub, withIntermediateDirectories: true)
+        try "# Sub Note".write(to: sub.appendingPathComponent("child.md"), atomically: true, encoding: .utf8)
+
+        // Nested subfolder
+        let deep = sub.appendingPathComponent("deep")
+        try FileManager.default.createDirectory(at: deep, withIntermediateDirectories: true)
+        try "# Deep Note".write(to: deep.appendingPathComponent("leaf.md"), atomically: true, encoding: .utf8)
+
+        state = AppState(defaults: UserDefaults(suiteName: "com.flowbar.tests-\(UUID().uuidString)")!)
+        state.settings.folderPath = tempDir.path
+        state.loadFiles()
+    }
+
+    @Test("loadFiles discovers files in subfolders")
+    func discoversSubfolderFiles() {
+        let ids = state.sidebar.noteFiles.map(\.id)
+        #expect(ids.contains("root"))
+        #expect(ids.contains("sub/child"))
+        #expect(ids.contains("sub/deep/leaf"))
+        #expect(state.sidebar.noteFiles.count == 3)
+    }
+
+    @Test("sidebarItems has folders before files, sorted")
+    func sidebarItemsStructure() {
+        // Root level: sub/ folder, then root.md file
+        #expect(state.sidebar.sidebarItems.count == 2)
+        if case .folder(let name, _, let children) = state.sidebar.sidebarItems[0] {
+            #expect(name == "sub")
+            // sub/ has: deep/ folder, then child.md
+            #expect(children.count == 2)
+            if case .folder(let deepName, _, _) = children[0] {
+                #expect(deepName == "deep")
+            }
+            if case .file(let note) = children[1] {
+                #expect(note.name == "child")
+            }
+        }
+        if case .file(let note) = state.sidebar.sidebarItems[1] {
+            #expect(note.name == "root")
+        }
+    }
+
+    @Test("selectFile works for subfolder files")
+    func selectSubfolderFile() {
+        let child = state.sidebar.noteFiles.first { $0.id == "sub/child" }!
+        state.selectFile(child)
+        #expect(state.editor.editorContent == "# Sub Note")
+        #expect(state.sidebar.selectedFile?.id == "sub/child")
+    }
+
+    @Test("createNewFile in subfolder creates file there")
+    func createFileInSubfolder() {
+        state.createNewFile(inFolder: "sub")
+        #expect(state.sidebar.selectedFile?.id == "sub/untitled")
+        #expect(FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("sub/untitled.md").path))
+        #expect(state.sidebar.expandedFolders.contains("sub"))
+    }
+
+    @Test("createNewFolder creates directory on disk")
+    func createFolder() {
+        state.createNewFolder()
+        let folderPath = tempDir.appendingPathComponent("untitled-folder").path
+        var isDir: ObjCBool = false
+        #expect(FileManager.default.fileExists(atPath: folderPath, isDirectory: &isDir))
+        #expect(isDir.boolValue)
+    }
+
+    @Test("createNewFolder in subfolder creates nested folder")
+    func createNestedFolder() {
+        state.createNewFolder(inFolder: "sub")
+        let folderPath = tempDir.appendingPathComponent("sub/untitled-folder").path
+        var isDir: ObjCBool = false
+        #expect(FileManager.default.fileExists(atPath: folderPath, isDirectory: &isDir))
+        #expect(isDir.boolValue)
+        #expect(state.sidebar.expandedFolders.contains("sub"))
+    }
+
+    @Test("renameFile works for subfolder files")
+    func renameSubfolderFile() {
+        let child = state.sidebar.noteFiles.first { $0.id == "sub/child" }!
+        state.selectFile(child)
+        state.renameFile(child, to: "renamed")
+        #expect(state.sidebar.selectedFile?.id == "sub/renamed")
+        #expect(FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("sub/renamed.md").path))
+    }
+
+    @Test("trashFolder removes folder and contents")
+    func trashFolder() {
+        let child = state.sidebar.noteFiles.first { $0.id == "sub/child" }!
+        state.selectFile(child)
+        state.trashFolder(relativePath: "sub")
+        #expect(!FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("sub").path))
+        // Only root.md should remain
+        #expect(state.sidebar.noteFiles.count == 1)
+        #expect(state.sidebar.noteFiles[0].id == "root")
+    }
+
+    @Test("NoteFile.name returns display name not relative path")
+    func noteFileDisplayName() {
+        let child = state.sidebar.noteFiles.first { $0.id == "sub/child" }!
+        #expect(child.name == "child")
+    }
+
+    @Test("folder expand/collapse toggle")
+    func folderToggle() {
+        #expect(!state.sidebar.expandedFolders.contains("sub"))
+        state.sidebar.toggleFolder("sub")
+        #expect(state.sidebar.expandedFolders.contains("sub"))
+        state.sidebar.toggleFolder("sub")
+        #expect(!state.sidebar.expandedFolders.contains("sub"))
+    }
+
+    @Test("renameFolder renames on disk and reloads")
+    func renameFolder() {
+        state.sidebar.expandedFolders.insert("sub")
+        state.renameFolder(relativePath: "sub", to: "docs")
+        #expect(FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("docs").path))
+        #expect(!FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("sub").path))
+        #expect(state.sidebar.noteFiles.contains { $0.id == "docs/child" })
+        // Expanded state transfers to new name
+        #expect(state.sidebar.expandedFolders.contains("docs"))
+        #expect(!state.sidebar.expandedFolders.contains("sub"))
+    }
+
+    @Test("renameFolder no-ops for same name or empty")
+    func renameFolderNoOp() {
+        state.renameFolder(relativePath: "sub", to: "sub")
+        #expect(FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("sub").path))
+        state.renameFolder(relativePath: "sub", to: "  ")
+        #expect(FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("sub").path))
+    }
+
+    @Test("renameFolder skips if target exists")
+    func renameFolderConflict() throws {
+        let other = tempDir.appendingPathComponent("other")
+        try FileManager.default.createDirectory(at: other, withIntermediateDirectories: true)
+        state.renameFolder(relativePath: "sub", to: "other")
+        // Both should still exist — rename was skipped
+        #expect(FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("sub").path))
+        #expect(FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("other").path))
+    }
+
+    @Test("commitFolderRename uses renameText")
+    func commitFolderRename() {
+        state.startFolderRename("sub")
+        #expect(state.sidebar.renamingFolderPath == "sub")
+        #expect(state.sidebar.renameText == "sub")
+        state.sidebar.renameText = "renamed-folder"
+        state.commitFolderRename()
+        #expect(state.sidebar.renamingFolderPath == nil)
+        #expect(FileManager.default.fileExists(atPath: tempDir.appendingPathComponent("renamed-folder").path))
+    }
+}
+
 @Suite("AppState panel navigation")
 @MainActor
 struct AppStatePanelTests {

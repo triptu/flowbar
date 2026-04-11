@@ -32,12 +32,16 @@ final class SidebarState {
     // MARK: - Files
 
     var noteFiles: [NoteFile] = []
+    var sidebarItems: [SidebarItem] = []
+    var expandedFolders: Set<String> = []
 
-    // MARK: - Rename
+    // MARK: - Rename (files and folders share renameText/renameSessionID)
 
-    /// Non-nil when a sidebar row is in inline-rename mode
+    /// Non-nil when a sidebar file row is in inline-rename mode
     var renamingFileID: String?
-    /// The live text in the rename field — stored here so any caller can commit
+    /// Non-nil when a sidebar folder row is in inline-rename mode
+    var renamingFolderPath: String?
+    /// The live text in the rename field
     var renameText = ""
     /// Bumped on each startRename to force SwiftUI to create a fresh RenameField
     var renameSessionID = 0
@@ -64,6 +68,12 @@ final class SidebarState {
         }
     }
 
+    // MARK: - Folder expand/collapse
+
+    func toggleFolder(_ relativePath: String) {
+        expandedFolders.formSymmetricDifference([relativePath])
+    }
+
     // MARK: - Rename helpers
 
     func startRename(_ file: NoteFile) {
@@ -72,7 +82,15 @@ final class SidebarState {
         renamingFileID = file.id
     }
 
+    func startFolderRename(_ relativePath: String) {
+        let name = URL(fileURLWithPath: relativePath).lastPathComponent
+        renameText = name
+        renameSessionID += 1
+        renamingFolderPath = relativePath
+    }
+
     func cancelRename() {
         renamingFileID = nil
+        renamingFolderPath = nil
     }
 }

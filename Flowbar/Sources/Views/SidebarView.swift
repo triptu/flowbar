@@ -1,5 +1,10 @@
 import SwiftUI
 
+// Chevron width + gap — used for consistent text alignment between folders and files.
+// Files indent by this amount so their text aligns with folder text after the chevron.
+// Children indent by this amount so their content starts where parent text starts.
+private let chevronIndent: CGFloat = 16
+
 struct SidebarView: View {
     @Environment(AppState.self) var appState
 
@@ -7,28 +12,8 @@ struct SidebarView: View {
         VStack(spacing: 0) {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 2) {
-                    ForEach(appState.sidebar.noteFiles) { file in
-                        SidebarFileRow(
-                            file: file,
-                            isSelected: appState.sidebar.selectedFile?.id == file.id,
-                            isRenaming: appState.sidebar.renamingFileID == file.id
-                        )
-                        .onTapGesture {
-                            guard appState.sidebar.renamingFileID != file.id else { return }
-                            appState.selectFile(file)
-                        }
-                        .accessibilityElement(children: .contain)
-                        .accessibilityIdentifier("sidebar-row-\(file.id)")
-                        .contextMenu {
-                            Button("New File") { appState.createNewFile() }
-                            Divider()
-                            Button("Reveal in Finder") { appState.revealInFinder(file) }
-                            Button("Open in Obsidian") { appState.openInObsidian(file) }
-                            Divider()
-                            Button("Rename") { appState.startRename(file) }
-                            Divider()
-                            Button("Move to Trash", role: .destructive) { appState.trashFile(file) }
-                        }
+                    ForEach(appState.sidebar.sidebarItems) { item in
+                        SidebarItemView(item: item)
                     }
                 }
                 .padding(.vertical, 4)
@@ -36,9 +21,10 @@ struct SidebarView: View {
             }
             .contextMenu {
                 Button("New File") { appState.createNewFile() }
+                Button("New Folder") { appState.createNewFolder() }
             }
             .overlay {
-                if appState.sidebar.noteFiles.isEmpty {
+                if appState.sidebar.sidebarItems.isEmpty {
                     VStack(spacing: 8) {
                         Text("No files yet")
                             .font(.system(size: 13, weight: .medium))
@@ -56,6 +42,124 @@ struct SidebarView: View {
         }
         .frame(maxHeight: .infinity)
         .background(FlowbarColors.sidebarBg)
+    }
+}
+
+// MARK: - SidebarItemView (dispatches folder vs file)
+
+struct SidebarItemView: View {
+    @Environment(AppState.self) var appState
+    let item: SidebarItem
+
+    var body: some View {
+        switch item {
+        case .folder(let name, let relativePath, let children):
+            SidebarFolderRow(name: name, relativePath: relativePath, children: children)
+        case .file(let file):
+            SidebarFileRow(
+                file: file,
+                isSelected: appState.sidebar.selectedFile?.id == file.id,
+                isRenaming: appState.sidebar.renamingFileID == file.id
+            )
+            .padding(.leading, chevronIndent)
+            .onTapGesture {
+                guard appState.sidebar.renamingFileID != file.id else { return }
+                appState.selectFile(file)
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("sidebar-row-\(file.id)")
+            .contextMenu {
+                let parentFolder = file.id.contains("/") ? String(file.id[..<file.id.lastIndex(of: "/")!]) : nil
+                Button("New File") { appState.createNewFile(inFolder: parentFolder) }
+                Button("New Folder") { appState.createNewFolder(inFolder: parentFolder) }
+                Divider()
+                Button("Reveal in Finder") { appState.revealInFinder(file) }
+                Button("Open in Obsidian") { appState.openInObsidian(file) }
+                Divider()
+                Button("Rename") { appState.startRename(file) }
+                Divider()
+                Button("Move to Trash", role: .destructive) { appState.trashFile(file) }
+            }
+        }
+    }
+}
+
+// MARK: - SidebarFolderRow
+
+struct SidebarFolderRow: View {
+    @Environment(AppState.self) var appState
+    let name: String
+    let relativePath: String
+    let children: [SidebarItem]
+
+    private var isExpanded: Bool {
+        appState.sidebar.expandedFolders.contains(relativePath)
+    }
+
+    private var isRenaming: Bool {
+        appState.sidebar.renamingFolderPath == relativePath
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 6) {
+                Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+                    .frame(width: chevronIndent - 6, alignment: .trailing)
+                if isRenaming {
+                    RenameField(
+                        initialText: appState.sidebar.renameText,
+                        accentColor: appState.settings.accentColor.nsColor,
+                        fontSize: appState.settings.typography.sidebarSize,
+                        onCommit: { text in
+                            appState.sidebar.renameText = text
+                            appState.commitFolderRename()
+                        },
+                        onCancel: {
+                            appState.cancelRename()
+                        }
+                    )
+                    .id(appState.sidebar.renameSessionID)
+                } else {
+                    Text(name)
+                        .font(.system(size: appState.settings.typography.sidebarSize))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                guard !isRenaming else { return }
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    appState.sidebar.toggleFolder(relativePath)
+                }
+            }
+            .accessibilityIdentifier("sidebar-folder-\(relativePath)")
+            .contextMenu {
+                Button("New File") { appState.createNewFile(inFolder: relativePath) }
+                Button("New Folder") { appState.createNewFolder(inFolder: relativePath) }
+                Divider()
+                Button("Reveal in Finder") {
+                    appState.revealFolderInFinder(relativePath: relativePath)
+                }
+                Divider()
+                Button("Rename") { appState.startFolderRename(relativePath) }
+                Divider()
+                Button("Move to Trash", role: .destructive) {
+                    appState.trashFolder(relativePath: relativePath)
+                }
+            }
+
+            if isExpanded {
+                ForEach(children) { child in
+                    SidebarItemView(item: child)
+                        .padding(.leading, chevronIndent)
+                }
+            }
+        }
     }
 }
 
@@ -92,10 +196,10 @@ struct SidebarFileRow: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill(isSelected ? appState.settings.accent.opacity(0.4) : Color.clear)
+                .fill(isSelected ? appState.settings.accent.opacity(0.2) : Color.clear)
         )
         .contentShape(Rectangle())
     }
@@ -105,7 +209,7 @@ struct SidebarFileRow: View {
 //
 // Design: ONE dismiss path. Every exit (Enter, Escape, click-outside, Tab)
 // funnels through `finish()`. The click-outside monitor just resigns first
-// responder → controlTextDidEndEditing → finish(). No racing dismiss paths.
+// responder -> controlTextDidEndEditing -> finish(). No racing dismiss paths.
 
 struct RenameField: NSViewRepresentable {
     let initialText: String

@@ -12,10 +12,44 @@ struct NoteFileTests {
         #expect(file.name == "test-file")
     }
 
+    @Test("init with rootURL derives relative path id", arguments: [
+        ("/root/notes", "/root/notes/file.md", "file", "file"),
+        ("/root/notes", "/root/notes/sub/file.md", "sub/file", "file"),
+        ("/root/notes", "/root/notes/a/b/deep.md", "a/b/deep", "deep"),
+    ] as [(String, String, String, String)])
+    func initWithRootURL(root: String, file: String, expectedID: String, expectedName: String) {
+        let rootURL = URL(fileURLWithPath: root)
+        let fileURL = URL(fileURLWithPath: file)
+        let note = NoteFile(url: fileURL, rootComponents: rootURL.standardizedFileURL.pathComponents)
+        #expect(note.id == expectedID)
+        #expect(note.name == expectedName)
+    }
+
     @Test("equality by URL")
     func equality() {
         let url = URL(fileURLWithPath: "/tmp/test.md")
         #expect(NoteFile(url: url) == NoteFile(url: url))
+    }
+}
+
+@Suite("SidebarItem")
+struct SidebarItemTests {
+
+    @Test("folder and file ids are distinct")
+    func distinctIDs() {
+        let file = SidebarItem.file(NoteFile(url: URL(fileURLWithPath: "/tmp/notes.md")))
+        let folder = SidebarItem.folder(name: "notes", relativePath: "notes", children: [])
+        #expect(file.id != folder.id)
+        #expect(file.id == "file:notes")
+        #expect(folder.id == "folder:notes")
+    }
+
+    @Test("name returns display name")
+    func names() {
+        let file = SidebarItem.file(NoteFile(url: URL(fileURLWithPath: "/tmp/my-note.md")))
+        let folder = SidebarItem.folder(name: "docs", relativePath: "docs", children: [])
+        #expect(file.name == "my-note")
+        #expect(folder.name == "docs")
     }
 }
 
