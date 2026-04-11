@@ -90,6 +90,12 @@ All interactive elements have accessibility identifiers for reliable targeting v
 - `search-field` — search text field
 - `search-backdrop` — transparent backdrop (click to dismiss)
 
+**Sidebar:**
+- `sidebar-row-{fileId}` — file row in sidebar
+- `sidebar-folder-{relativePath}` — folder row in sidebar
+- `sidebar-footer-{label}` — footer buttons (settings, timer)
+- `rename-field` — inline rename text field
+
 **Content area:**
 - `content-area` — main content panel
 - `note-edit-preview` — edit/preview toggle button
@@ -108,6 +114,7 @@ All interactive elements have accessibility identifiers for reliable targeting v
 - `todo-navigate-{fileId}` — source file link
 - `todos-search` — search field
 - `todos-filter-file` — file filter menu
+- `todos-group-by-file` — group by file toggle
 - `todos-toggle-completed` — show/hide completed toggle
 
 **Title bar:**

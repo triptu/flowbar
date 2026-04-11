@@ -59,7 +59,6 @@ First launch: click the Flowbar icon in your menu bar, go to Settings, and point
 
 ## Limitations
 
-- **No nested folders** — Flowbar only picks up markdown files in the top-level of the selected folder. Nested subdirectories are not scanned.
 - **Obsidian users** — Don't point Flowbar at your entire Obsidian vault. Instead, create a dedicated folder inside your vault (e.g. `vault/flowbar/`) and point Flowbar at that. This keeps things fast and avoids pulling in Obsidian's internal files.
 
 ## Contributing

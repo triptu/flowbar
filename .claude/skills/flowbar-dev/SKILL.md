@@ -75,7 +75,7 @@ Must be added to both filesystem AND pbxproj (PBXFileReference, PBXGroup childre
 - `@Bindable var appState = appState` inside `body` when you need `$appState.someBinding`
 
 ### Models
-`NoteFile` and `TodoItem` are immutable value types. No mutable runtime state on models — compute at the view level from services.
+`NoteFile`, `TodoItem`, and `SidebarItem` are immutable value types. `SidebarItem` is a recursive enum (`.folder` with children or `.file`) used for the sidebar tree. No mutable runtime state on models — compute at the view level from services.
 
 ### Services
 - `TimerService` doesn't touch markdown files — `complete()` returns `(todoText, sourceFile)`, caller handles file ops via `MarkdownParser`
