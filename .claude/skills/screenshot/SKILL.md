@@ -102,9 +102,11 @@ All interactive elements have accessibility identifiers for reliable targeting v
 - `note-open-obsidian` — open in Obsidian button
 
 **Timer:**
-- `timer-home-view` / `timer-todos-view` — timer sub-views
+- `timer-home-view` — main timer area (always visible on the Timer screen)
+- `timer-todos-view` — todos list, shown as a right side panel when `timerService.todosVisible == true`
 - `timer-pause-resume` — pause/resume button
 - `timer-complete` — complete button
+- `timer-open-todos` — empty-state link that opens the todos side panel
 - `timeline-play-{todoText}` — play button per timeline entry
 
 **Todo list:**
@@ -119,7 +121,7 @@ All interactive elements have accessibility identifiers for reliable targeting v
 
 **Title bar:**
 - `titlebar-task-label` — active task label
-- `titlebar-toggle-timeline` — timeline toggle button
+- `titlebar-toggle-todos` — show/hide the todos side panel on the Timer screen
 
 ### Targeting elements by accessibility identifier
 

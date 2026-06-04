@@ -19,6 +19,9 @@ final class SidebarState {
     var sidebarWidth: Double {
         didSet { if sidebarWidth != oldValue { defaults.set(sidebarWidth, forKey: "sidebarWidth") } }
     }
+    var todosPanelWidth: Double {
+        didSet { if todosPanelWidth != oldValue { defaults.set(todosPanelWidth, forKey: "todosPanelWidth") } }
+    }
 
     // MARK: - Navigation (single source of truth)
 
@@ -50,6 +53,7 @@ final class SidebarState {
         self.defaults = defaults
         self.sidebarVisible = defaults.object(forKey: "sidebarVisible") as? Bool ?? true
         self.sidebarWidth = defaults.object(forKey: "sidebarWidth") as? Double ?? 200
+        self.todosPanelWidth = defaults.object(forKey: "todosPanelWidth") as? Double ?? 280
     }
 
     // MARK: - Navigation helpers

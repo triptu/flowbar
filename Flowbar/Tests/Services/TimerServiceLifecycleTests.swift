@@ -75,7 +75,7 @@ struct TimerServiceLifecycleTests {
         #expect(timer.currentTodoText == "")
         #expect(timer.currentSourceFile == "")
         #expect(timer.elapsed == 0)
-        #expect(timer.screen == .todos)
+        #expect(timer.todosVisible)
     }
 
     @Test("complete returns todo info and clears state")

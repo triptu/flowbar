@@ -193,20 +193,34 @@ final class WindowManager: NSObject {
     }
 
     /// Sets the panel's NSAppearance to match the current theme setting.
-    /// When theme is `.system`, sets appearance to `nil` so the panel inherits the
-    /// system appearance (and forces an invalidation so it takes effect immediately).
+    /// For `.system`, resolves the current system appearance and assigns it explicitly
+    /// — leaving `panel.appearance = nil` defers the redraw of hosted views until the
+    /// panel resigns key. The `effectiveAppearance` KVO observer re-applies this on
+    /// system-theme changes, so the panel still follows the OS automatically.
     func syncPanelAppearance() {
         guard let panel else { return }
+        let newAppearance: NSAppearance
         switch appState.settings.theme {
         case .light:
-            panel.appearance = NSAppearance(named: .aqua)
+            newAppearance = NSAppearance(named: .aqua) ?? NSApp.effectiveAppearance
         case .dark:
-            panel.appearance = NSAppearance(named: .darkAqua)
+            newAppearance = NSAppearance(named: .darkAqua) ?? NSApp.effectiveAppearance
         case .system:
-            panel.appearance = nil
-            // Force the panel to pick up the current system appearance immediately
-            panel.invalidateShadow()
+            let systemName = NSApp.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) ?? .aqua
+            newAppearance = NSAppearance(named: systemName) ?? NSApp.effectiveAppearance
         }
+        panel.appearance = newAppearance
+        // SwiftUI's `.preferredColorScheme` sets an explicit appearance override on
+        // the NSHostingView (contentView). That override outranks `panel.appearance`,
+        // and when `preferredColorScheme` becomes nil (theme == .system), SwiftUI
+        // doesn't clear the override synchronously — leaving the hosted views rendered
+        // with the previous theme until the panel resigns key. Forcing the hosting
+        // view's appearance to match the panel's keeps both layers in lockstep and
+        // makes the switch immediate.
+        panel.contentView?.appearance = newAppearance
+        panel.invalidateShadow()
+        panel.contentView?.needsDisplay = true
+        panel.viewsNeedDisplay = true
     }
 
     func hidePanel() {

@@ -203,7 +203,9 @@ struct SettingsView: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
+        panel.canCreateDirectories = true
         panel.message = "Select your markdown notes folder"
+        panel.prompt = "Choose"
         if panel.runModal() == .OK, let url = panel.url {
             folderPathInput = url.path
             appState.setFolderPath(url.path)

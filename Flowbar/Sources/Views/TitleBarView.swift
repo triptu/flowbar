@@ -19,7 +19,7 @@ struct TitleBarLabel: View {
                         Text(TimerService.formatTime(timerService.elapsed))
                             .monospacedDigit()
                             .foregroundStyle(.secondary)
-                        Text(timerService.currentTodoText.truncated(to: 25))
+                        Text(timerService.currentTodoText)
                             .lineLimit(1)
                             .truncationMode(.tail)
                     }
@@ -37,17 +37,17 @@ struct TitleBarLabel: View {
             if isTimerPanel {
                 Button(action: {
                     withAnimation(.easeInOut(duration: 0.2)) {
-                        timerService.toggleScreen()
+                        timerService.toggleTodosPanel()
                     }
                 }) {
                     Image(systemName: "sidebar.right")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(timerService.todosVisible ? .primary : .secondary)
                         .frame(width: 20, height: 20)
                 }
                 .buttonStyle(.plain)
-                .accessibilityIdentifier("titlebar-toggle-timeline")
-                .accessibilityLabel("Toggle timeline")
+                .accessibilityIdentifier("titlebar-toggle-todos")
+                .accessibilityLabel("Toggle todos panel")
                 .padding(.trailing, 16)
             }
         }

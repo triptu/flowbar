@@ -3,21 +3,20 @@ import Observation
 
 /// Manages the stopwatch timer for tracking time spent on todos.
 ///
-/// Owns all timer state, screen routing, and compound intents (startTodo, toggleTodo,
-/// completeAndMarkDone). Views should be dumb — read state and call intent methods.
-/// Persists sessions to SQLite via DatabaseService. Side-effects on markdown files
-/// happen here so behavior is testable in one place.
+/// Owns all timer state, the todos side-panel visibility, and compound intents
+/// (startTodo, toggleTodo, completeAndMarkDone). Views should be dumb — read state
+/// and call intent methods. Persists sessions to SQLite via DatabaseService.
+/// Side-effects on markdown files happen here so behavior is testable in one place.
 @Observable
 @MainActor
 final class TimerService {
-    enum Screen { case todos, home }
-
     var isRunning = false
     var isPaused = false
     var currentTodoText = ""
     var currentSourceFile = ""
     var elapsed: TimeInterval = 0
-    var screen: Screen = .todos
+    /// Whether the todos list is shown as a right-side panel on the Timer screen.
+    var todosVisible: Bool = true
 
     /// True when a timer session exists (running or paused)
     var hasActiveSession: Bool { isRunning || isPaused }
@@ -96,8 +95,8 @@ final class TimerService {
         hasActiveSession && currentTodoText == todoText && currentSourceFile == sourceFile
     }
 
-    func toggleScreen() {
-        screen = (screen == .todos) ? .home : .todos
+    func toggleTodosPanel() {
+        todosVisible.toggle()
     }
 
     /// Ends the session as completed in the database and clears state.
@@ -191,7 +190,7 @@ final class TimerService {
         currentTodoText = ""
         currentSourceFile = ""
         currentLineIndex = nil
-        screen = .todos
+        todosVisible = true
     }
 
     private func startTicking() {

@@ -94,14 +94,14 @@ struct MainView: View {
             // Open timer
             Button("") {
                 appState.showTimer()
-                timerService.screen = .home
+                timerService.todosVisible = false
             }
                 .keyboardShortcut("t", modifiers: [.option, .command])
 
-            // Open todo list
+            // Open todo list (timer + todos side panel)
             Button("") {
                 appState.showTimer()
-                timerService.screen = .todos
+                timerService.todosVisible = true
             }
                 .keyboardShortcut("l", modifiers: [.option, .command])
 

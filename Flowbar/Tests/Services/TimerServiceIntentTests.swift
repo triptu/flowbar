@@ -33,49 +33,49 @@ struct TimerServiceIntentTests {
 
     // MARK: - Screen state
 
-    @Test("start keeps screen on todos")
-    func startScreenStaysTodos() {
+    @Test("start keeps todos panel visible")
+    func startTodosPanelStaysVisible() {
         timer.start(todoText: "A", sourceFile: "tasks")
-        #expect(timer.screen == .todos)
+        #expect(timer.todosVisible)
         timer.clear()
     }
 
-    @Test("clear sets screen to todos")
-    func stopScreenTodos() {
+    @Test("clear re-opens todos panel")
+    func stopReopensTodosPanel() {
         timer.start(todoText: "A", sourceFile: "tasks")
-        timer.toggleScreen()
-        #expect(timer.screen == .home)
+        timer.toggleTodosPanel()
+        #expect(!timer.todosVisible)
         timer.clear()
-        #expect(timer.screen == .todos)
+        #expect(timer.todosVisible)
     }
 
-    @Test("complete sets screen to todos")
-    func completeScreenTodos() {
+    @Test("complete re-opens todos panel")
+    func completeReopensTodosPanel() {
         timer.start(todoText: "A", sourceFile: "tasks")
-        timer.toggleScreen()
+        timer.toggleTodosPanel()
         _ = timer.complete()
-        #expect(timer.screen == .todos)
+        #expect(timer.todosVisible)
     }
 
     // MARK: - Bug 1: paused → stop/complete navigation
 
-    @Test("clear while paused sets screen to todos")
-    func stopWhilePausedScreen() {
+    @Test("clear while paused re-opens todos panel")
+    func stopWhilePausedReopensTodos() {
         timer.start(todoText: "A", sourceFile: "tasks")
-        timer.toggleScreen()
+        timer.toggleTodosPanel()
         timer.pause()
         timer.clear()
-        #expect(timer.screen == .todos)
+        #expect(timer.todosVisible)
         #expect(!timer.hasActiveSession)
     }
 
-    @Test("complete while paused sets screen to todos")
-    func completeWhilePausedScreen() {
+    @Test("complete while paused re-opens todos panel")
+    func completeWhilePausedReopensTodos() {
         timer.start(todoText: "A", sourceFile: "tasks")
-        timer.toggleScreen()
+        timer.toggleTodosPanel()
         timer.pause()
         let result = timer.complete()
-        #expect(timer.screen == .todos)
+        #expect(timer.todosVisible)
         #expect(!timer.hasActiveSession)
         #expect(result?.todoText == "A")
     }
@@ -187,7 +187,7 @@ struct TimerServiceIntentTests {
         timer.completeAndMarkDone(folderPath: tempDir.path)
 
         #expect(!timer.hasActiveSession)
-        #expect(timer.screen == .todos)
+        #expect(timer.todosVisible)
         let content = try readFile(url)
         #expect(content.contains("- [x] Ship feature"))
     }
@@ -203,7 +203,7 @@ struct TimerServiceIntentTests {
         timer.completeAndMarkDone(folderPath: tempDir.path)
 
         #expect(!timer.hasActiveSession)
-        #expect(timer.screen == .todos)
+        #expect(timer.todosVisible)
         let content = try readFile(url)
         #expect(content.contains("- [x] Paused task"))
     }
@@ -281,14 +281,14 @@ struct TimerServiceIntentTests {
         timer.clear()
     }
 
-    // MARK: - toggleScreen
+    // MARK: - toggleTodosPanel
 
-    @Test("toggleScreen flips between todos and home")
-    func toggleScreenFlips() {
-        #expect(timer.screen == .todos)
-        timer.toggleScreen()
-        #expect(timer.screen == .home)
-        timer.toggleScreen()
-        #expect(timer.screen == .todos)
+    @Test("toggleTodosPanel flips todosVisible")
+    func toggleTodosPanelFlips() {
+        #expect(timer.todosVisible)
+        timer.toggleTodosPanel()
+        #expect(!timer.todosVisible)
+        timer.toggleTodosPanel()
+        #expect(timer.todosVisible)
     }
 }
